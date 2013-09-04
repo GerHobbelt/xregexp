@@ -1,7 +1,7 @@
 /*!
  * XRegExp 3.0.0-pre
  * <http://xregexp.com/>
- * Steven Levithan © 2007-2012 MIT License
+ * Steven Levithan ï¿½ 2007-2012 MIT License
  */
 
 /**
@@ -10,7 +10,7 @@
  * to make your client-side grepping simpler and more powerful, while freeing you from worrying
  * about pesky cross-browser inconsistencies and the dubious `lastIndex` property.
  */
-var XRegExp = (function(undefined) {
+XRegExp = (function(undefined) {
     'use strict';
 
 /* ==============================
