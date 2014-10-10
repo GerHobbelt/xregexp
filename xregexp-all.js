@@ -1348,7 +1348,9 @@ var XRegExp = (function(undefined) {
                 for (i = 1; i < match.length; ++i) {
                     name = this[REGEX_DATA].captureNames[i - 1];
                     if (name) {
-                        match[name] = match[i];
+                        if (match[i] != undef || match[name] == undef) {
+                            match[name] = match[i];
+                        }
                     }
                 }
             }

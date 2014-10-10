@@ -10,7 +10,7 @@
  * to make your client-side grepping simpler and more powerful, while freeing you from worrying
  * about pesky cross-browser inconsistencies and the dubious `lastIndex` property.
  */
-XRegExp = (function(undefined) {
+var XRegExp = (function(undefined) {
     'use strict';
 
 /* ==============================
