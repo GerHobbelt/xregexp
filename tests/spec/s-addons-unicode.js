@@ -18,13 +18,13 @@ describe('Unicode Base addon:', function() {
             });
 
             it('should throw an exception for double negation \\P{^...}', function() {
-                expect(function() {XRegExp('\\P{^L}');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('[\\P{^L}]');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('[^\\P{^L}]');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('\\P{^L}');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('[\\P{^L}]');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('[^\\P{^L}]');}).toThrowError(SyntaxError);
             });
 
             it('should throw an exception for \\p^ with a single-letter name', function() {
-                expect(function() {XRegExp('\\p^L');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('\\p^L');}).toThrowError(SyntaxError);
             });
 
             it('should use the first letter only as the name if not wrapped with {...}', function() {
@@ -57,35 +57,35 @@ describe('Unicode Base addon:', function() {
             it('should throw an exception within character classes, in astral mode', function() {
                 XRegExp.install('astral');
 
-                expect(function() {XRegExp('[\\p{L}]');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('[\\P{L}]');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('[\\pL]');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('[\\PL]');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('[\\p{L}]');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('[\\P{L}]');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('[\\pL]');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('[\\PL]');}).toThrowError(SyntaxError);
             });
 
             it('should throw an exception for unrecognized names', function() {
                 var unrecognizedNames = ['X', 'Unrecognized_Name'];
 
                 unrecognizedNames.forEach(function(name) {
-                    expect(function() {XRegExp('\\p{' + name + '}');}).toThrow(SyntaxError);
-                    expect(function() {XRegExp('\\P{' + name + '}');}).toThrow(SyntaxError);
-                    expect(function() {XRegExp('\\p{^' + name + '}');}).toThrow(SyntaxError);
+                    expect(function() {XRegExp('\\p{' + name + '}');}).toThrowError(SyntaxError);
+                    expect(function() {XRegExp('\\P{' + name + '}');}).toThrowError(SyntaxError);
+                    expect(function() {XRegExp('\\p{^' + name + '}');}).toThrowError(SyntaxError);
 
                     if (name.length === 1) {
-                        expect(function() {XRegExp('\\p' + name);}).toThrow(SyntaxError);
-                        expect(function() {XRegExp('\\P' + name);}).toThrow(SyntaxError);
+                        expect(function() {XRegExp('\\p' + name);}).toThrowError(SyntaxError);
+                        expect(function() {XRegExp('\\P' + name);}).toThrowError(SyntaxError);
                     }
                 });
             });
 
             it('should throw an exception if a name is not specified', function() {
-                expect(function() {XRegExp('\\p{}');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('\\P{}');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('\\p{^}');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('\\p{}');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('\\P{}');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('\\p{^}');}).toThrowError(SyntaxError);
 
                 // Erroring on bare \p and \P is actually handled by xregexp.js, not Unicode Base
-                expect(function() {XRegExp('\\p');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('\\P');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('\\p');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('\\P');}).toThrowError(SyntaxError);
             });
 
             it('should ignore spaces, underscores, hyphens, and casing in names', function() {
@@ -93,12 +93,12 @@ describe('Unicode Base addon:', function() {
             });
 
             it('should not ignore characters other than spaces, underscores, and hyphens in names', function() {
-                expect(function() {XRegExp('\\p{L+}');}).toThrow(SyntaxError);
-                expect(function() {XRegExp('\\p{.L}');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('\\p{L+}');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('\\p{.L}');}).toThrowError(SyntaxError);
             });
 
             it('should require a negating caret to be the first character', function() {
-                expect(function() {XRegExp('\\p{ ^L}');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('\\p{ ^L}');}).toThrowError(SyntaxError);
             });
 
         });
@@ -273,21 +273,39 @@ describe('Unicode Base addon:', function() {
         }());
 
         it('should throw an exception when using a Unicode token in a character class with inline flag (?A)', function() {
-            expect(function() {XRegExp('(?A)[\\p{L}]');}).toThrow(SyntaxError);
+            expect(function() {XRegExp('(?A)[\\p{L}]');}).toThrowError(SyntaxError);
         });
 
         it('should throw an exception when using a Unicode token in a character class with flag A', function() {
-            expect(function() {XRegExp('[\\p{L}]', 'A');}).toThrow(SyntaxError);
+            expect(function() {XRegExp('[\\p{L}]', 'A');}).toThrowError(SyntaxError);
         });
 
-        it('should be equivalent to implicit astral-mode opt-in', function() {
+        it('should be equivalent to implicit astral mode', function() {
             XRegExp.install('astral');
             var implicit = XRegExp('\\p{L}');
 
             XRegExp.uninstall('astral');
             var explicit = XRegExp('\\p{L}', 'A');
 
-            expect(explicit).toBeEquiv(implicit);
+            expect(explicit).toEqual(implicit);
+        });
+
+        it('should be exposed in extended flags prop when using implicit astral mode', function() {
+            XRegExp.install('astral');
+            expect(XRegExp('')[REGEX_DATA].flags).toBe('A');
+
+            XRegExp.uninstall('astral');
+            expect(XRegExp('')[REGEX_DATA].flags).toBe('');
+        });
+
+        it('should be exposed in flags arg of token functions when using implicit astral mode', function() {
+            XRegExp.addToken(/~~FLAG-A-TEST/, function(match, scope, flags) {return flags;});
+
+            XRegExp.install('astral');
+            expect(XRegExp('~~FLAG-A-TEST!').source).toBe('A!');
+
+            XRegExp.uninstall('astral');
+            expect(XRegExp('~~FLAG-A-TEST!').source).toBe('!');
         });
 
     });
@@ -333,7 +351,7 @@ describe('Unicode Base addon:', function() {
                 inverseOf: 'MissingToken'
             }]);
 
-            expect(function() {XRegExp('\\p{MissingRef}');}).toThrow(ReferenceError);
+            expect(function() {XRegExp('\\p{MissingRef}');}).toThrowError(ReferenceError);
         });
 
         (function() {
@@ -344,7 +362,7 @@ describe('Unicode Base addon:', function() {
             });
 
             it('should cause an exception to be thrown when using an astral-only token, when not in astral mode', function() {
-                expect(function() {XRegExp('\\p{AstralOnly}');}).toThrow(SyntaxError);
+                expect(function() {XRegExp('\\p{AstralOnly}');}).toThrowError(SyntaxError);
             });
         }());
 
@@ -388,11 +406,11 @@ describe('Unicode Blocks addon:', function() {
 
     it('should require the "In" prefix for block names (unprefixed names are not allowed)', function() {
         expect(function() {XRegExp('\\p{InBasic_Latin}');}).not.toThrow();
-        expect(function() {XRegExp('\\p{Basic_Latin}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{Basic_Latin}');}).toThrowError(SyntaxError);
     });
 
     it('should not allow the "Is" prefix for block names', function() {
-        expect(function() {XRegExp('\\p{IsBasic_Latin}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{IsBasic_Latin}');}).toThrowError(SyntaxError);
     });
 
     it('should handle \\p{InBasic_Latin}', function() {
@@ -415,11 +433,11 @@ describe('Unicode Blocks addon:', function() {
 describe('Unicode Categories addon:', function() {
 
     it('should not allow the "In" prefix for category names', function() {
-        expect(function() {XRegExp('\\p{InP}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{InP}');}).toThrowError(SyntaxError);
     });
 
     it('should not allow the "Is" prefix for category names', function() {
-        expect(function() {XRegExp('\\p{IsP}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{IsP}');}).toThrowError(SyntaxError);
     });
 
     it('should handle \\p{Cn}', function() {
@@ -444,12 +462,12 @@ describe('Unicode Categories addon:', function() {
          * (e.g., Chrome 21 doesn't let ᾀ match ᾈ, and Firefox 14 doesn't let ǉ match the titlecase
          * ǈ), so just test common code points.
          */
-        expect(XRegExp.match('AaИи!', XRegExp('\\p{Ll}',    'gi'))).toBeEquiv(['A', 'a', 'И', 'и']);
-        expect(XRegExp.match('AaИи!', XRegExp('[\\p{Ll}]',  'gi'))).toBeEquiv(['A', 'a', 'И', 'и']);
-        expect(XRegExp.match('AaИи!', XRegExp('[^\\P{Ll}]', 'gi'))).toBeEquiv([]);
-        expect(XRegExp.match('AaИи!', XRegExp('\\P{Ll}',    'gi'))).toBeEquiv(['!']);
-        expect(XRegExp.match('AaИи!', XRegExp('[^\\p{Ll}]', 'gi'))).toBeEquiv(['!']);
-        expect(XRegExp.match('AaИи!', XRegExp('[\\P{Ll}]',  'gi'))).toBeEquiv(['A', 'a', 'И', 'и', '!']);
+        expect(XRegExp.match('AaИи!', XRegExp('\\p{Ll}',    'gi'))).toEqualMatch(['A', 'a', 'И', 'и']);
+        expect(XRegExp.match('AaИи!', XRegExp('[\\p{Ll}]',  'gi'))).toEqualMatch(['A', 'a', 'И', 'и']);
+        expect(XRegExp.match('AaИи!', XRegExp('[^\\P{Ll}]', 'gi'))).toEqualMatch([]);
+        expect(XRegExp.match('AaИи!', XRegExp('\\P{Ll}',    'gi'))).toEqualMatch(['!']);
+        expect(XRegExp.match('AaИи!', XRegExp('[^\\p{Ll}]', 'gi'))).toEqualMatch(['!']);
+        expect(XRegExp.match('AaИи!', XRegExp('[\\P{Ll}]',  'gi'))).toEqualMatch(['A', 'a', 'И', 'и', '!']);
     });
 
     it('should handle \\p{P}', function() {
@@ -487,11 +505,11 @@ describe('Unicode Categories addon:', function() {
 describe('Unicode Properties addon:', function() {
 
     it('should not allow the "In" prefix for property names', function() {
-        expect(function() {XRegExp('\\p{InASCII}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{InASCII}');}).toThrowError(SyntaxError);
     });
 
     it('should not allow the "Is" prefix for property names', function() {
-        expect(function() {XRegExp('\\p{IsASCII}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{IsASCII}');}).toThrowError(SyntaxError);
     });
 
     it('should handle \\p{Alphabetic}', function() {
@@ -527,11 +545,11 @@ describe('Unicode Properties addon:', function() {
 describe('Unicode Scripts addon:', function() {
 
     it('should not allow the "In" prefix for script names', function() {
-        expect(function() {XRegExp('\\p{InLatin}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{InLatin}');}).toThrowError(SyntaxError);
     });
 
     it('should not allow the "Is" prefix for script names', function() {
-        expect(function() {XRegExp('\\p{IsLatin}');}).toThrow(SyntaxError);
+        expect(function() {XRegExp('\\p{IsLatin}');}).toThrowError(SyntaxError);
     });
 
     it('should handle \\p{Katakana}', function() {

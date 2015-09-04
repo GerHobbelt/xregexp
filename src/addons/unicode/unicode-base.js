@@ -1,7 +1,7 @@
 /*!
  * XRegExp Unicode Base 3.0.0-pre
  * <http://xregexp.com/>
- * Steven Levithan (c) 2008-2014 MIT License
+ * Steven Levithan (c) 2008-2015 MIT License
  */
 
 /**
@@ -135,8 +135,8 @@
                 ERR_ASTRAL_IN_CLASS = 'Astral mode does not support Unicode tokens within character classes',
                 // Negated via \P{..} or \p{^..}
                 isNegated = match[1] === 'P' || !!match[2],
-                // Switch from BMP (U+FFFF) to astral (U+10FFFF) mode via flag A or implicit opt-in
-                isAstralMode = flags.indexOf('A') > -1 || XRegExp.isInstalled('astral'),
+                // Switch from BMP (0-FFFF) to astral (0-10FFFF) mode via flag A
+                isAstralMode = flags.indexOf('A') > -1,
                 // Token lookup name. Check `[4]` first to avoid passing `undefined` via `\p{}`
                 slug = normalize(match[4] || match[3]),
                 // Token data object
@@ -176,7 +176,8 @@
         },
         {
             scope: 'all',
-            optionalFlags: 'A'
+            optionalFlags: 'A',
+            leadChar: '\\'
         }
     );
 

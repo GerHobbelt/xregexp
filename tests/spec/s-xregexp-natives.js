@@ -7,7 +7,7 @@ describe('When overridden, RegExp.prototype.exec()', function() {
     // This is broken in old Firefox (tested in v2.0; it works in v8+), but not for any fault of
     // XRegExp. Uncomment this test if future XRegExp fixes it for old Firefox.
     /*it('should type convert an undefined argument to a string', function() {
-        expect(/undefined/.exec()).toBeEquiv(['undefined']);
+        expect(/undefined/.exec()).toEqualMatch(['undefined']);
     });*/
 
     /*
@@ -27,7 +27,7 @@ describe('When overridden, RegExp.prototype.exec()', function() {
         var regex = /x/;
 
         regex.lastIndex = 4;
-        expect(regex.exec('123x5')).toBeEquiv(['x']);
+        expect(regex.exec('123x5')).toEqualMatch(['x']);
     });
 
     /*
@@ -41,20 +41,20 @@ describe('When overridden, RegExp.prototype.exec()', function() {
         var regex = /x/g;
 
         regex.lastIndex = 4;
-        expect(regex.exec('123x5')).toBe(null);
+        expect(regex.exec('123x5')).toBeNull();
 
         regex.lastIndex = 2;
-        expect(regex.exec('123x5')).toBeEquiv(['x']);
+        expect(regex.exec('123x5')).toEqualMatch(['x']);
     });
 
     it('should type convert lastIndex when setting the search start position', function() {
         var regex = /x/g;
 
         regex.lastIndex = '3';
-        expect(regex.exec('123x5')).toBeEquiv(['x']);
+        expect(regex.exec('123x5')).toEqualMatch(['x']);
 
         regex.lastIndex = '4';
-        expect(regex.exec('123x5')).toBe(null);
+        expect(regex.exec('123x5')).toBeNull();
     });
 
     /*
@@ -63,14 +63,8 @@ describe('When overridden, RegExp.prototype.exec()', function() {
      * - Are mirrored by XRegExp.exec and nonglobal String.prototype.match.
      */
 
-    describe('provides extensions:', function() {
-
+    xdescribe('provides extensions:', function() {
         // TODO: Copy/update named capture specs from XRegExp.exec here
-
-        it('', function() {
-
-        });
-
     });
 
 });
@@ -141,11 +135,11 @@ describe('When overridden, String.prototype.match()', function() {
     describe('with a global regex', function() {
 
         it('should return an array with all matches', function() {
-            expect('a bc'.match(/(\w)/g)).toBeEquiv(['a', 'b', 'c']);
+            expect('a bc'.match(/(\w)/g)).toEqualMatch(['a', 'b', 'c']);
         });
 
         it('should return null if no match is found', function() {
-            expect('a bc'.match(/x/g)).toBe(null);
+            expect('a bc'.match(/x/g)).toBeNull();
         });
 
         it('should reset lastIndex to 0 when a match is found', function() {
@@ -172,7 +166,7 @@ describe('When overridden, String.prototype.match()', function() {
         });
 
         it('should convert any nonstring context to a string (except null and undefined)', function() {
-            expect(String.prototype.match.call(11, /1/g)).toBeEquiv(['1', '1']);
+            expect(String.prototype.match.call(11, /1/g)).toEqualMatch(['1', '1']);
         });
 
         it('should throw an exception when called on null or undefined context, if strict mode is supported', function() {
@@ -181,7 +175,7 @@ describe('When overridden, String.prototype.match()', function() {
                 // method will be called with the global object (window) as its context, rather
                 // than null or undefined
                 if (hasStrictMode) {
-                    expect(function() {String.prototype.match.call(value, /x/g);}).toThrow(TypeError);
+                    expect(function() {String.prototype.match.call(value, /x/g);}).toThrowError(TypeError);
                 } else {
                     // Keep the assertion count consistent cross-browser
                     expect(hasStrictMode).toBe(false);
@@ -219,13 +213,13 @@ describe('When overridden, String.prototype.match()', function() {
             ];
 
             tests.forEach(function(test) {
-                expect(test.str.match(test.regex)).toBeEquiv(test.result);
+                expect(test.str.match(test.regex)).toEqualMatch(test.result);
             });
 
             // The native RegExp with an explicit undefined pattern incorrectly creates /undefined/
             // in Firefox 3 and 3.6 (but not v4)
-            //expect('undefined'.match()).toBeEquiv(['']);
-            //expect('undefined'.match(undefined)).toBeEquiv(['']);
+            //expect('undefined'.match()).toEqualMatch(['']);
+            //expect('undefined'.match(undefined)).toEqualMatch(['']);
         });
 
         it('should throw an exception when called on null or undefined context, if strict mode is supported', function() {
@@ -234,7 +228,7 @@ describe('When overridden, String.prototype.match()', function() {
                 // method will be called with the global object (window) as its context, rather
                 // than null or undefined
                 if (hasStrictMode) {
-                    expect(function() {String.prototype.match.call(value, /x/);}).toThrow(TypeError);
+                    expect(function() {String.prototype.match.call(value, /x/);}).toThrowError(TypeError);
                 } else {
                     // Keep the assertion count consistent cross-browser
                     expect(hasStrictMode).toBe(false);
@@ -248,14 +242,8 @@ describe('When overridden, String.prototype.match()', function() {
          * - Are mirrored by RegExp.prototype.exec and XRegExp.exec.
          */
 
-        describe('provides extensions:', function() {
-
+        xdescribe('provides extensions:', function() {
             // TODO: Copy/update specs from RegExp.prototype.exec here
-
-            it('', function() {
-
-            });
-
         });
 
     });
@@ -480,7 +468,7 @@ describe('When overridden, String.prototype.replace()', function() {
             // method will be called with the global object (window) as its context, rather
             // than null or undefined
             if (hasStrictMode) {
-                expect(function() {String.prototype.replace.call(value, /^/, '');}).toThrow(TypeError);
+                expect(function() {String.prototype.replace.call(value, /^/, '');}).toThrowError(TypeError);
             } else {
                 // Keep the assertion count consistent cross-browser
                 expect(hasStrictMode).toBe(false);
@@ -526,7 +514,7 @@ describe('When overridden, String.prototype.replace()', function() {
                 });
 
                 it('should throw an exception for backreferences to unknown group names', function() {
-                    expect(function() {'test'.replace(XRegExp('(?<test>t)', 'g'), ':${x}:');}).toThrow(SyntaxError);
+                    expect(function() {'test'.replace(XRegExp('(?<test>t)', 'g'), ':${x}:');}).toThrowError(SyntaxError);
                 });
 
             });
@@ -555,8 +543,8 @@ describe('When overridden, String.prototype.replace()', function() {
                 });
 
                 it('should throw an exception for backreferences to unknown group numbers', function() {
-                    expect(function() {'test'.replace(/t/, '${1}');}).toThrow(SyntaxError);
-                    expect(function() {'test'.replace(/(t)/, '${2}');}).toThrow(SyntaxError);
+                    expect(function() {'test'.replace(/t/, '${1}');}).toThrowError(SyntaxError);
+                    expect(function() {'test'.replace(/(t)/, '${2}');}).toThrowError(SyntaxError);
                 });
 
                 it('should allow ${0} to refer to the entire match', function() {
@@ -593,10 +581,10 @@ describe('When overridden, String.prototype.replace()', function() {
             describe('strict error handling', function() {
 
                 it('should throw an exception for backreferences to unknown group numbers', function() {
-                    expect(function() {'xaaa'.replace(/aa/, '$1b');}).toThrow(SyntaxError);
-                    expect(function() {'xaaa'.replace(/aa/, '$01b');}).toThrow(SyntaxError);
-                    expect(function() {'xaaa'.replace(/a(a)/, '$2b');}).toThrow(SyntaxError);
-                    expect(function() {'xa(a)a'.replace('a(a)', '$1b');}).toThrow(SyntaxError);
+                    expect(function() {'xaaa'.replace(/aa/, '$1b');}).toThrowError(SyntaxError);
+                    expect(function() {'xaaa'.replace(/aa/, '$01b');}).toThrowError(SyntaxError);
+                    expect(function() {'xaaa'.replace(/a(a)/, '$2b');}).toThrowError(SyntaxError);
+                    expect(function() {'xa(a)a'.replace('a(a)', '$1b');}).toThrowError(SyntaxError);
                 });
 
             });

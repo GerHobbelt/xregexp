@@ -6,7 +6,7 @@ describe('XRegExp.addToken()', function() {
         values.forEach(function(value) {
             expect(function() {
                 XRegExp.addToken(value, function() {return '';});
-            }).toThrow(TypeError);
+            }).toThrowError(TypeError);
         });
     });
 
@@ -196,7 +196,7 @@ describe('XRegExp.cache()', function() {
     });
 
     it('should handle native and nonnative flags', function() {
-        expect(XRegExp.cache('. +()\\1 1', 'gimsx')).toBeEquiv(XRegExp('. +()\\1 1', 'gimsx'));
+        expect(XRegExp.cache('. +()\\1 1', 'gimsx')).toEqual(XRegExp('. +()\\1 1', 'gimsx'));
     });
 
     it('should allow flushing the regex object cache via XRegExp.cache.flush()', function() {
@@ -231,9 +231,9 @@ describe('XRegExp.escape()', function() {
     });
 
     it('should throw an exception when given a null or undefined pattern', function() {
-        expect(function() {XRegExp.escape();}).toThrow(TypeError);
-        expect(function() {XRegExp.escape(undefined);}).toThrow(TypeError);
-        expect(function() {XRegExp.escape(null);}).toThrow(TypeError);
+        expect(function() {XRegExp.escape();}).toThrowError(TypeError);
+        expect(function() {XRegExp.escape(undefined);}).toThrowError(TypeError);
+        expect(function() {XRegExp.escape(null);}).toThrowError(TypeError);
     });
 
 });
@@ -252,12 +252,12 @@ describe('XRegExp.exec()', function() {
      */
 
     it('should return null if no match is found', function() {
-        expect(XRegExp.exec('abcxdef', /z/)).toBe(null);
+        expect(XRegExp.exec('abcxdef', /z/)).toBeNull();
     });
 
     it('should return a match array with backreferences if a match is found', function() {
-        expect(XRegExp.exec('abcxdef', /a/)).toBeEquiv(['a']);
-        expect(XRegExp.exec('abcxdef', /(a)/)).toBeEquiv(['a', 'a']);
+        expect(XRegExp.exec('abcxdef', /a/)).toEqualMatch(['a']);
+        expect(XRegExp.exec('abcxdef', /(a)/)).toEqualMatch(['a', 'a']);
     });
 
     it('should not modify the lastIndex of a nonglobal regex', function() {
@@ -332,7 +332,7 @@ describe('XRegExp.exec()', function() {
         ];
 
         values.forEach(function(value) {
-            expect(function() {XRegExp.exec('str', value);}).toThrow(TypeError);
+            expect(function() {XRegExp.exec('str', value);}).toThrowError(TypeError);
         });
     });
 
@@ -346,12 +346,12 @@ describe('XRegExp.exec()', function() {
     it('should use the specified search start position', function() {
         expect(XRegExp.exec('abcxdef', /x/, 2)).toBeTruthy();
         expect(XRegExp.exec('abcxdef', /x/g, 2)).toBeTruthy();
-        expect(XRegExp.exec('abcxdef', /x/, 5)).toBe(null);
-        expect(XRegExp.exec('abcxdef', /x/g, 5)).toBe(null);
+        expect(XRegExp.exec('abcxdef', /x/, 5)).toBeNull();
+        expect(XRegExp.exec('abcxdef', /x/g, 5)).toBeNull();
     });
 
     it('should fail to match if the start position is greater than the string length', function() {
-        expect(XRegExp.exec('abc', /a/, 5)).toBe(null);
+        expect(XRegExp.exec('abc', /a/, 5)).toBeNull();
     });
 
     it('should ignore lastIndex when setting the search start position', function() {
@@ -370,8 +370,8 @@ describe('XRegExp.exec()', function() {
 
         regex.lastIndex = regexG.lastIndex = 0;
 
-        expect(XRegExp.exec('abcxdef', regex, 5)).toBe(null);
-        expect(XRegExp.exec('abcxdef', regexG, 5)).toBe(null);
+        expect(XRegExp.exec('abcxdef', regex, 5)).toBeNull();
+        expect(XRegExp.exec('abcxdef', regexG, 5)).toBeNull();
     });
 
     it('should allow matching at or after the specified position when not using sticky mode', function() {
@@ -389,8 +389,8 @@ describe('XRegExp.exec()', function() {
     });
 
     it('should not allow matching after the specified position when using sticky mode', function() {
-        expect(XRegExp.exec('abcxdef', /x/, 0, true)).toBe(null);
-        expect(XRegExp.exec('abcxdef', /x/, 0, 'sticky')).toBe(null);
+        expect(XRegExp.exec('abcxdef', /x/, 0, true)).toBeNull();
+        expect(XRegExp.exec('abcxdef', /x/, 0, 'sticky')).toBeNull();
     });
 
     (function() {
@@ -413,8 +413,8 @@ describe('XRegExp.exec()', function() {
      */
 
     it('should return backreferences to nonparticipating capturing groups as undefined', function() {
-        expect(XRegExp.exec('a', /()??/)).toBeEquiv(['', undefined]);
-        expect(XRegExp.exec('a', /()/)).toBeEquiv(['', '']);
+        expect(XRegExp.exec('a', /()??/)).toEqualMatch(['', undefined]);
+        expect(XRegExp.exec('a', /()/)).toEqualMatch(['', '']);
     });
 
     it('should avoid regression on edge cases', function() {
@@ -424,7 +424,7 @@ describe('XRegExp.exec()', function() {
          * provided a nonstring argument and called on a regex with a capturing group that matches
          * an empty string.
          */
-        expect(XRegExp.exec(1, /1()/)).toBeEquiv(['1', '']);
+        expect(XRegExp.exec(1, /1()/)).toEqualMatch(['1', '']);
     });
 
     it('should include the index property on the match array, with the match start position', function() {
@@ -452,7 +452,7 @@ describe('XRegExp.exec()', function() {
     it('should throw an exception if reserved array properties are used as capture names', function() {
         // Reserved names are 'length', '__proto__', and bare integers
         ['length', '__proto__', '0', '1'].forEach(function(name) {
-            expect(function() {XRegExp.exec('a', XRegExp('(?<' + name + '>a)'));}).toThrow(SyntaxError);
+            expect(function() {XRegExp.exec('a', XRegExp('(?<' + name + '>a)'));}).toThrowError(SyntaxError);
         });
     });
 
@@ -468,73 +468,106 @@ describe('XRegExp.forEach()', function() {
 
     it('should match all, for both global and nonglobal regexes', function() {
         [/\w+/, /\w+/g].forEach(function(regex) {
-            expect(XRegExp.forEach('abc 123 def', regex, function(m) {
-                this.push(m[0]);
-            }, [])).toEqual(['abc', '123', 'def']);
+            var result = [];
+            XRegExp.forEach('abc 123 def', regex, function(m) {
+                result.push(m[0]);
+            });
+
+            expect(result).toEqual(['abc', '123', 'def']);
         });
     });
 
     it('should provide named backreferences on the match array', function() {
-        expect(XRegExp.forEach('abc 123 def', XRegExp('(?<first>\\w)\\w*'), function(m) {
-            this.push(m.first);
-        }, [])).toEqual(['a', '1', 'd']);
+        var result = [];
+        XRegExp.forEach('abc 123 def', XRegExp('(?<first>\\w)\\w*'), function(m) {
+            result.push(m.first);
+        });
+
+        expect(result).toEqual(['a', '1', 'd']);
     });
 
     it('should provide match start indexes on the match array', function() {
-        expect(XRegExp.forEach('abc 123 def', /\w+/, function(m) {
-            this.push(m.index);
-        }, [])).toEqual([0, 4, 8]);
+        var result = [];
+        XRegExp.forEach('abc 123 def', /\w+/, function(m) {
+            result.push(m.index);
+        });
+
+        expect(result).toEqual([0, 4, 8]);
     });
 
     it('should provide match numbers to callback functions', function() {
-        expect(XRegExp.forEach('abc 123 def', /\w+/, function(m, i) {
-            this.push(i);
-        }, [])).toEqual([0, 1, 2]);
+        var result = [];
+        XRegExp.forEach('abc 123 def', /\w+/, function(m, i) {
+            result.push(i);
+        });
+
+        expect(result).toEqual([0, 1, 2]);
     });
 
     it('should provide source strings to callback functions', function() {
         var str = 'abc 123 def';
+        var result = [];
+        XRegExp.forEach(str, /\w+/, function(m, i, s) {
+            result.push(s);
+        });
 
-        expect(XRegExp.forEach(str, /\w+/, function(m, i, s) {
-            this.push(s);
-        }, [])).toEqual([str, str, str]);
+        expect(result).toEqual([str, str, str]);
     });
 
     it('should provide source regexes to callback functions', function() {
         var regex = /\w+/;
+        var result = [];
+        XRegExp.forEach('abc 123 def', regex, function(m, i, s, r) {
+            result.push(r);
+        });
 
-        expect(XRegExp.forEach('abc 123 def', regex, function(m, i, s, r) {
-            this.push(r);
-        }, [])).toEqual([regex, regex, regex]);
+        expect(result).toEqual([regex, regex, regex]);
+    });
+
+    it('should include precompilation source and flags props on source regexes in callback functions', function() {
+        var regex = XRegExp('(?<a>\\w+)', 'x');
+        var result = [];
+        XRegExp.forEach('abc', regex, function(m, i, s, r) {
+            result.push(r[REGEX_DATA].source, r[REGEX_DATA].flags);
+        });
+
+        expect(result).toEqual([regex[REGEX_DATA].source, regex[REGEX_DATA].flags]);
     });
 
     it('should not let iteration be affected by source string manipulation in the callback function', function() {
         var str1 = 'abc 123 def';
         var str2 = 'abc 123 def';
-
-        expect(XRegExp.forEach(str2, /\w+/, function(m, i, s) {
-            this.push(s);
+        var result = [];
+        XRegExp.forEach(str2, /\w+/, function(m, i, s) {
+            result.push(s);
             s += s;
             str2 += str2;
-        }, [])).toEqual([str1, str1, str1]);
+        });
+
+        expect(result).toEqual([str1, str1, str1]);
     });
 
     it('should not let iteration be affected by regex manipulation in the callback function', function() {
-        expect(XRegExp.forEach('abc 123 def', /\w+/, function(m, i, s, r) {
-            this.push(m[0]);
+        var result = [];
+        XRegExp.forEach('abc 123 def', /\w+/, function(m, i, s, r) {
+            result.push(m[0]);
             r.compile('x'); // Mutates the regex in place
-        }, [])).toEqual(['abc', '123', 'def']);
+        });
+
+        expect(result).toEqual(['abc', '123', 'def']);
 
         // NOTE: `compile` in Opera 11 has a bug which makes `r.compile('.').source === '/./'`
     });
 
     it('should start iteration at position 0, ignoring lastIndex', function() {
         var regex = /\w+/g;
+        var result = [];
         regex.lastIndex = 4;
+        XRegExp.forEach('abc 123 def', regex, function(m) {
+            result.push(m[0]);
+        });
 
-        expect(XRegExp.forEach('abc 123 def', regex, function(m) {
-            this.push(m[0]);
-        }, [])).toEqual(['abc', '123', 'def']);
+        expect(result).toEqual(['abc', '123', 'def']);
     });
 
     it('should reset the lastIndex of a global regex to 0, upon completion', function() {
@@ -580,11 +613,8 @@ describe('XRegExp.forEach()', function() {
         expect(interimLastIndex2).toBe(1);
     });
 
-    it('should return the provided context object, if any', function() {
-        expect(XRegExp.forEach('', /x/, function() {})).toBe(undefined);
-
-        var obj = {};
-        expect(XRegExp.forEach('', /x/, function() {}, obj)).toBe(obj);
+    it('should not return a value', function() {
+        expect(XRegExp.forEach('', /x/, function() {})).toBeUndefined();
     });
 
 });
@@ -608,6 +638,7 @@ describe('XRegExp.globalize()', function() {
 
     it('should retain the original source and flags (except /g)', function() {
         var regexes = [
+            XRegExp('(?i)(?<n>x)', 'm' + (hasNativeY ? 'y' : '')),
             XRegExp('(?<n>x)', 'im' + (hasNativeY ? 'y' : '')),
             /(x)/im
         ];
@@ -622,6 +653,46 @@ describe('XRegExp.globalize()', function() {
         });
     });
 
+    it('should retain the original precompilation source and flags with added /g', function() {
+        var regexes = [
+            XRegExp('(?i)(?<n>x)', 'mx'),
+            XRegExp('(?<n>x)', 'imx'),
+            XRegExp('', 'g')
+        ];
+
+        regexes.forEach(function(regex) {
+            var regexXSource = regex[REGEX_DATA].source;
+            var regexXFlags = regex[REGEX_DATA].flags;
+            var globalCopy = XRegExp.globalize(regex);
+            var globalCopyXSource = globalCopy[REGEX_DATA].source;
+            var globalCopyXFlags = globalCopy[REGEX_DATA].flags;
+
+            expect(globalCopyXSource).toBe(regexXSource);
+            expect(globalCopyXFlags.indexOf('g')).toBeGreaterThan(-1);
+            if (regex.global) {
+                expect(globalCopyXFlags).toBe(regexXFlags);
+            } else {
+                expect(globalCopyXFlags.replace('g', '')).toBe(regexXFlags);
+            }
+        });
+    });
+
+    it('should set null precompilation source and flags for non-XRegExp regexes', function() {
+        expect(XRegExp.globalize(/./im)[REGEX_DATA]).toEqual(jasmine.any(Object));
+        expect(XRegExp.globalize(/./im)[REGEX_DATA].source).toBeNull();
+        expect(XRegExp.globalize(/./im)[REGEX_DATA].flags).toBeNull();
+
+        expect(XRegExp.globalize(XRegExp(/./im))[REGEX_DATA]).toEqual(jasmine.any(Object));
+        expect(XRegExp.globalize(XRegExp(/./im))[REGEX_DATA].source).toBeNull();
+        expect(XRegExp.globalize(XRegExp(/./im))[REGEX_DATA].flags).toBeNull();
+    });
+
+    it('should add /g to precompilation flags in alphabetical order', function() {
+        expect(XRegExp.globalize(XRegExp('', 'ix'))[REGEX_DATA].flags).toBe('gix');
+        // Flag A is registered by the Unicode Base addon
+        expect(XRegExp.globalize(XRegExp('', 'Aix'))[REGEX_DATA].flags).toBe('Agix');
+    });
+
     it('should retain named capture capabilities', function() {
         var regex = XRegExp('(?<name>x)\\k<name>');
 
@@ -629,10 +700,10 @@ describe('XRegExp.globalize()', function() {
     });
 
     it('should throw an exception if not given a RegExp object', function() {
-        expect(function() {XRegExp.globalize();}).toThrow(TypeError);
-        expect(function() {XRegExp.globalize(undefined);}).toThrow(TypeError);
-        expect(function() {XRegExp.globalize(null);}).toThrow(TypeError);
-        expect(function() {XRegExp.globalize('/str/');}).toThrow(TypeError);
+        expect(function() {XRegExp.globalize();}).toThrowError(TypeError);
+        expect(function() {XRegExp.globalize(undefined);}).toThrowError(TypeError);
+        expect(function() {XRegExp.globalize(null);}).toThrowError(TypeError);
+        expect(function() {XRegExp.globalize('/str/');}).toThrowError(TypeError);
     });
 
     it('should reset lastIndex for the global copy', function() {
@@ -697,21 +768,6 @@ describe('XRegExp.install()', function() {
 
         features.forEach(function(feature) {
             expect(XRegExp.isInstalled(feature)).toBe(true);
-        });
-    });
-
-    // NOTE: The 'all' shortcut was supported in XRegExp 2.0.0 only
-    it('should not allow using the "all" shortcut', function() {
-        XRegExp.install({all: true});
-
-        features.forEach(function(feature) {
-            expect(XRegExp.isInstalled(feature)).toBe(false);
-        });
-
-        XRegExp.install('all');
-
-        features.forEach(function(feature) {
-            expect(XRegExp.isInstalled(feature)).toBe(false);
         });
     });
 
@@ -845,18 +901,18 @@ describe('XRegExp.match()', function() {
     });
 
     it('should return null upon failure for scope "one" or with a nonglobal regex when scope is unspecified', function() {
-        expect(XRegExp.match('a bc', /x/)).toBe(null);
-        expect(XRegExp.match('a bc', /x/, 'one')).toBe(null);
-        expect(XRegExp.match('a bc', /x/g, 'one')).toBe(null);
+        expect(XRegExp.match('a bc', /x/)).toBeNull();
+        expect(XRegExp.match('a bc', /x/, 'one')).toBeNull();
+        expect(XRegExp.match('a bc', /x/g, 'one')).toBeNull();
     });
 
     it('should match all and return an array for scope "all" or with a global regex when scope is unspecified', function() {
         // NOTE: Old IE adds input, index, and lastIndex properties to global match arrays,
         // preventing toEqual from working as desired
 
-        expect(XRegExp.match('a bc', /(\w)/g)).toBeEquiv(['a', 'b', 'c']);
-        expect(XRegExp.match('a bc', /(\w)/g, 'all')).toBeEquiv(['a', 'b', 'c']);
-        expect(XRegExp.match('a bc', /(\w)/, 'all')).toBeEquiv(['a', 'b', 'c']);
+        expect(XRegExp.match('a bc', /(\w)/g)).toEqualMatch(['a', 'b', 'c']);
+        expect(XRegExp.match('a bc', /(\w)/g, 'all')).toEqualMatch(['a', 'b', 'c']);
+        expect(XRegExp.match('a bc', /(\w)/, 'all')).toEqualMatch(['a', 'b', 'c']);
     });
 
     it('should return an empty array upon failure for scope "all" or with a global regex when scope is unspecified', function() {
@@ -874,14 +930,14 @@ describe('XRegExp.match()', function() {
         expect(XRegExp.match(str, nonglobal)).toBe('1');
 
         global.lastIndex = 2;
-        expect(XRegExp.match(str, global)).toBeEquiv(['1', '2', '3']);
+        expect(XRegExp.match(str, global)).toEqualMatch(['1', '2', '3']);
 
         [nonglobal, global].forEach(function(regex) {
             regex.lastIndex = 2;
             expect(XRegExp.match(str, regex, 'one')).toBe('1');
 
             regex.lastIndex = 2;
-            expect(XRegExp.match(str, regex, 'all')).toBeEquiv(['1', '2', '3']);
+            expect(XRegExp.match(str, regex, 'all')).toEqualMatch(['1', '2', '3']);
         });
     });
 
@@ -955,10 +1011,10 @@ describe('XRegExp.match()', function() {
 
     it('should throw an exception when given null or undefined as the subject', function() {
         [null, undefined].forEach(function(value) {
-            expect(function() {XRegExp.match(value, /x/);}).toThrow(TypeError);
+            expect(function() {XRegExp.match(value, /x/);}).toThrowError(TypeError);
         });
 
-        expect(function() {XRegExp.match();}).toThrow(TypeError);
+        expect(function() {XRegExp.match();}).toThrowError(TypeError);
     });
 
     it('should throw an exception when given a non RegExp object as the regex argument', function() {
@@ -973,7 +1029,7 @@ describe('XRegExp.match()', function() {
         ];
 
         values.forEach(function(value) {
-            expect(function() {XRegExp.match('str', value);}).toThrow(TypeError);
+            expect(function() {XRegExp.match('str', value);}).toThrowError(TypeError);
         });
     });
 
@@ -1128,10 +1184,10 @@ describe('XRegExp.replace()', function() {
 
     it('should throw an exception when given null or undefined as the subject', function() {
         [null, undefined].forEach(function(value) {
-            expect(function() {XRegExp.replace(value, /^/, '');}).toThrow(TypeError);
+            expect(function() {XRegExp.replace(value, /^/, '');}).toThrowError(TypeError);
         });
 
-        expect(function() {XRegExp.replace();}).toThrow(TypeError);
+        expect(function() {XRegExp.replace();}).toThrowError(TypeError);
     });
 
     // NOTE: The remaining specs are for named backreferences and replacement text syntax
@@ -1343,10 +1399,10 @@ describe('XRegExp.split()', function() {
 
     it('should throw an exception when given null or undefined as the subject', function() {
         [null, undefined].forEach(function(value) {
-            expect(function() {XRegExp.split(value, /x/);}).toThrow(TypeError);
+            expect(function() {XRegExp.split(value, /x/);}).toThrowError(TypeError);
         });
 
-        expect(function() {XRegExp.split();}).toThrow(TypeError);
+        expect(function() {XRegExp.split();}).toThrowError(TypeError);
     });
 
 });
@@ -1444,7 +1500,7 @@ describe('XRegExp.test()', function() {
         ];
 
         values.forEach(function(value) {
-            expect(function() {XRegExp.test('str', value);}).toThrow(TypeError);
+            expect(function() {XRegExp.test('str', value);}).toThrowError(TypeError);
         });
     });
 
@@ -1574,21 +1630,6 @@ describe('XRegExp.uninstall()', function() {
         });
     });
 
-    // NOTE: The 'all' shortcut was supported in XRegExp 2.0.0 only
-    it('should not allow using the "all" shortcut', function() {
-        XRegExp.uninstall({all: true});
-
-        features.forEach(function(feature) {
-            expect(XRegExp.isInstalled(feature)).toBe(true);
-        });
-
-        XRegExp.install('all');
-
-        features.forEach(function(feature) {
-            expect(XRegExp.isInstalled(feature)).toBe(true);
-        });
-    });
-
     it('should undo repeated installations with a single uninstall', function() {
         XRegExp.install('natives');
         XRegExp.install('natives');
@@ -1608,7 +1649,7 @@ describe('XRegExp.union()', function() {
         expect(XRegExp.union(['a+b*c']).test('a+b*c')).toBe(true);
 
         expect('a+b*c (?!\\.)'.match(XRegExp.union(['a+b*c', '(?!\\.)'], 'g'))).
-            toBeEquiv(['a+b*c', '(?!\\.)']);
+            toEqualMatch(['a+b*c', '(?!\\.)']);
     });
 
     it('should rewrite backreferences in regexes', function() {
@@ -1616,7 +1657,7 @@ describe('XRegExp.union()', function() {
             /(dogs)\1/,
             XRegExp('(?<pet>fish)\\k<pet>'),
             /(cats)\1/
-        ], 'g'))).toBeEquiv([
+        ], 'g'))).toEqualMatch([
             'fishfish',
             'dogsdogs',
             'catscats'
@@ -1628,7 +1669,7 @@ describe('XRegExp.union()', function() {
             'a+b*c',
             /(dogs)\1/,
             /(cats)\1/
-        ], 'g'))).toBeEquiv([
+        ], 'g'))).toEqualMatch([
             'a+b*c',
             'dogsdogs',
             'catscats'
@@ -1654,7 +1695,7 @@ describe('XRegExp.union()', function() {
         expect(function() {XRegExp.union([
             XRegExp('(?<pet>dogs)\\k<pet>'),
             XRegExp('(?<pet>cats)\\k<pet>')
-        ]);}).toThrow(SyntaxError);
+        ]);}).toThrowError(SyntaxError);
     });
 
     it('should throw an exception when given a nonarray as the patterns argument', function() {
@@ -1666,15 +1707,15 @@ describe('XRegExp.union()', function() {
         ];
 
         values.forEach(function(value) {
-            expect(function() {XRegExp.union(value);}).toThrow(TypeError);
+            expect(function() {XRegExp.union(value);}).toThrowError(TypeError);
         });
 
         // Implicit undefined
-        expect(function() {XRegExp.union();}).toThrow(TypeError);
+        expect(function() {XRegExp.union();}).toThrowError(TypeError);
     });
 
     it('should throw an exception when given an empty patterns array', function() {
-        expect(function() {XRegExp.union([]);}).toThrow(TypeError);
+        expect(function() {XRegExp.union([]);}).toThrowError(TypeError);
 
         // NOTE: Ruby's union method converts an empty array to /(?!)/. XRegExp intentionally
         // handles this differently
@@ -1685,8 +1726,8 @@ describe('XRegExp.union()', function() {
     });
 
     it('should throw an exception if the array of patterns contains null or undefined', function() {
-        expect(function() {XRegExp.union([null]);}).toThrow(TypeError);
-        expect(function() {XRegExp.union([undefined]);}).toThrow(TypeError);
+        expect(function() {XRegExp.union([null]);}).toThrowError(TypeError);
+        expect(function() {XRegExp.union([undefined]);}).toThrowError(TypeError);
     });
 
     it('should apply flag n (explicit capture) to all regexes, when specified', function() {
@@ -1696,13 +1737,13 @@ describe('XRegExp.union()', function() {
 
         expect(function() {XRegExp.union([
             /(b)\1/
-        ], 'n');}).toThrow(SyntaxError);
+        ], 'n');}).toThrowError(SyntaxError);
 
         expect(function() {XRegExp.union([
             XRegExp('(?<a>a)\\k<a>'),
             /(b)\1/,
             XRegExp('(?<x>)')
-        ], 'n');}).toThrow(SyntaxError);
+        ], 'n');}).toThrowError(SyntaxError);
     });
 
 });
