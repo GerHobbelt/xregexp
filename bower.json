@@ -1,0 +1,28 @@
+{
+  "name": "xregexp",
+  "version": "3.0.0-pre",
+  "homepage": "https://github.com/slevithan/xregexp",
+  "authors": [
+    "Steven Levithan <http://xregexp.com/>"
+  ],
+  "description": "Extended JavaScript regular expressions",
+  "main": "xregexp-all.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "regexp",
+    "regex",
+    "text"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
