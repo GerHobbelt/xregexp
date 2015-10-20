@@ -1,28 +1,34 @@
 {
-  "name": "xregexp",
-  "version": "3.0.0-pre",
-  "homepage": "https://github.com/slevithan/xregexp",
-  "authors": [
-    "Steven Levithan <http://xregexp.com/>"
-  ],
-  "description": "Extended JavaScript regular expressions",
-  "main": "xregexp-all.js",
-  "moduleType": [
-    "amd",
-    "globals",
-    "node"
-  ],
-  "keywords": [
-    "regexp",
-    "regex",
-    "text"
-  ],
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ]
+    "name": "xregexp",
+    "version": "3.1.0-dev",
+    "description": "Extended regular expressions",
+    "homepage": "http://xregexp.com/",
+    "authors": [
+        "Steven Levithan <steves_list@hotmail.com>"
+    ],
+    "license": "MIT",
+    "moduleType": [
+        "amd",
+        "globals",
+        "node"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/slevithan/xregexp.git"
+    },
+    "keywords": [
+        "regex",
+        "regexp"
+    ],
+    "main": "xregexp-all.js",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "package.json",
+        "README.md",
+        "src",
+        "tests",
+        "tools"
+    ]
 }

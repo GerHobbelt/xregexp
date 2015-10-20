@@ -1,18 +1,19 @@
 /*!
- * XRegExp-All 3.1.0-dev
- * <xregexp.com>
+ * XRegExp-All 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2012-2015 MIT License
  */
 
-// Module systems magic dance
-// Don't use strict mode for this function, so it can assign to global
+// Module systems magic dance. Don't use strict mode for this function, so it can assign to global.
 ;(function(root, definition) {
+    var self;
+
     // RequireJS
-    if (typeof define === 'function' && define.amd) {
+    if (typeof define === 'function') {
         define(definition);
     // CommonJS
     } else if (typeof exports === 'object') {
-        var self = definition();
+        self = definition();
         // Use Node.js's `module.exports`. This supports both `require('xregexp')` and
         // `require('xregexp').XRegExp`
         (typeof module === 'object' ? (module.exports = self) : exports).XRegExp = self;
@@ -24,8 +25,8 @@
 }(this, function() {
 
 /*!
- * XRegExp 3.1.0-dev
- * <xregexp.com>
+ * XRegExp 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2007-2015 MIT License
  */
 
@@ -526,66 +527,6 @@ var XRegExp = (function(undefined) {
         return value;
     }
 
-
-/**
- * Returns an Array that is the list of given patterns to be joined. Patterns can be provided as
- * regex objects or strings. Metacharacters are escaped in patterns provided as strings.
- * Backreferences in provided regex objects are automatically renumbered to work correctly. Native
- * flags used by provided regexes are ignored in favor of the `flags` argument.
- * @memberOf XRegExp
- * @param {Array} patterns Regexes and strings to combine.
- * @returns {Array} modified patterns RegExps and Strings to be combined.
- */
-    function prepareJoin(patterns) {
-        var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*]/g,
-            output = [],
-            numCaptures = 0,
-            numPriorCaptures,
-            captureNames,
-            pattern,
-            rewrite = function(match, paren, backref) {
-                var name = captureNames[numCaptures - numPriorCaptures];
-
-                // Capturing group
-                if (paren) {
-                    ++numCaptures;
-                    // If the current capture has a name, preserve the name
-                    if (name) {
-                        return '(?<' + name + '>';
-                    }
-                // Backreference
-                } else if (backref) {
-                    // Rewrite the backreference
-                    return '\\' + (+backref + numPriorCaptures);
-                }
-
-                return match;
-            },
-            i;
-
-        if (!(isType(patterns, 'Array') && patterns.length)) {
-            throw new TypeError('Must provide a nonempty array of patterns to merge');
-        }
-
-        for (i = 0; i < patterns.length; ++i) {
-            pattern = patterns[i];
-
-            if (self.isRegExp(pattern)) {
-                numPriorCaptures = numCaptures;
-                captureNames = (pattern[REGEX_DATA] && pattern[REGEX_DATA].captureNames) || [];
-
-                // Rewrite backreferences. Passing to XRegExp dies on octals and ensures patterns
-                // are independently valid; helps keep this simple. Named captures are put back
-                output.push(nativ.replace.call(self(pattern.source).source, parts, rewrite));
-            } else {
-                output.push(self.escape(pattern));
-            }
-        }
-
-        return output;
-    }
-
-
 /* ==============================
  * Constructor
  * ============================== */
@@ -722,14 +663,13 @@ var XRegExp = (function(undefined) {
  * ============================== */
 
 /**
- * The XRegExp version number as a string containing three dot-separated parts. For example,
- * '2.0.0-beta-3'.
+ * The XRegExp version number.
  *
  * @static
  * @memberOf XRegExp
  * @type String
  */
-    self.version = '3.1.0-dev';
+    self.version = '3.0.0';
 
 /* ==============================
  * Public methods
@@ -761,8 +701,7 @@ var XRegExp = (function(undefined) {
  *     token chaining or deferring.
  *   <li>`leadChar` {String} Single character that occurs at the beginning of any successful match
  *     of the token (not always applicable). This doesn't change the behavior of the token unless
- *     you provide an erroneous value. However, providing it can increase the token's performance
- *     since the token can be skipped at any positions where this character doesn't appear.
+ *     you provide an erroneous value. However, providing it can increase the token's performance.
  * @example
  *
  * // Basic usage: Add \a for the ALERT control code
@@ -773,9 +712,7 @@ var XRegExp = (function(undefined) {
  * );
  * XRegExp('\\a[\\a-\\n]+').test('\x07\n\x07'); // -> true
  *
- * // Add the U (ungreedy) flag from PCRE and RE2, which reverses greedy and lazy quantifiers.
- * // Since `scope` is not specified, it uses 'default' (i.e., transformations apply outside of
- * // character classes only)
+ * // Add the U (ungreedy) flag from PCRE and RE2, which reverses greedy and lazy quantifiers
  * XRegExp.addToken(
  *   /([?*+]|{\d+(?:,\d*)?})(\??)/,
  *   function(match) {return match[1] + (match[2] ? '' : '?');},
@@ -937,9 +874,7 @@ var XRegExp = (function(undefined) {
     };
 
 /**
- * Executes a provided function once per regex match. Searches always start at the beginning of the
- * string and continue until the end, regardless of the state of the regex's `global` property and
- * initial `lastIndex`.
+ * Executes a provided function once per regex match.
  *
  * @memberOf XRegExp
  * @param {String} str String to search.
@@ -952,11 +887,10 @@ var XRegExp = (function(undefined) {
  * @example
  *
  * // Extracts every other digit from a string
- * var evens = [];
  * XRegExp.forEach('1a2345', /\d/, function(match, i) {
- *   if (i % 2) evens.push(+match[0]);
- * });
- * // evens -> [2, 4]
+ *   if (i % 2) this.push(+match[0]);
+ * }, []);
+ * // -> [2, 4]
  */
     self.forEach = function(str, regex, callback) {
         var pos = 0,
@@ -1121,9 +1055,9 @@ var XRegExp = (function(undefined) {
 
 /**
  * Retrieves the matches from searching a string using a chain of regexes that successively search
- * within previous matches. The provided `chain` array can contain regexes and or objects with
- * `regex` and `backref` properties. When a backreference is specified, the named or numbered
- * backreference is passed forward to the next regex or returned.
+ * within previous matches. The provided `chain` array can contain regexes and objects with `regex`
+ * and `backref` properties. When a backreference is specified, the named or numbered backreference
+ * is passed forward to the next regex or returned.
  *
  * @memberOf XRegExp
  * @param {String} str String to search.
@@ -1348,7 +1282,6 @@ var XRegExp = (function(undefined) {
  *
  * // With pos and sticky
  * XRegExp.test('abc', /c/, 0, 'sticky'); // -> false
- * XRegExp.test('abc', /c/, 2, 'sticky'); // -> true
  */
     self.test = function(str, regex, pos, sticky) {
         // Do this the easy way :-)
@@ -1388,29 +1321,6 @@ var XRegExp = (function(undefined) {
     };
 
 /**
- * Returns an XRegExp object that is the concatenation of the given patterns. Patterns can be provided as
- * regex objects or strings. Metacharacters are escaped in patterns provided as strings.
- * Backreferences in provided regex objects are automatically renumbered to work correctly within
- * the larger combined pattern. Native flags used by provided regexes are ignored in favor of the
- * `flags` argument.
- * @memberOf XRegExp
- * @param {Array} patterns Regexes and strings to combine.
- * @param {String|RegExp} separator Regex or string to use as the joining separator.
- * @param {String} [flags] Any combination of XRegExp flags.
- * @returns {RegExp} Union of the provided regexes and strings.
- * @example
- *
- * XRegExp.join(['a+b*c', /(dogs)\1/, /(cats)\1/], 'i');
- * // -> /a\+b\*c(dogs)\1(cats)\2/i
- */
-    self.join = function(patterns, separator, flags) {
-        separator = separator || "";
-        var separatorStr = self.isRegExp(separator) ? separator.source : self.escape(separator),
-             output = prepareJoin(patterns);
-        return self(output.join(separatorStr), flags);
-    };
-
-/**
  * Returns an XRegExp object that is the union of the given patterns. Patterns can be provided as
  * regex objects or strings. Metacharacters are escaped in patterns provided as strings.
  * Backreferences in provided regex objects are automatically renumbered to work correctly within
@@ -1427,7 +1337,52 @@ var XRegExp = (function(undefined) {
  * // -> /a\+b\*c|(dogs)\1|(cats)\2/i
  */
     self.union = function(patterns, flags) {
-        return self.join(patterns, /|/, flags);
+        var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*]/g,
+            output = [],
+            numCaptures = 0,
+            numPriorCaptures,
+            captureNames,
+            pattern,
+            rewrite = function(match, paren, backref) {
+                var name = captureNames[numCaptures - numPriorCaptures];
+
+                // Capturing group
+                if (paren) {
+                    ++numCaptures;
+                    // If the current capture has a name, preserve the name
+                    if (name) {
+                        return '(?<' + name + '>';
+                    }
+                // Backreference
+                } else if (backref) {
+                    // Rewrite the backreference
+                    return '\\' + (+backref + numPriorCaptures);
+                }
+
+                return match;
+            },
+            i;
+
+        if (!(isType(patterns, 'Array') && patterns.length)) {
+            throw new TypeError('Must provide a nonempty array of patterns to merge');
+        }
+
+        for (i = 0; i < patterns.length; ++i) {
+            pattern = patterns[i];
+
+            if (self.isRegExp(pattern)) {
+                numPriorCaptures = numCaptures;
+                captureNames = (pattern[REGEX_DATA] && pattern[REGEX_DATA].captureNames) || [];
+
+                // Rewrite backreferences. Passing to XRegExp dies on octals and ensures patterns
+                // are independently valid; helps keep this simple. Named captures are put back
+                output.push(nativ.replace.call(self(pattern.source).source, parts, rewrite));
+            } else {
+                output.push(self.escape(pattern));
+            }
+        }
+
+        return self(output.join('|'), flags);
     };
 
 /* ==============================
@@ -1478,9 +1433,7 @@ var XRegExp = (function(undefined) {
                 for (i = 1; i < match.length; ++i) {
                     name = this[REGEX_DATA].captureNames[i - 1];
                     if (name) {
-                        if (match[i] != undef || match[name] == undef) {
-                            match[name] = match[i];
-                        }
+                        match[name] = match[i];
                     }
                 }
             }
@@ -1950,10 +1903,10 @@ var XRegExp = (function(undefined) {
 }());
 
 /*!
- * XRegExp.build 3.1.0-dev
- * <xregexp.com>
+ * XRegExp.build 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2012-2015 MIT License
- * Inspired by Lea Verou's RegExp.create <lea.verou.me>
+ * Inspired by Lea Verou's RegExp.create <http://lea.verou.me/>
  */
 
 (function(XRegExp) {
@@ -2123,8 +2076,8 @@ var XRegExp = (function(undefined) {
 }(XRegExp));
 
 /*!
- * XRegExp.matchRecursive 3.1.0-dev
- * <xregexp.com>
+ * XRegExp.matchRecursive 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2009-2015 MIT License
  */
 
@@ -2178,16 +2131,16 @@ var XRegExp = (function(undefined) {
  * // ]
  *
  * // Omitting unneeded parts with null valueNames, and using escapeChar
- * str = '...{1}.\\{{function(x,y){return {y:x}}}';
+ * str = '...{1}\\{{function(x,y){return y+x;}}';
  * XRegExp.matchRecursive(str, '{', '}', 'g', {
  *   valueNames: ['literal', null, 'value', null],
  *   escapeChar: '\\'
  * });
  * // -> [
- * // {name: 'literal', value: '...',  start: 0, end: 3},
- * // {name: 'value',   value: '1',    start: 4, end: 5},
- * // {name: 'literal', value: '.\\{', start: 6, end: 9},
- * // {name: 'value',   value: 'function(x,y){return {y:x}}', start: 10, end: 37}
+ * // {name: 'literal', value: '...', start: 0, end: 3},
+ * // {name: 'value',   value: '1',   start: 4, end: 5},
+ * // {name: 'literal', value: '\\{', start: 6, end: 8},
+ * // {name: 'value',   value: 'function(x,y){return y+x;}', start: 9, end: 35}
  * // ]
  *
  * // Sticky mode via flag y
@@ -2315,15 +2268,15 @@ var XRegExp = (function(undefined) {
 }(XRegExp));
 
 /*!
- * XRegExp Unicode Base 3.1.0-dev
- * <xregexp.com>
+ * XRegExp Unicode Base 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2008-2015 MIT License
  */
 
 /**
  * Adds base support for Unicode matching:
  * - Adds syntax `\p{..}` for matching Unicode tokens. Tokens can be inverted using `\P{..}` or
- *   `\p{^..}`. Token names ignore case, spaces, hyphens, and underscores. You can omit the braces
+ *   `\p{^..}`. Token names ignore case, spaces, hyphens, and underscores. You can omit the brackets
  *   for token names that are a single letter (e.g. `\pL` or `PL`).
  * - Adds flag A (astral), which enables 21-bit Unicode support.
  * - Adds the `XRegExp.addUnicodeData` method used by other addons to provide character data.
@@ -2552,10 +2505,10 @@ var XRegExp = (function(undefined) {
 }(XRegExp));
 
 /*!
- * XRegExp Unicode Blocks 3.1.0-dev
- * <xregexp.com>
+ * XRegExp Unicode Blocks 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2010-2015 MIT License
- * Unicode data by Mathias Bynens <mathiasbynens.be>
+ * Unicode data provided by Mathias Bynens <http://mathiasbynens.be/>
  */
 
 /**
@@ -3627,10 +3580,10 @@ var XRegExp = (function(undefined) {
 }(XRegExp));
 
 /*!
- * XRegExp Unicode Categories 3.1.0-dev
- * <xregexp.com>
+ * XRegExp Unicode Categories 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2010-2015 MIT License
- * Unicode data by Mathias Bynens <mathiasbynens.be>
+ * Unicode data provided by Mathias Bynens <http://mathiasbynens.be/>
  */
 
 /**
@@ -3863,10 +3816,10 @@ var XRegExp = (function(undefined) {
 }(XRegExp));
 
 /*!
- * XRegExp Unicode Properties 3.1.0-dev
- * <xregexp.com>
+ * XRegExp Unicode Properties 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2012-2015 MIT License
- * Unicode data by Mathias Bynens <mathiasbynens.be>
+ * Unicode data provided by Mathias Bynens <http://mathiasbynens.be/>
  */
 
 /**
@@ -3969,10 +3922,10 @@ var XRegExp = (function(undefined) {
 }(XRegExp));
 
 /*!
- * XRegExp Unicode Scripts 3.1.0-dev
- * <xregexp.com>
+ * XRegExp Unicode Scripts 3.0.0
+ * <http://xregexp.com/>
  * Steven Levithan (c) 2010-2015 MIT License
- * Unicode data by Mathias Bynens <mathiasbynens.be>
+ * Unicode data provided by Mathias Bynens <http://mathiasbynens.be/>
  */
 
 /**

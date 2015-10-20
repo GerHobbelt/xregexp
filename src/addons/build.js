@@ -1,8 +1,8 @@
 /*!
- * XRegExp.build 3.0.0
- * <http://xregexp.com/>
+ * XRegExp.build 3.1.0-dev
+ * <xregexp.com>
  * Steven Levithan (c) 2012-2015 MIT License
- * Inspired by Lea Verou's RegExp.create <http://lea.verou.me/>
+ * Inspired by Lea Verou's RegExp.create <lea.verou.me>
  */
 
 (function(XRegExp) {
