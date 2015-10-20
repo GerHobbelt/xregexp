@@ -1,5 +1,5 @@
 /*!
- * XRegExp.matchRecursive 3.0.0-pre
+ * XRegExp.matchRecursive 3.0.0
  * <http://xregexp.com/>
  * Steven Levithan (c) 2009-2015 MIT License
  */
@@ -104,7 +104,7 @@
                     XRegExp.union([left, right]).source +
                     ')[^' + escapeChar + '])+)+',
                 // Flags `gy` not needed here
-                flags.replace(/[^im]+/g, '')
+                flags.replace(/[^imu]+/g, '')
             );
         }
 

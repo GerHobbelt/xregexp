@@ -12,8 +12,27 @@ function repeat(str, num) {
 // Property name used for extended regex instance data
 var REGEX_DATA = 'xregexp';
 
-// Check for flag y support
-var hasNativeY = RegExp.prototype.sticky !== undefined;
+// Check for ES6 `u` flag support
+var hasNativeU = (function() {
+    var isSupported = true;
+    try {
+        new RegExp('', 'u');
+    } catch (exception) {
+        isSupported = false;
+    }
+    return isSupported;
+}());
+
+// Check for ES6 `y` flag support
+var hasNativeY = (function() {
+    var isSupported = true;
+    try {
+        new RegExp('', 'y');
+    } catch (exception) {
+        isSupported = false;
+    }
+    return isSupported;
+}());
 
 // Check for strict mode support
 var hasStrictMode = (function() {'use strict'; return !this;}());

@@ -1,4 +1,27 @@
-[
+/*!
+ * XRegExp Unicode Categories 3.0.0
+ * <http://xregexp.com/>
+ * Steven Levithan (c) 2010-2015 MIT License
+ * Unicode data provided by Mathias Bynens <http://mathiasbynens.be/>
+ */
+
+/**
+ * Adds support for Unicode's general categories. E.g., `\p{Lu}` or `\p{Uppercase Letter}`. See
+ * category descriptions in UAX #44 <http://unicode.org/reports/tr44/#GC_Values_Table>. Token names
+ * are case insensitive, and any spaces, hyphens, and underscores are ignored.
+ *
+ * Uses Unicode 8.0.0.
+ *
+ * @requires XRegExp, Unicode Base
+ */
+(function(XRegExp) {
+    'use strict';
+
+    if (!XRegExp.addUnicodeData) {
+        throw new ReferenceError('Unicode Base must be loaded before Unicode Categories');
+    }
+
+    XRegExp.addUnicodeData([
         {
             name: 'C',
             alias: 'Other',
@@ -207,4 +230,6 @@
             alias: 'Space_Separator',
             bmp: '\x20\xA0\u1680\u2000-\u200A\u202F\u205F\u3000'
         }
-]
+    ]);
+
+}(XRegExp));
