@@ -268,7 +268,7 @@ var XRegExp = (function(undefined) {
             regex.flags :
             // Explicitly using `RegExp.prototype.toString` (rather than e.g. `String` or
             // concatenation with an empty string) allows this to continue working predictably when
-            // `XRegExp.proptotype.toString` is overriden
+            // `XRegExp.proptotype.toString` is overridden
             nativ.exec.call(/\/([a-z]*)$/i, RegExp.prototype.toString.call(regex))[1];
     }
 
@@ -1478,7 +1478,7 @@ var XRegExp = (function(undefined) {
                 for (i = 1; i < match.length; ++i) {
                     name = this[REGEX_DATA].captureNames[i - 1];
                     if (name) {
-                        if (match[i] != undef || match[name] == undef) {
+                        if (match[i] != undefined || match[name] == undefined) {
                             match[name] = match[i];
                         }
                     }
