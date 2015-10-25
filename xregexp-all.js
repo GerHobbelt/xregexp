@@ -43,7 +43,7 @@ var XRegExp = (function(undefined) {
  * ============================== */
 
     var // Internal reference to the `XRegExp` object
-        self,
+        XRegExp,
         // Property name used for extended regex instance data
         REGEX_DATA = 'xregexp',
         // Optional features that can be installed and uninstalled
@@ -146,13 +146,13 @@ var XRegExp = (function(undefined) {
 
         // Can't auto-inherit these since the XRegExp constructor returns a nonprimitive value
         if (regex.__proto__) {
-            regex.__proto__ = self.prototype;
+            regex.__proto__ = XRegExp.prototype;
         } else {
-            for (p in self.prototype) {
-                // A `self.prototype.hasOwnProperty(p)` check wouldn't be worth it here, since this
+            for (p in XRegExp.prototype) {
+                // A `XRegExp.prototype.hasOwnProperty(p)` check wouldn't be worth it here, since this
                 // is performance sensitive, and enumerable `Object.prototype` or `RegExp.prototype`
                 // extensions exist on `regex.prototype` anyway
-                regex[p] = self.prototype[p];
+                regex[p] = XRegExp.prototype[p];
             }
         }
 
@@ -192,7 +192,7 @@ var XRegExp = (function(undefined) {
  * @returns {RegExp} Copy of the provided regex, possibly with modified flags.
  */
     function copyRegex(regex, options) {
-        if (!self.isRegExp(regex)) {
+        if (!XRegExp.isRegExp(regex)) {
             throw new TypeError('Type RegExp expected');
         }
 
@@ -412,7 +412,7 @@ var XRegExp = (function(undefined) {
         var options = {};
 
         if (isType(value, 'String')) {
-            self.forEach(value, /[^\s,]+/, function(match) {
+            XRegExp.forEach(value, /[^\s,]+/, function(match) {
                 options[match] = true;
             });
 
@@ -466,7 +466,7 @@ var XRegExp = (function(undefined) {
                 continue;
             }
 
-            match = self.exec(pattern, t.regex, pos, 'sticky');
+            match = XRegExp.exec(pattern, t.regex, pos, 'sticky');
             if (match) {
                 result = {
                     matchLength: match[0].length,
@@ -570,15 +570,15 @@ var XRegExp = (function(undefined) {
         for (i = 0; i < patterns.length; ++i) {
             pattern = patterns[i];
 
-            if (self.isRegExp(pattern)) {
+            if (XRegExp.isRegExp(pattern)) {
                 numPriorCaptures = numCaptures;
                 captureNames = (pattern[REGEX_DATA] && pattern[REGEX_DATA].captureNames) || [];
 
                 // Rewrite backreferences. Passing to XRegExp dies on octals and ensures patterns
                 // are independently valid; helps keep this simple. Named captures are put back
-                output.push(nativ.replace.call(self(pattern.source).source, parts, rewrite));
+                output.push(nativ.replace.call(XRegExp(pattern.source).source, parts, rewrite));
             } else {
-                output.push(self.escape(pattern));
+                output.push(XRegExp.escape(pattern));
             }
         }
 
@@ -624,7 +624,7 @@ var XRegExp = (function(undefined) {
  * // have fresh `lastIndex` properties (set to zero).
  * XRegExp(/regex/);
  */
-    self = function(pattern, flags) {
+    XRegExp = function(pattern, flags) {
         var context = {
                 hasNamedCapture: false,
                 captureNames: []
@@ -638,7 +638,7 @@ var XRegExp = (function(undefined) {
             appliedPattern,
             appliedFlags;
 
-        if (self.isRegExp(pattern)) {
+        if (XRegExp.isRegExp(pattern)) {
             if (flags !== undefined) {
                 throw new TypeError('Cannot supply flags when copying a RegExp');
             }
@@ -649,7 +649,7 @@ var XRegExp = (function(undefined) {
         pattern = pattern === undefined ? '' : String(pattern);
         flags = flags === undefined ? '' : String(flags);
 
-        if (self.isInstalled('astral') && flags.indexOf('A') === -1) {
+        if (XRegExp.isInstalled('astral') && flags.indexOf('A') === -1) {
             // This causes an error to be thrown if the Unicode Base addon is not available
             flags += 'A';
         }
@@ -684,7 +684,7 @@ var XRegExp = (function(undefined) {
                     pos += (result.matchLength || 1);
                 } else {
                     // Get the native token at the current position
-                    token = self.exec(appliedPattern, nativeTokens[scope], pos, 'sticky')[0];
+                    token = XRegExp.exec(appliedPattern, nativeTokens[scope], pos, 'sticky')[0];
                     output += token;
                     pos += token.length;
                     if (token === '[' && scope === defaultScope) {
@@ -715,7 +715,7 @@ var XRegExp = (function(undefined) {
     };
 
 // Add `RegExp.prototype` to the prototype chain
-    self.prototype = new RegExp();
+    XRegExp.prototype = new RegExp();
 
 /* ==============================
  * Public properties
@@ -729,7 +729,7 @@ var XRegExp = (function(undefined) {
  * @memberOf XRegExp
  * @type String
  */
-    self.version = '3.1.0-dev';
+    XRegExp.version = '3.1.0-dev';
 
 /* ==============================
  * Public methods
@@ -784,7 +784,7 @@ var XRegExp = (function(undefined) {
  * XRegExp('a+', 'U').exec('aaa')[0]; // -> 'a'
  * XRegExp('a+?', 'U').exec('aaa')[0]; // -> 'aaa'
  */
-    self.addToken = function(regex, handler, options) {
+    XRegExp.addToken = function(regex, handler, options) {
         options = options || {};
         var optionalFlags = options.optionalFlags, i;
 
@@ -815,7 +815,7 @@ var XRegExp = (function(undefined) {
 
         // Reset the pattern cache used by the `XRegExp` constructor, since the same pattern and
         // flags might now produce different results
-        self.cache.flush('patterns');
+        XRegExp.cache.flush('patterns');
     };
 
 /**
@@ -832,17 +832,17 @@ var XRegExp = (function(undefined) {
  *   // The regex is compiled once only
  * }
  */
-    self.cache = function(pattern, flags) {
+    XRegExp.cache = function(pattern, flags) {
         if (!regexCache[pattern]) {
             regexCache[pattern] = {};
         }
         return regexCache[pattern][flags] || (
-            regexCache[pattern][flags] = self(pattern, flags)
+            regexCache[pattern][flags] = XRegExp(pattern, flags)
         );
     };
 
 // Intentionally undocumented
-    self.cache.flush = function(cacheName) {
+    XRegExp.cache.flush = function(cacheName) {
         if (cacheName === 'patterns') {
             // Flush the pattern cache used by the `XRegExp` constructor
             patternCache = {};
@@ -864,7 +864,7 @@ var XRegExp = (function(undefined) {
  * XRegExp.escape('Escaped? <.>');
  * // -> 'Escaped\?\ <\.>'
  */
-    self.escape = function(str) {
+    XRegExp.escape = function(str) {
         return nativ.replace.call(toObject(str), /[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     };
 
@@ -897,7 +897,7 @@ var XRegExp = (function(undefined) {
  * }
  * // result -> ['2', '3', '4']
  */
-    self.exec = function(str, regex, pos, sticky) {
+    XRegExp.exec = function(str, regex, pos, sticky) {
         var cacheKey = 'g',
             addY = false,
             match,
@@ -958,12 +958,12 @@ var XRegExp = (function(undefined) {
  * });
  * // evens -> [2, 4]
  */
-    self.forEach = function(str, regex, callback) {
+    XRegExp.forEach = function(str, regex, callback) {
         var pos = 0,
             i = -1,
             match;
 
-        while ((match = self.exec(str, regex, pos))) {
+        while ((match = XRegExp.exec(str, regex, pos))) {
             // Because `regex` is provided to `callback`, the function could use the deprecated/
             // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
             // `XRegExp.exec` doesn't use `lastIndex` to set the search position, this can't lead
@@ -989,7 +989,7 @@ var XRegExp = (function(undefined) {
  * var globalCopy = XRegExp.globalize(/regex/);
  * globalCopy.global; // -> true
  */
-    self.globalize = function(regex) {
+    XRegExp.globalize = function(regex) {
         return copyRegex(regex, {addG: true});
     };
 
@@ -1014,7 +1014,7 @@ var XRegExp = (function(undefined) {
  * // With an options string
  * XRegExp.install('astral natives');
  */
-    self.install = function(options) {
+    XRegExp.install = function(options) {
         options = prepareOptions(options);
 
         if (!features.astral && options.astral) {
@@ -1038,7 +1038,7 @@ var XRegExp = (function(undefined) {
  *
  * XRegExp.isInstalled('natives');
  */
-    self.isInstalled = function(feature) {
+    XRegExp.isInstalled = function(feature) {
         return !!(features[feature]);
     };
 
@@ -1056,7 +1056,7 @@ var XRegExp = (function(undefined) {
  * XRegExp.isRegExp(RegExp('^', 'm')); // -> true
  * XRegExp.isRegExp(XRegExp('(?s).')); // -> true
  */
-    self.isRegExp = function(value) {
+    XRegExp.isRegExp = function(value) {
         return toString.call(value) === '[object RegExp]';
         //return isType(value, 'RegExp');
     };
@@ -1088,7 +1088,7 @@ var XRegExp = (function(undefined) {
  * XRegExp.match('abc', /\w/, 'all'); // -> ['a', 'b', 'c']
  * XRegExp.match('abc', /x/, 'all'); // -> []
  */
-    self.match = function(str, regex, scope) {
+    XRegExp.match = function(str, regex, scope) {
         var global = (regex.global && scope !== 'one') || scope === 'all',
             cacheKey = ((global ? 'g' : '') + (regex.sticky ? 'y' : '')) || 'noGY',
             result,
@@ -1147,7 +1147,7 @@ var XRegExp = (function(undefined) {
  * ]);
  * // -> ['xregexp.com', 'www.google.com']
  */
-    self.matchChain = function(str, chain) {
+    XRegExp.matchChain = function(str, chain) {
         return (function recurseChain(values, level) {
             var item = chain[level].regex ? chain[level] : {regex: chain[level]},
                 matches = [],
@@ -1171,7 +1171,7 @@ var XRegExp = (function(undefined) {
                 i;
 
             for (i = 0; i < values.length; ++i) {
-                self.forEach(values[i], item.regex, addMatch);
+                XRegExp.forEach(values[i], item.regex, addMatch);
             }
 
             return ((level === chain.length - 1) || !matches.length) ?
@@ -1227,8 +1227,8 @@ var XRegExp = (function(undefined) {
  * XRegExp.replace('RegExp builds RegExps', 'RegExp', 'XRegExp', 'all');
  * // -> 'XRegExp builds XRegExps'
  */
-    self.replace = function(str, search, replacement, scope) {
-        var isRegex = self.isRegExp(search),
+    XRegExp.replace = function(str, search, replacement, scope) {
+        var isRegex = XRegExp.isRegExp(search),
             global = (search.global && scope !== 'one') || scope === 'all',
             cacheKey = ((global ? 'g' : '') + (search.sticky ? 'y' : '')) || 'noGY',
             s2 = search,
@@ -1248,7 +1248,7 @@ var XRegExp = (function(undefined) {
                 })
             );
         } else if (global) {
-            s2 = new RegExp(self.escape(String(search)), 'g');
+            s2 = new RegExp(XRegExp.escape(String(search)), 'g');
         }
 
         // Fixed `replace` required for named backreferences, etc.
@@ -1286,12 +1286,12 @@ var XRegExp = (function(undefined) {
  *   }]
  * ]);
  */
-    self.replaceEach = function(str, replacements) {
+    XRegExp.replaceEach = function(str, replacements) {
         var i, r;
 
         for (i = 0; i < replacements.length; ++i) {
             r = replacements[i];
-            str = self.replace(str, r[0], r[1], r[2]);
+            str = XRegExp.replace(str, r[0], r[1], r[2]);
         }
 
         return str;
@@ -1323,7 +1323,7 @@ var XRegExp = (function(undefined) {
  * XRegExp.split('..word1..', /([a-z]+)(\d+)/i);
  * // -> ['..', 'word', '1', '..']
  */
-    self.split = function(str, separator, limit) {
+    XRegExp.split = function(str, separator, limit) {
         return fixed.split.call(toObject(str), separator, limit);
     };
 
@@ -1350,9 +1350,9 @@ var XRegExp = (function(undefined) {
  * XRegExp.test('abc', /c/, 0, 'sticky'); // -> false
  * XRegExp.test('abc', /c/, 2, 'sticky'); // -> true
  */
-    self.test = function(str, regex, pos, sticky) {
+    XRegExp.test = function(str, regex, pos, sticky) {
         // Do this the easy way :-)
-        return !!self.exec(str, regex, pos, sticky);
+        return !!XRegExp.exec(str, regex, pos, sticky);
     };
 
 /**
@@ -1375,7 +1375,7 @@ var XRegExp = (function(undefined) {
  * // With an options string
  * XRegExp.uninstall('astral natives');
  */
-    self.uninstall = function(options) {
+    XRegExp.uninstall = function(options) {
         options = prepareOptions(options);
 
         if (features.astral && options.astral) {
@@ -1403,11 +1403,11 @@ var XRegExp = (function(undefined) {
  * XRegExp.join(['a+b*c', /(dogs)\1/, /(cats)\1/], 'i');
  * // -> /a\+b\*c(dogs)\1(cats)\2/i
  */
-    self.join = function(patterns, separator, flags) {
+    XRegExp.join = function(patterns, separator, flags) {
         separator = separator || "";
-        var separatorStr = self.isRegExp(separator) ? separator.source : self.escape(separator),
-             output = prepareJoin(patterns);
-        return self(output.join(separatorStr), flags);
+        var separatorStr = XRegExp.isRegExp(separator) ? separator.source : XRegExp.escape(separator),
+            output = prepareJoin(patterns);
+        return XRegExp(output.join(separatorStr), flags);
     };
 
 /**
@@ -1426,8 +1426,8 @@ var XRegExp = (function(undefined) {
  * XRegExp.union(['a+b*c', /(dogs)\1/, /(cats)\1/], 'i');
  * // -> /a\+b\*c|(dogs)\1|(cats)\2/i
  */
-    self.union = function(patterns, flags) {
-        return self.join(patterns, /|/, flags);
+    XRegExp.union = function(patterns, flags) {
+        return XRegExp.join(patterns, /|/, flags);
     };
 
 /* ==============================
@@ -1525,7 +1525,7 @@ var XRegExp = (function(undefined) {
     fixed.match = function(regex) {
         var result;
 
-        if (!self.isRegExp(regex)) {
+        if (!XRegExp.isRegExp(regex)) {
             // Use the native `RegExp` rather than `XRegExp`
             regex = new RegExp(regex);
         } else if (regex.global) {
@@ -1554,7 +1554,7 @@ var XRegExp = (function(undefined) {
  * @returns {String} New string with one or all matches replaced.
  */
     fixed.replace = function(search, replacement) {
-        var isRegex = self.isRegExp(search),
+        var isRegex = XRegExp.isRegExp(search),
             origLastIndex,
             captureNames,
             result;
@@ -1686,7 +1686,7 @@ var XRegExp = (function(undefined) {
  * @returns {Array} Array of substrings.
  */
     fixed.split = function(separator, limit) {
-        if (!self.isRegExp(separator)) {
+        if (!XRegExp.isRegExp(separator)) {
             // Browsers handle nonregex split correctly, so use the faster native method
             return nativ.split.apply(this, arguments);
         }
@@ -1707,7 +1707,7 @@ var XRegExp = (function(undefined) {
         // unless Opera Dragonfly is open (go figure). It works in at least Opera 9.5-10.1 and 11+
         limit = (limit === undefined ? -1 : limit) >>> 0;
 
-        self.forEach(str, separator, function(match) {
+        XRegExp.forEach(str, separator, function(match) {
             // This condition is not the same as `if (match[0].length)`
             if ((match.index + match[0].length) > lastLastIndex) {
                 output.push(str.slice(lastLastIndex, match.index));
@@ -1735,7 +1735,7 @@ var XRegExp = (function(undefined) {
  * Built-in syntax/flag tokens
  * ============================== */
 
-    add = self.addToken;
+    add = XRegExp.addToken;
 
 /*
  * Letter escapes that natively match literal characters: `\a`, `\A`, etc. These should be
@@ -1945,7 +1945,7 @@ var XRegExp = (function(undefined) {
  * Expose XRegExp
  * ============================== */
 
-    return self;
+    return XRegExp;
 
 }());
 
