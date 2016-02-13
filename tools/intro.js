@@ -6,7 +6,7 @@
 
 // Module systems magic dance
 // Don't use strict mode for this function, so it can assign to global
-;(function(root, definition) {
+(function(root, definition) {
     // RequireJS
     if (typeof define === 'function' && define.amd) {
         define(definition);
@@ -22,3 +22,4 @@
         root.XRegExp = definition();
     }
 }(this, function() {
+    "use strict";

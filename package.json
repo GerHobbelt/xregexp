@@ -13,14 +13,12 @@
     "regex",
     "regexp"
   ],
-  "main": "./src/index.js",
+  "main": "xregexp-all.js",
   "files": [
-    "src"
+    "LICENSE",
+    "xregexp-all.js"
   ],
   "scripts": {
-    "build": "node_modules/.bin/browserify src/index.js --standalone XRegExp > xregexp-all.js"
-  },
-  "devDependencies": {
-    "browserify": "^13.0.0"
+    "build": "./tools/concatenate-source.sh"
   }
 }

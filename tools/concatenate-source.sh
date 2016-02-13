@@ -26,7 +26,16 @@ rm -f $output_file
 # Concatenate all source files
 for file in $source_files
 do
-    cat "${file}" >> "${output_file}"
+    # use SED to kill duplicate definitions of REGEX_DATA and functions pad4, dec and hex.
+    # Also clear out the internal export statements: the intro+outro takes care of that
+    # in full UMD/AMD style.
+    cat "${file}" | sed -e 's/^\};//' \
+                        -e 's/^module\.exports *= *function(XRegExp) *{//' \
+                        -e 's/module\.exports *= *XRegExp;//' \
+                        -e "s/'use strict';//" \
+                        -e "s/REGEX_DATA = 'xregexp',//" \
+                        -e '/\/\/ Adds leading zeros if shorter than four characters/,/\/\/ Gets the decimal code/ { /Gets the decimal/ p; d; }' \
+                        >> "${output_file}"
     echo '' >> "${output_file}"
 done
 
