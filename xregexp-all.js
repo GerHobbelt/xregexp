@@ -3269,7 +3269,7 @@ module.exports = XRegExp;
             pattern,
             flags
         );
-    };
+    }
 
 // Add `RegExp.prototype` to the prototype chain
     XRegExp.prototype = new RegExp();
@@ -3422,7 +3422,7 @@ module.exports = XRegExp;
  * // -> 'Escaped\?\ <\.>'
  */
     XRegExp.escape = function(str) {
-        return nativ.replace.call(toObject(str), /[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        return nativ.replace.call(toObject(str), /[-\[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     };
 
 /**
