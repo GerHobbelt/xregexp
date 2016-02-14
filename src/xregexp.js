@@ -205,15 +205,6 @@
             customFlags += xregexpFlags;
         }
         customFlags = nativ.replace.call(clipDuplicates(customFlags), /[Agimuy]+/g, '');
-        console.log('augment:', {
-            flags: customFlags,
-            hasCaptureNames: hasCaptureNames,
-            regex_source_: regex.source,
-            xregexp_source: xregexpSource,
-            isNonNativeA2: customFlags || hasCaptureNames,
-            isNonNativeB2: regex.source !== xregexpSource,
-            isNative: !(customFlags || hasCaptureNames || regex.source !== xregexpSource)
-        });
         regex = augment(
             new RegExp(regex.source, flags),
             hasCaptureNames ? xData.captureNames.slice(0) : null,
@@ -694,17 +685,6 @@
             customFlags += appliedFlags;
         }
         customFlags = nativ.replace.call(clipDuplicates(customFlags), /[Agimuy]+/g, '');
-        console.log('augment:', {
-            generated: generated,
-            flags: flags,
-            customFlags: customFlags,
-            hasCaptureNames: generated.captures,
-            regex_source: generated.pattern,
-            xregexp_source: pattern,
-            isNonNativeA1: customFlags || generated.captures,
-            isNonNativeB1: generated.pattern !== pattern,
-            isNative: !(customFlags || generated.captures || generated.pattern !== pattern)
-        });
         return augment(
             new RegExp(generated.pattern, generated.flags),
             generated.captures,
