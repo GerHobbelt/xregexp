@@ -85,12 +85,13 @@
  * @param {Array} captureNames Array with capture names, or `null`.
  * @param {String} xSource XRegExp pattern used to generate `regex`, or `null` if N/A.
  * @param {String} xFlags XRegExp flags used to generate `regex`, or `null` if N/A.
+ * @param {Boolean} [isNotNative=false] Whether the regex requires some XRegExp specific feature.
  * @param {Boolean} [isInternalOnly=false] Whether the regex will be used only for internal
  *   operations, and never exposed to users. For internal-only regexes, we can improve perf by
  *   skipping some operations like attaching `XRegExp.prototype` properties.
  * @returns {RegExp} Augmented regex.
  */
-    function augment(regex, captureNames, xSource, xFlags, isInternalOnly) {
+    function augment(regex, captureNames, xSource, xFlags, isNotNative, isInternalOnly) {
         var p;
 
         regex[REGEX_DATA] = {
@@ -116,6 +117,10 @@
         regex[REGEX_DATA].source = xSource;
         // Emulate the ES6 `flags` prop by ensuring flags are in alphabetical order
         regex[REGEX_DATA].flags = xFlags ? xFlags.split('').sort().join('') : xFlags;
+
+        // signal whether the given regex is a standard RegExp one ('native') or does require
+        // one or more XRegExp specific features:
+        regex[REGEX_DATA].isNative = !isNotNative;
 
         return regex;
     }
@@ -158,7 +163,8 @@
             flagsToAdd = '',
             flagsToRemove = '',
             xregexpSource = null,
-            xregexpFlags = null;
+            xregexpFlags = null,
+            customFlags;
 
         options = options || {};
 
@@ -191,11 +197,29 @@
         // avoid searching for special tokens. That would be wrong for regexes constructed by
         // `RegExp`, and unnecessary for regexes constructed by `XRegExp` because the regex has
         // already undergone the translation to native regex syntax
+        var hasCaptureNames = hasNamedCapture(regex);
+
+        // Strip all but custom flags, except the 'A' flag
+        customFlags = flags;
+        if (xregexpFlags) {
+            customFlags += xregexpFlags;
+        }
+        customFlags = nativ.replace.call(clipDuplicates(customFlags), /[Agimuy]+/g, '');
+        console.log('augment:', {
+            flags: customFlags,
+            hasCaptureNames: hasCaptureNames,
+            regex_source_: regex.source,
+            xregexp_source: xregexpSource,
+            isNonNativeA2: customFlags || hasCaptureNames,
+            isNonNativeB2: regex.source !== xregexpSource,
+            isNative: !(customFlags || hasCaptureNames || regex.source !== xregexpSource)
+        });
         regex = augment(
             new RegExp(regex.source, flags),
-            hasNamedCapture(regex) ? xData.captureNames.slice(0) : null,
+            hasCaptureNames ? xData.captureNames.slice(0) : null,
             xregexpSource,
             xregexpFlags,
+            customFlags || hasCaptureNames || regex.source !== xregexpSource,
             options.isInternalOnly
         );
 
@@ -663,11 +687,30 @@
         }
 
         generated = patternCache[pattern][flags];
+        
+        // Strip all but custom flags, except the 'A' flag
+        var customFlags = flags;
+        if (appliedFlags) {
+            customFlags += appliedFlags;
+        }
+        customFlags = nativ.replace.call(clipDuplicates(customFlags), /[Agimuy]+/g, '');
+        console.log('augment:', {
+            generated: generated,
+            flags: flags,
+            customFlags: customFlags,
+            hasCaptureNames: generated.captures,
+            regex_source: generated.pattern,
+            xregexp_source: pattern,
+            isNonNativeA1: customFlags || generated.captures,
+            isNonNativeB1: generated.pattern !== pattern,
+            isNative: !(customFlags || generated.captures || generated.pattern !== pattern)
+        });
         return augment(
             new RegExp(generated.pattern, generated.flags),
             generated.captures,
             pattern,
-            flags
+            flags,
+            customFlags || generated.captures || generated.pattern !== pattern
         );
     }
 
