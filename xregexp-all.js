@@ -2365,9 +2365,9 @@
             start;
         XRegExp.forEach(range, /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/, function(m) {
             start = charCode(m[1]);
-            if (start > (lastEnd + 1)) {
+            if (start > lastEnd + 1) {
                 output += '\\u' + pad4(hex(lastEnd + 1));
-                if (start > (lastEnd + 2)) {
+                if (start > lastEnd + 2) {
                     output += '-\\u' + pad4(hex(start - 1));
                 }
             }
