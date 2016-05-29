@@ -25,8 +25,15 @@ describe('XRegExp.build addon:', function() {
         });
 
         it('should strip a leading ^ and trailing unescaped $ in subpatterns, when both are present', function() {
-            expect(XRegExp.build('{{x}}', {x: '^123$'}).test('01234')).toBe(true);
             expect(XRegExp.build('{{x}}', {x: /^123$/}).test('01234')).toBe(true);
+            expect(XRegExp.build('{{x}}', {x: '^123$'}).test('01234')).toBe(true);
+            expect(
+                XRegExp.build(
+                    ' (?#comment) {{sub}} ',
+                    {sub: XRegExp(' (?#comment) ^123$ ', 'x')},
+                    'x'
+                ).test('01234')
+            ).toBe(true);
         });
 
         it('should not strip a leading ^ and trailing unescaped $ in subpatterns, when both are not present', function() {
@@ -36,9 +43,20 @@ describe('XRegExp.build addon:', function() {
             expect(XRegExp.build('{{x}}', {x: '123$'}).test('01234')).toBe(false);
         });
 
+        it('should not strip a leading ^ and trailing unescaped $ in subpatterns, when both are present but not leading/trailing', function() {
+            expect(XRegExp.build('{{x}}', {x: '^1$'}).test('11')).toBe(true);
+            expect(XRegExp.build('{{x}}', {x: '^1$\\b'}).test('11')).toBe(false);
+        });
+
         it('should not strip a trailing escaped $ in subpatterns', function() {
             expect(XRegExp.build('{{x}}', {x: '^123\\$'}).test('123$')).toBe(true);
             expect(XRegExp.build('{{x}}', {x: '^123\\$'}).test('0123$4')).toBe(false);
+        });
+
+        it('should support flag n with mixed named and unnamed groups', function() {
+            expect(function() {XRegExp.build('()(?<n>)\\k<n>', {}, 'n');}).not.toThrow();
+            expect(function() {XRegExp.build('{{a}}', {a: '()(?<n>)\\k<n>'}, 'n');}).not.toThrow();
+            expect(function() {XRegExp.build('()(?<x>)\\k<x>{{a}}', {a: '()(?<n>)\\k<n>'}, 'n');}).not.toThrow();
         });
 
         // TODO: Add complete specs

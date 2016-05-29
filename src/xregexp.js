@@ -1,7 +1,7 @@
 /*!
- * XRegExp 3.1.0-dev
+ * XRegExp 3.1.0
  * <xregexp.com>
- * Steven Levithan (c) 2007-2015 MIT License
+ * Steven Levithan (c) 2007-2016 MIT License
  */
 
 /**
@@ -14,7 +14,7 @@
     'use strict';
 
 /* ==============================
- * Private variables
+ * Private stuff
  * ============================== */
 
     // Property name used for extended regex instance data
@@ -54,14 +54,29 @@
     var replacementToken = /\$(?:{([\w$]+)}|(\d\d?|[\s\S]))/g;
     // Check for correct `exec` handling of nonparticipating capturing groups
     var correctExecNpcg = nativ.exec.call(/()??/, '')[1] === undefined;
-    // Dummy regular expression for testing purposes
-    var dummyRegExp = /x/;
-    // Check for ES6 `u` flag support
-    var hasNativeU = 'unicode' in dummyRegExp;
-    // Check for ES6 `y` flag support
-    var hasNativeY = 'sticky' in dummyRegExp;
     // Check for ES6 `flags` prop support
-    var hasFlagsProp = dummyRegExp.flags !== undefined;
+    var hasFlagsProp = /x/.flags !== undefined;
+    // Shortcut to `Object.prototype.toString`
+    var toString = {}.toString;
+
+    function hasNativeFlag(flag) {
+        // Can't check based on the presense of properties/getters since
+        // browsers might support such properties even when don't support the
+        // corresponding flag in regex construction (tested in Chrome 48, where
+        // `'unicode' in /x/` is true but trying to construct a regex with flag
+        // `u` throws an error).
+        var isSupported = true;
+        try {
+            new RegExp('', flag);
+        } catch (exception) {
+            isSupported = false;
+        }
+        return isSupported;
+    }
+    // Check for ES6 `u` flag support
+    var hasNativeU = hasNativeFlag('u');
+    // Check for ES6 `y` flag support
+    var hasNativeY = hasNativeFlag('y');
     // Tracker for known flags, including addon flags
     var registeredFlags = {
         g: true,
@@ -70,12 +85,6 @@
         u: hasNativeU,
         y: hasNativeY
     };
-    // Shortcut to `Object.prototype.toString`
-    var toString = {}.toString;
-
-/* ==============================
- * Private functions
- * ============================== */
 
 /**
  * Attaches extended data and `XRegExp.prototype` properties to a regex object.
@@ -668,8 +677,7 @@
             }
 
             patternCache[pattern][flags] = {
-                // Cleanup token cruft: repeated `(?:)(?:)` and leading/trailing `(?:)`
-                pattern: nativ.replace.call(output, /\(\?:\)(?:[*+?]|\{\d+(?:,\d*)?})?\??(?=\(\?:\))|^\(\?:\)(?:[*+?]|\{\d+(?:,\d*)?})?\??|\(\?:\)(?:[*+?]|\{\d+(?:,\d*)?})?\??$/g, ''),
+                pattern: output,
                 // Strip all but native flags
                 flags: nativ.replace.call(appliedFlags, /[^gimuy]+/g, ''),
                 // `context.captureNames` has an item for each capturing group, even if unnamed
@@ -709,11 +717,14 @@
  * @memberOf XRegExp
  * @type String
  */
-    XRegExp.version = '3.1.0-dev';
+    XRegExp.version = '3.1.0';
 
 /* ==============================
  * Public methods
  * ============================== */
+
+// Intentionally undocumented
+    XRegExp._hasNativeFlag = hasNativeFlag;
 
 /**
  * Extends XRegExp syntax and allows custom flags. This is used internally and can be used to
@@ -975,7 +986,7 @@
 
 /**
  * Installs optional features according to the specified options. Can be undone using
- * {@link #XRegExp.uninstall}.
+ * `XRegExp.uninstall`.
  *
  * @memberOf XRegExp
  * @param {Object|String} options Options object or string.
@@ -986,8 +997,7 @@
  *   // Enables support for astral code points in Unicode addons (implicitly sets flag A)
  *   astral: true,
  *
- *   // Overrides native regex methods with fixed/extended versions that support named
- *   // backreferences and fix numerous cross-browser bugs
+ *   // DEPRECATED: Overrides native regex methods with fixed/extended versions
  *   natives: true
  * });
  *
@@ -1011,12 +1021,12 @@
  *
  * @memberOf XRegExp
  * @param {String} feature Name of the feature to check. One of:
- *   <li>`natives`
  *   <li>`astral`
+ *   <li>`natives`
  * @returns {Boolean} Whether the feature is installed.
  * @example
  *
- * XRegExp.isInstalled('natives');
+ * XRegExp.isInstalled('astral');
  */
     XRegExp.isInstalled = function(feature) {
         return !!(features[feature]);
@@ -1080,7 +1090,6 @@
         r2 = regex[REGEX_DATA][cacheKey] || (
             regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
                 addG: !!global,
-                addY: !!regex.sticky,
                 removeG: scope === 'one',
                 isInternalOnly: true
             })
@@ -1222,7 +1231,6 @@
             s2 = search[REGEX_DATA][cacheKey] || (
                 search[REGEX_DATA][cacheKey] = copyRegex(search, {
                     addG: !!global,
-                    addY: !!search.sticky,
                     removeG: scope === 'one',
                     isInternalOnly: true
                 })
@@ -1243,10 +1251,10 @@
     };
 
 /**
- * Performs batch processing of string replacements. Used like {@link #XRegExp.replace}, but
- * accepts an array of replacement details. Later replacements operate on the output of earlier
- * replacements. Replacement details are accepted as an array with a regex or string to search for,
- * the replacement string or function, and an optional scope of 'one' or 'all'. Uses the XRegExp
+ * Performs batch processing of string replacements. Used like `XRegExp.replace`, but accepts an
+ * array of replacement details. Later replacements operate on the output of earlier replacements.
+ * Replacement details are accepted as an array with a regex or string to search for, the
+ * replacement string or function, and an optional scope of 'one' or 'all'. Uses the XRegExp
  * replacement text syntax, which supports named backreference properties via `${name}`.
  *
  * @memberOf XRegExp
@@ -1337,7 +1345,7 @@
 
 /**
  * Uninstalls optional features according to the specified options. All optional features start out
- * uninstalled, so this is used to undo the actions of {@link #XRegExp.install}.
+ * uninstalled, so this is used to undo the actions of `XRegExp.install`.
  *
  * @memberOf XRegExp
  * @param {Object|String} options Options object or string.
@@ -1348,7 +1356,7 @@
  *   // Disables support for astral code points in Unicode addons
  *   astral: true,
  *
- *   // Restores native regex methods
+ *   // DEPRECATED: Restores native regex methods
  *   natives: true
  * });
  *
