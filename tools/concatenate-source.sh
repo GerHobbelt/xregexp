@@ -17,6 +17,21 @@ source_files='
     ./outro.js
 '
 
+# Update the version numbers everywhere
+if [ -f ../package.json ]; then
+    v=$( node -e 'var pkg = require("../package.json"); console.log(pkg.version);' )
+    for file in $source_files
+    do
+        cat "${file}" | sed -e "s/\\* XRegExp\\([ -][^0-9]*\\)\\([0-9]\\+\\..*\\)\$/* XRegExp\\1$v/" > __tmp__
+        cat __tmp__ > "${file}"
+    done
+    rm -f __tmp__ 
+else
+    echo "This repo doesn't come with a package.json file"
+fi
+exit 0
+
+
 # Filename of concatenated package
 output_file='../xregexp-all.js'
 
@@ -29,7 +44,7 @@ do
     # use SED to kill duplicate definitions of REGEX_DATA and functions pad4, dec and hex.
     # Also clear out the internal export statements: the intro+outro takes care of that
     # in full UMD/AMD style.
-    cat "${file}" | sed -e 's/^\};//' \
+    cat "${file}" | sed -e 's/^\}; *\/\/ *End of module.*$//' \
                         -e 's/^module\.exports *= *function(XRegExp) *{//' \
                         -e 's/module\.exports *= *XRegExp;//' \
                         -e "s/'use strict';//" \
@@ -38,5 +53,17 @@ do
                         >> "${output_file}"
     echo '' >> "${output_file}"
 done
+
+
+# and none of the following should dump core when the code is intact:
+echo "Testing source file integrity: src/xregexp.js"
+node ../src/xregexp.js
+
+echo "Testing source file integrity: all sources in src/"
+node ../src/index.js
+
+echo "Testing source file integrity: generated output file xregexp-all.js"
+node "${output_file}"
+
 
 echo "Successfully created $(basename $output_file)"
