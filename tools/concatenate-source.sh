@@ -29,7 +29,6 @@ if [ -f ../package.json ]; then
 else
     echo "This repo doesn't come with a package.json file"
 fi
-exit 0
 
 
 # Filename of concatenated package
