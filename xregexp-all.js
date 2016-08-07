@@ -549,7 +549,7 @@ function toObject(value) {
  * @returns {Array} modified patterns RegExps and Strings to be combined.
  */
 function prepareJoin(patterns) {
-    var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*]/g,
+    var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g,
         output = [],
         numCaptures = 0,
         numPriorCaptures,
@@ -2407,9 +2407,9 @@ function invertBmp(range) {
     var output = '',
         lastEnd = -1;
     XRegExp.forEach(
-    range, 
-    /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/, 
-    function(m) {
+        range, 
+        /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/, 
+        function(m) {
             var start = charCode(m[1]);
             if (start > lastEnd + 1) {
                 output += '\\u' + pad4(hex(lastEnd + 1));
@@ -2469,7 +2469,7 @@ function cacheAstral(slug, isNegated) {
 // ==--------------------------==
 
 /*
- * Add Unicode token syntax: \p{..}, \P{..}, \p{^..}. Also add astral mode (flag A).
+ * Add Unicode token syntax: `\p{..}`, `\P{..}`, `\p{^..}`, `\pC`. Also add astral mode (flag A).
  */
 XRegExp.addToken(
     // Use `*` instead of `+` to avoid capturing `^` as the token name in `\p{^}`
