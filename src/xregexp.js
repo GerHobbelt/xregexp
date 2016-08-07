@@ -1788,7 +1788,7 @@ XRegExp.addToken(
  * character class endings can't be determined.
  */
 XRegExp.addToken(
-    /\[(\^?)]/,
+    /\[(\^?)\]/,
     function(match) {
         // For cross-browser compatibility with ES3, convert [] to \b\B and [^] to [\s\S].
         // (?!) should work like \b\B, but is unreliable in some versions of Firefox
