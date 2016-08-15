@@ -1,5 +1,5 @@
 /*!
- * XRegExp-All 3.1.2-5
+ * XRegExp-All 3.1.2-6
  * <xregexp.com>
  * Steven Levithan (c) 2012-2015 MIT License
  */
@@ -25,7 +25,7 @@
     "use strict";
 
 /*!
- * XRegExp 3.1.2-5
+ * XRegExp 3.1.2-6
  * <xregexp.com>
  * Steven Levithan (c) 2007-2016 MIT License
  */
@@ -2354,7 +2354,7 @@ XRegExp.matchRecursive = function(str, left, right, flags, options) {
 
 
 /*!
- * XRegExp Unicode Base 3.1.2-5
+ * XRegExp Unicode Base 3.1.2-6
  * <xregexp.com>
  * Steven Levithan (c) 2008-2016 MIT License
  */
@@ -2622,7 +2622,7 @@ XRegExp._getUnicodeProperty = function(name) {
 
 
 /*!
- * XRegExp Unicode Blocks 3.1.2-5
+ * XRegExp Unicode Blocks 3.1.2-6
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -3700,7 +3700,7 @@ XRegExp.addUnicodeData([
 
 
 /*!
- * XRegExp Unicode Categories 3.1.2-5
+ * XRegExp Unicode Categories 3.1.2-6
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -3938,7 +3938,7 @@ XRegExp.addUnicodeData([
 
 
 /*!
- * XRegExp Unicode Properties 3.1.2-5
+ * XRegExp Unicode Properties 3.1.2-6
  * <xregexp.com>
  * Steven Levithan (c) 2012-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -4046,7 +4046,7 @@ XRegExp.addUnicodeData(unicodeData);
 
 
 /*!
- * XRegExp Unicode Scripts 3.1.2-5
+ * XRegExp Unicode Scripts 3.1.2-6
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
