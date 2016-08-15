@@ -1,5 +1,5 @@
 /*!
- * XRegExp-All 3.1.2-4
+ * XRegExp-All 3.1.2-5
  * <xregexp.com>
  * Steven Levithan (c) 2012-2015 MIT License
  */
@@ -25,7 +25,7 @@
     "use strict";
 
 /*!
- * XRegExp 3.1.2-4
+ * XRegExp 3.1.2-5
  * <xregexp.com>
  * Steven Levithan (c) 2007-2016 MIT License
  */
@@ -2354,7 +2354,7 @@ XRegExp.matchRecursive = function(str, left, right, flags, options) {
 
 
 /*!
- * XRegExp Unicode Base 3.1.2-4
+ * XRegExp Unicode Base 3.1.2-5
  * <xregexp.com>
  * Steven Levithan (c) 2008-2016 MIT License
  */
@@ -2582,25 +2582,47 @@ XRegExp.addUnicodeData = function(data) {
 };
 
 /**
- * Test if the given name is a legal Unicode Slug for use in XRegExp `\p` or `\P` regex constructs.
+ * @ignore
+ *
+ * Return a reference to the internal Unicode definition structure for the given Unicode Property 
+ * if the given name is a legal Unicode Property for use in XRegExp `\p` or `\P` regex constructs.
  *
  * @memberOf XRegExp
- * @param {String} name Name by which the Unicode slug may be recognized (case-insensitive),
+ * @param {String} name Name by which the Unicode Property may be recognized (case-insensitive),
  *   e.g. `'N'` or `'Number'`.
  *   
- *   The given name is matched against all registered Unicode names and aliases.
+ *   The given name is matched against all registered Unicode Properties and Property Aliases.
  *
- * @return {Object} Truthy when the name matches a Unicode slug (the internal slug definition
- *   object is returned); `false` when the name does not match *any* Unicode name or alias. 
+ * @return {Object} Reference to definition structure when the name matches a Unicode Property; 
+ * `false` when the name does not match *any* Unicode Property or Property Alias. 
+ *
+ * @note
+ * For more info on Unicode Properties, see also http://unicode.org/reports/tr18/#Categories. 
+ *
+ * @note
+ * This method is *not* part of the officially documented and published API and is meant 'for
+ * advanced use only' where userland code wishes to re-use the (large) internal Unicode 
+ * structures set up by XRegExp as a single point of Unicode 'knowledge' in the application.
+ *
+ * See some example usage of this functionality, used as a boolean check if the given name 
+ * is legal and to obtain internal structural data:
+ * - `function prepareMacros(...)` in https://github.com/GerHobbelt/jison-lex/blob/master/regexp-lexer.js#L885  
+ * - `function generateRegexesInitTableCode(...)` in https://github.com/GerHobbelt/jison-lex/blob/master/regexp-lexer.js#L1999
+ *
+ * Note that the second function in the example (`function generateRegexesInitTableCode(...)`) 
+ * uses a approach without using this API to obtain a Unicode range spanning regex for use in environments
+ * which do not support XRegExp by simply expanding the XRegExp instance to a String through
+ * the `map()` mapping action and subsequent `join()`.
  */
-XRegExp.isUnicodeSlug = function(name) {
-    return unicode[normalize(name)] || false;
+XRegExp._getUnicodeProperty = function(name) {
+    var slug = normalize(name);
+    return unicode[slug] || false;
 };
 
 
 
 /*!
- * XRegExp Unicode Blocks 3.1.2-4
+ * XRegExp Unicode Blocks 3.1.2-5
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -3678,7 +3700,7 @@ XRegExp.addUnicodeData([
 
 
 /*!
- * XRegExp Unicode Categories 3.1.2-4
+ * XRegExp Unicode Categories 3.1.2-5
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -3916,7 +3938,7 @@ XRegExp.addUnicodeData([
 
 
 /*!
- * XRegExp Unicode Properties 3.1.2-4
+ * XRegExp Unicode Properties 3.1.2-5
  * <xregexp.com>
  * Steven Levithan (c) 2012-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -4024,7 +4046,7 @@ XRegExp.addUnicodeData(unicodeData);
 
 
 /*!
- * XRegExp Unicode Scripts 3.1.2-4
+ * XRegExp Unicode Scripts 3.1.2-5
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
