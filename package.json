@@ -1,13 +1,13 @@
 {
   "name": "xregexp",
-  "version": "3.1.2-6",
+  "version": "3.1.2-7",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/slevithan/xregexp.git"
+    "url": "https://github.com/GerHobbelt/xregexp.git"
   },
   "keywords": [
     "regex",

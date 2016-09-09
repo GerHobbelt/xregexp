@@ -1,5 +1,5 @@
 /*!
- * XRegExp-All 3.1.2-6
+ * XRegExp-All 
  * <xregexp.com>
  * Steven Levithan (c) 2012-2015 MIT License
  */
