@@ -1,5 +1,5 @@
 /*!
- * XRegExp-All 3.1.2-5
+ * XRegExp-All 
  * <xregexp.com>
  * Steven Levithan (c) 2012-2015 MIT License
  */
@@ -25,7 +25,7 @@
     "use strict";
 
 /*!
- * XRegExp 3.1.2-5
+ * XRegExp 
  * <xregexp.com>
  * Steven Levithan (c) 2007-2016 MIT License
  */
@@ -747,7 +747,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '3.1.1-next';
+XRegExp.version = '3.1.2-7';
 
 // ==--------------------------==
 // Public methods
@@ -1970,7 +1970,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp.build 3.1.1-next
+ * XRegExp.build
  * <xregexp.com>
  * Steven Levithan (c) 2012-2016 MIT License
  * Inspired by Lea Verou's RegExp.create <lea.verou.me>
@@ -2161,7 +2161,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp.matchRecursive 3.1.1-next
+ * XRegExp.matchRecursive
  * <xregexp.com>
  * Steven Levithan (c) 2009-2016 MIT License
  */
@@ -2354,7 +2354,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp Unicode Base 3.1.2-5
+ * XRegExp Unicode Base 
  * <xregexp.com>
  * Steven Levithan (c) 2008-2016 MIT License
  */
@@ -2622,7 +2622,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp Unicode Blocks 3.1.2-5
+ * XRegExp Unicode Blocks 
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -3700,7 +3700,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp Unicode Categories 3.1.2-5
+ * XRegExp Unicode Categories 
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -3938,7 +3938,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp Unicode Properties 3.1.2-5
+ * XRegExp Unicode Properties 
  * <xregexp.com>
  * Steven Levithan (c) 2012-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
@@ -4046,7 +4046,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp Unicode Scripts 3.1.2-5
+ * XRegExp Unicode Scripts 
  * <xregexp.com>
  * Steven Levithan (c) 2010-2016 MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
