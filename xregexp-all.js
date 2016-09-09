@@ -747,7 +747,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '3.1.1';
+XRegExp.version = '3.1.1-next';
 
 // ==--------------------------==
 // Public methods
@@ -1970,7 +1970,7 @@ XRegExp.addToken(
 
 
 /*!
- * XRegExp.build 3.1.1
+ * XRegExp.build 3.1.1-next
  * <xregexp.com>
  * Steven Levithan (c) 2012-2016 MIT License
  * Inspired by Lea Verou's RegExp.create <lea.verou.me>
@@ -2161,7 +2161,7 @@ XRegExp.build = function(pattern, subs, flags) {
 
 
 /*!
- * XRegExp.matchRecursive 3.1.1
+ * XRegExp.matchRecursive 3.1.1-next
  * <xregexp.com>
  * Steven Levithan (c) 2009-2016 MIT License
  */
