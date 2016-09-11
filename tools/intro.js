@@ -1,7 +1,7 @@
 /*!
  * XRegExp-All 
  * <xregexp.com>
- * Steven Levithan (c) 2012-2015 MIT License
+ * Steven Levithan (c) 2012-2016 MIT License
  */
 
 // Module systems magic dance
