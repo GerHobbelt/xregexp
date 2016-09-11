@@ -1,7 +1,7 @@
 /*!
  * XRegExp-All 
  * <xregexp.com>
- * Steven Levithan (c) 2012-2015 MIT License
+ * Steven Levithan (c) 2012-2016 MIT License
  */
 
 // Module systems magic dance
@@ -86,7 +86,7 @@ var hasFlagsProp = /x/.flags !== undefined;
 var toString = {}.toString;
 
 function hasNativeFlag(flag) {
-    // Can't check based on the presense of properties/getters since browsers might support such
+    // Can't check based on the presence of properties/getters since browsers might support such
     // properties even when they don't support the corresponding flag in regex construction (tested
     // in Chrome 48, where `'unicode' in /x/` is true but trying to construct a regex with flag `u`
     // throws an error)
@@ -747,7 +747,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '3.1.2-7';
+XRegExp.version = '3.1.2-8';
 
 // ==--------------------------==
 // Public methods
