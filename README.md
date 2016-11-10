@@ -15,25 +15,25 @@ XRegExp regexes compile to native `RegExp` objects, and therefore perform just a
 // Using named capture and flag x (free-spacing and line comments)
 var date = XRegExp('(?<year>  [0-9]{4} ) -?  # year  \n\
                     (?<month> [0-9]{2} ) -?  # month \n\
-                    (?<day>   [0-9]{2} )     # day     'x');
+                    (?<day>   [0-9]{2} )     # day   ', 'x');
 
 // XRegExp.exec gives you named backreferences on the match result
-var match = XRegExp.exec('2015-02-22  date);
+var match = XRegExp.exec('2015-02-22', date);
 match.year; // -> '2015'
 
 // It also includes optional pos and sticky arguments
 var pos = 3;
 var result = [];
-while (match = XRegExp.exec('<1><2><3><4>5<6>  /<(\d+)>/, pos, 'sticky')) {
+while (match = XRegExp.exec('<1><2><3><4>5<6>', /<(\d+)>/, pos, 'sticky')) {
     result.push(match[1]);
     pos = match.index + match[0].length;
 }
-// result -> ['2  '3  '4']
+// result -> ['2', '3', '4']
 
 // XRegExp.replace allows named backreferences in replacements
-XRegExp.replace('2015-02-22  date, '${month}/${day}/${year}');
+XRegExp.replace('2015-02-22', date, '${month}/${day}/${year}');
 // -> '02/22/2015'
-XRegExp.replace('2015-02-22  date, function(match) {
+XRegExp.replace('2015-02-22', date, function(match) {
     return match.month + '/' + match.day + '/' + match.year;
 });
 // -> '02/22/2015'
@@ -49,17 +49,17 @@ date.test('2015-02-22');
 
 // Extract every other digit from a string using XRegExp.forEach
 var evens = [];
-XRegExp.forEach('1a2345  /\d/, function(match, i) {
+XRegExp.forEach('1a2345', /\d/, function(match, i) {
     if (i % 2) evens.push(+match[0]);
 });
 // evens -> [2, 4]
 
 // Get numbers within <b> tags using XRegExp.matchChain
-XRegExp.matchChain('1 <b>2</b> 3 <b>4 a 56</b>  [
+XRegExp.matchChain('1 <b>2</b> 3 <b>4 a 56</b>', [
     XRegExp('(?is)<b>.*?</b>'),
     /\d+/
 ]);
-// -> ['2  '4  '56']
+// -> ['2', '4', '56']
 
 // You can also pass forward and return specific backreferences
 var html = '<a href="http://xregexp.com/">XRegExp</a>' +
@@ -68,10 +68,10 @@ XRegExp.matchChain(html, [
     {regex: /<a href="([^"]+)">/i, backref: 1},
     {regex: XRegExp('(?i)^https?://(?<domain>[^/?#]+)'), backref: 'domain'}
 ]);
-// -> ['xregexp.com  'www.google.com']
+// -> ['xregexp.com', 'www.google.com']
 
 // Merge strings and regexes into a single pattern with updated backreferences
-XRegExp.union(['a+b*c  /(dog)\1/, /(cat)\1/], 'i');
+XRegExp.union(['a+b*c', /(dog)\1/, /(cat)\1/], 'i');
 // -> /a\+b\*c|(dog)\1|(cat)\2/i
 ```
 
@@ -104,7 +104,7 @@ By default, `\p{…}` and `\P{…}` support the Basic Multilingual Plane (i.e. c
 ```js
 // Using flag A to match astral code points
 XRegExp('^\\pS$').test('💩'); // -> false
-XRegExp('^\\pS$  'A').test('💩'); // -> true
+XRegExp('^\\pS$', 'A').test('💩'); // -> true
 XRegExp('(?A)^\\pS$').test('💩'); // -> true
 // Using surrogate pair U+D83D U+DCA9 to represent U+1F4A9 (pile of poo)
 XRegExp('(?A)^\\pS$').test('\uD83D\uDCA9'); // -> true
@@ -123,8 +123,8 @@ XRegExp uses Unicode 8.0.0.
 Build regular expressions using named subpatterns, for readability and pattern reuse:
 
 ```js
-var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $  {
-    hours: XRegExp.build('{{h12}} : | {{h24}}  {
+var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $', {
+    hours: XRegExp.build('{{h12}} : | {{h24}}', {
         h12: /1[0-2]|0?[1-9]/,
         h24: /2[0-3]|[01][0-9]/
     }),
@@ -132,7 +132,7 @@ var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $  {
 });
 
 time.test('10:59'); // -> true
-XRegExp.exec('10:59  time).minutes; // -> '59'
+XRegExp.exec('10:59', time).minutes; // -> '59'
 ```
 
 Named subpatterns can be provided as strings or regex objects. A leading `^` and trailing unescaped `$` are stripped from subpatterns if both are present, which allows embedding independently-useful anchored patterns. `{{…}}` tokens can be quantified as a single unit. Any backreferences in the outer pattern or provided subpatterns are automatically renumbered to work correctly within the larger combined pattern. The syntax `({{name}})` works as shorthand for named capture via `(?<name>{{name}})`. Named subpatterns cannot be embedded within character classes.
@@ -145,39 +145,39 @@ Match recursive constructs using XRegExp pattern strings as left and right delim
 
 ```js
 var str = '(t((e))s)t()(ing)';
-XRegExp.matchRecursive(str, '\\(  '\\)  'g');
-// -> ['t((e))s  '  'ing']
+XRegExp.matchRecursive(str, '\\(', '\\)', 'g');
+// -> ['t((e))s', '', 'ing']
 
 // Extended information mode with valueNames
 str = 'Here is <div> <div>an</div></div> example';
-XRegExp.matchRecursive(str, '<div\\s*>  '</div>  'gi  {
-    valueNames: ['between  'left  'match  'right']
+XRegExp.matchRecursive(str, '<div\\s*>', '</div>', 'gi', {
+    valueNames: ['between', 'left', 'match', 'right']
 });
- -> [
-{- between  value: 'Here is         start: 0,  end: 8},
-{- left     value: '<div>           start: 8,  end: 13},
-{- match    value: ' <div>an</div>  start: 13, end: 27},
-{- right    value: '</div>          start: 27, end: 33},
-{- between  value: ' example        start: 33, end: 41}
+/* -> [
+{name: 'between', value: 'Here is ',       start: 0,  end: 8},
+{name: 'left',    value: '<div>',          start: 8,  end: 13},
+{name: 'match',   value: ' <div>an</div>', start: 13, end: 27},
+{name: 'right',   value: '</div>',         start: 27, end: 33},
+{name: 'between', value: ' example',       start: 33, end: 41}
 ] */
 
 // Omitting unneeded parts with null valueNames, and using escapeChar
 str = '...{1}.\\{{function(x,y){return {y:x}}}';
-XRegExp.matchRecursive(str, '{  '}  'g  {
-    valueNames: ['literal  null, 'value  null],
+XRegExp.matchRecursive(str, '{', '}', 'g', {
+    valueNames: ['literal', null, 'value', null],
     escapeChar: '\\'
 });
- -> [
-{- literal  value: '...   start: 0, end: 3},
-{- value    value: '1     start: 4, end: 5},
-{- literal  value: '.\\{  start: 6, end: 9},
-{- value    value: 'function(x,y){return {y:x}}  start: 10, end: 37}
+/* -> [
+{name: 'literal', value: '...',  start: 0, end: 3},
+{name: 'value',   value: '1',    start: 4, end: 5},
+{name: 'literal', value: '.\\{', start: 6, end: 9},
+{name: 'value',   value: 'function(x,y){return {y:x}}', start: 10, end: 37}
 ] */
 
 // Sticky mode via flag y
 str = '<1><<<2>>><3>4<5>';
-XRegExp.matchRecursive(str, '<  '>  'gy');
-// -> ['1  '<<2>>  '3']
+XRegExp.matchRecursive(str, '<', '>', 'gy');
+// -> ['1', '<<2>>', '3']
 ```
 
 `XRegExp.matchRecursive` throws an error if it scans past an unbalanced delimiter in the target string.
