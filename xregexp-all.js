@@ -1460,7 +1460,7 @@ XRegExp.union = function(patterns, flags) {
  * bugs in the native `RegExp.prototype.exec`. Calling `XRegExp.install('natives')` uses this to
  * override the native method. Use via `XRegExp.exec` without overriding natives.
  *
- * @private
+ * @memberOf RegExp
  * @param {String} str String to search.
  * @returns {Array} Match array with named backreference properties, or `null`.
  */
@@ -1524,7 +1524,7 @@ fixed.exec = function(str) {
  * Fixes browser bugs in the native `RegExp.prototype.test`. Calling `XRegExp.install('natives')`
  * uses this to override the native method.
  *
- * @private
+ * @memberOf RegExp
  * @param {String} str String to search.
  * @returns {Boolean} Whether the regex matched the provided value.
  */
@@ -1538,7 +1538,7 @@ fixed.test = function(str) {
  * bugs in the native `String.prototype.match`. Calling `XRegExp.install('natives')` uses this to
  * override the native method.
  *
- * @private
+ * @memberOf String
  * @param {RegExp|*} regex Regex to search with. If not a regex object, it is passed to `RegExp`.
  * @returns {Array} If `regex` uses flag g, an array of match strings or `null`. Without flag g,
  *   the result of calling `regex.exec(this)`.
@@ -1569,7 +1569,7 @@ fixed.match = function(regex) {
  * that this doesn't support SpiderMonkey's proprietary third (`flags`) argument. Use via
  * `XRegExp.replace` without overriding natives.
  *
- * @private
+ * @memberOf String
  * @param {RegExp|String} search Search pattern to be replaced.
  * @param {String|Function} replacement Replacement string or a function invoked to create it.
  * @returns {String} New string with one or all matches replaced.
@@ -1701,7 +1701,7 @@ fixed.replace = function(search, replacement) {
  * Fixes browser bugs in the native `String.prototype.split`. Calling `XRegExp.install('natives')`
  * uses this to override the native method. Use via `XRegExp.split` without overriding natives.
  *
- * @private
+ * @memberOf String
  * @param {RegExp|String} separator Regex or string to use for separating the string.
  * @param {Number} [limit] Maximum number of items to include in the result array.
  * @returns {Array} Array of substrings.
