@@ -306,7 +306,7 @@ Returns {RegExp} Extended regular expression object.
 // With named capture and flag x
 XRegExp('(?<year>  [0-9]{4} ) -?  # year  \n\
          (?<month> [0-9]{2} ) -?  # month \n\
-         (?<day>   [0-9]{2} )     # day     'x');
+         (?<day>   [0-9]{2} )     # day   'x');
 
 // Providing a regex object copies it. Native regexes are recompiled using native (not XRegExp)
 // syntax. Copies maintain extended data, are augmented with `XRegExp.prototype` properties, and
