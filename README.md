@@ -1,4 +1,4 @@
-[XRegExp](http://xregexp.com/) 3.1.2-11
+[XRegExp](http://xregexp.com/) 3.1.2-12
 =======================================
 
 XRegExp provides augmented (and extensible) JavaScript regular expressions. You get new modern syntax and flags beyond what browsers support natively. XRegExp is also a regex utility belt with tools to make your client-side grepping and parsing easier, while freeing you from worrying about pesky aspects of JavaScript regexes like cross-browser inconsistencies or manually manipulating `lastIndex`.
