@@ -747,7 +747,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '3.1.2-8';
+XRegExp.version = '3.1.2-10';
 
 // ==--------------------------==
 // Public methods
@@ -755,6 +755,7 @@ XRegExp.version = '3.1.2-8';
 
 // Intentionally undocumented; used in tests and addons
 XRegExp._hasNativeFlag = hasNativeFlag;
+XRegExp._registeredFlags = function _getRegisteredFlags() { return registeredFlags };
 XRegExp._dec = dec;
 XRegExp._hex = hex;
 XRegExp._pad4 = pad4;
