@@ -223,48 +223,25 @@ Fork me to show support, fix, and extend.
 
 
 
+
+## Native support detection / RegExp flags
+
+XRegExp internally detects if the JS engine supports any of these RegExp flags:
+
+- `u` (defined in ES6 standard)
+- `y` (defined in ES6 standard)
+- `g`
+- `i`
+- `m`
+
+These (and other flags registered by XRegExp addons) can be queried via the
+`XRegExp._registeredFlags()` API, e.g. when you want to include this information in a system diagnostics report which accompanies a user or automated bug report.
+
+
+
+
+
 # APIs
-
-## Private stuff
-
-
-
-// Check for ES6 `u` flag support
-var hasNativeU = hasNativeFlag('u');
-// Check for ES6 `y` flag support
-var hasNativeY = hasNativeFlag('y');
-// Tracker for known flags, including addon flags
-var registeredFlags = {
-    g: true,
-    i: true,
-    m: true,
-    u: hasNativeU,
-    y: hasNativeY
-};
-
-
-
-
-
-
-
-
-
-
-Enables or disables native method overrides.
- *
-@private
-@param {Boolean} on `true` to enable; `false` to disable.
-
-function setNatives(on) {
-    RegExp.prototype.exec = (on ? fixed : nativ).exec;
-    RegExp.prototype.test = (on ? fixed : nativ).test;
-    String.prototype.match = (on ? fixed : nativ).match;
-    String.prototype.replace = (on ? fixed : nativ).replace;
-    String.prototype.split = (on ? fixed : nativ).split;
-
-
-
 
 
 ## XRegExp(pattern, flags) constructor
@@ -323,65 +300,8 @@ The XRegExp version number as a string containing three dot-separated parts. For
 
 
 
+
 ## XRegExp: Public methods
-
-
-### XRegExp._hasNativeFlag(flag)
-
-> Intentionally undocumented; used in tests and addons
-
-Check if the regex flag is supported natively in your environment.
-
-Returns {Boolean}.
-
-> Developer Note:
->
-> Can't check based on the presence of properties/getters since browsers might support such
-> properties even when they don't support the corresponding flag in regex construction (tested
-> in Chrome 48, where `'unicode' in /x/` is true but trying to construct a regex with flag `u`
-> throws an error)
-
-
-### XRegExp._dec(hex)
-
-> Intentionally undocumented; used in tests and addons
-
-Converts hexadecimal to decimal.
-
-`hex`
-: {String}
-
-Returns {Number}
-
-
-
-### XRegExp._hex(dec)
-
-> Intentionally undocumented; used in tests and addons
-
-Converts decimal to hexadecimal.
-
-`dec`
-: {Number|String}
-
-Returns {String}
-
-
-
-### XRegExp._pad4(str)
-
-> Intentionally undocumented; used in tests and addons
-
-Adds leading zeros if shorter than four characters. Used for fixed-length hexadecimal values.
-
-`str`
-: {String}
-
-Returns {String}
-
-
-
-
 
 
 
@@ -490,7 +410,7 @@ Returns {String} String with regex metacharacters escaped.
 
 ### Example
 
-```
+```js
 XRegExp.escape('Escaped? <.>');
 // -> 'Escaped\?\ <\.>'
 ```
@@ -498,7 +418,7 @@ XRegExp.escape('Escaped? <.>');
 
 
 
-## XRegExp.exec = function(str, regex, pos, sticky) {
+## XRegExp.exec(str, regex, pos, sticky) 
 
 Executes a regex search in a specified string. Returns a match array or `null`. If the provided
 regex uses named capture, named backreference properties are included on the match array.
@@ -506,20 +426,27 @@ Optional `pos` and `sticky` arguments specify the search start position, and whe
 must start at the specified position only. The `lastIndex` property of the provided regex is not
 used, but is updated for compatibility. Also fixes browser bugs compared to the native
 `RegExp.prototype.exec` and can be used reliably cross-browser.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {RegExp} regex Regex to search with.
-@param {Number} [pos=0] Zero-based index at which to start the search.
-@param {Boolean|String} [sticky=false] Whether the match must start at the specified position
+
+`str` 
+: {String} String to search.
+
+`regex`
+: {RegExp} Regex to search with.
+
+`pos`
+: {Number} [default: `pos=0`] Zero-based index at which to start the search.
+
+`sticky`
+: {Boolean|String} [default: `sticky=false`] Whether the match must start at the specified position
   only. The string `'sticky'` is accepted as an alternative to `true`.
-@returns {Array} Match array with named backreference properties, or `null`.
-@example
- *
+
+Returns the match array with named backreference properties, or `null`.
+
+```js
 // Basic use, with named backreference
 var match = XRegExp.exec('U+2620  XRegExp('U\\+(?<hex>[0-9A-F]{4})'));
 match.hex; // -> '2620'
- *
+
 // With pos and sticky, in a loop
 var pos = 2, result = [], match;
 while (match = XRegExp.exec('<1><2><3><4>5<6>  /<(\d)>/, pos, 'sticky')) {
@@ -527,63 +454,69 @@ while (match = XRegExp.exec('<1><2><3><4>5<6>  /<(\d)>/, pos, 'sticky')) {
   pos = match.index + match[0].length;
 }
 // result -> ['2  '3  '4']
-
-XRegExp.exec = function(str, regex, pos, sticky) {
-
+```
 
 
-## XRegExp.forEach = function(str, regex, callback) {
+
+## XRegExp.forEach(str, regex, callback) 
 
 Executes a provided function once per regex match. Searches always start at the beginning of the
 string and continue until the end, regardless of the state of the regex's `global` property and
 initial `lastIndex`.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {RegExp} regex Regex to search with.
-@param {Function} callback Function to execute for each match. Invoked with four arguments:
+ 
+`str`
+: {String} String to search.
+
+`regex`
+: {RegExp} Regex to search with.
+
+`callback`
+: {Function} Function to execute for each match. Invoked with four arguments:
+
   <li>The match array, with named backreference properties.
   <li>The zero-based match index.
   <li>The string being traversed.
   <li>The regex object being used to traverse the string.
-@example
- *
+
+### Example
+
+```js
 // Extracts every other digit from a string
 var evens = [];
 XRegExp.forEach('1a2345  /\d/, function(match, i) {
   if (i % 2) evens.push(+match[0]);
 });
 // evens -> [2, 4]
-
-XRegExp.forEach = function(str, regex, callback) {
-
+```
 
 
-## XRegExp.globalize = function(regex) {
+
+
+## XRegExp.globalize(regex) 
 
 Copies a regex object and adds flag `g`. The copy maintains extended data, is augmented with
 `XRegExp.prototype` properties, and has a fresh `lastIndex` property (set to zero). Native
 regexes are not recompiled using XRegExp syntax.
- *
-@memberOf XRegExp
-@param {RegExp} regex Regex to globalize.
-@returns {RegExp} Copy of the provided regex with flag `g` added.
-@example
- *
+
+`regex`
+: {RegExp} Regex to globalize.
+
+Returns a copy of the provided regex with flag `g` added. ({RegExp} type)
+
+```js
 var globalCopy = XRegExp.globalize(/regex/);
 globalCopy.global; // -> true
-
-XRegExp.globalize = function(regex) {
-
+```
 
 
-## XRegExp.install = function(options) {
+
+## XRegExp.install(options) 
 
 Installs optional features according to the specified options. Can be undone using
 `XRegExp.uninstall`.
 
 `options`
-: {Object|String} Options object or string.
+: {Object|String} Feature options object or feature string.
 
 ### feature: astral
 
@@ -600,11 +533,16 @@ Native methods to use and restore ('native' is an ES3 reserved keyword).
 
 These native methods are overridden:
 
-- exec: RegExp.prototype.exec,
-- test: RegExp.prototype.test,
-- match: String.prototype.match,
-- replace: String.prototype.replace,
-- split: String.prototype.split
+- `exec`: `RegExp.prototype.exec`
+
+- `test`: `RegExp.prototype.test`
+
+- `match`: `String.prototype.match`
+
+- `replace`: `String.prototype.replace`
+
+- `split`: `String.prototype.split`
+
 
 ### Examples
 
@@ -628,93 +566,106 @@ XRegExp.install('astral natives');
 
 
 
-## XRegExp.isInstalled = function(feature) {
+## XRegExp.isInstalled(feature) 
 
 Checks whether an individual optional feature is installed.
 
-@param {String} feature Name of the feature to check. One of:
+`feature`
+: {String} Name of the feature to check. One of:
+
   <li>`astral`
   <li>`natives`
-@returns {Boolean} Whether the feature is installed.
-@example
- *
+
+Return a {Boolean} value indicating whether the feature is installed.
+
+```js
 XRegExp.isInstalled('astral');
-
-XRegExp.isInstalled = function(feature) {
-
+```
 
 
-## XRegExp.isRegExp = function(value) {
+
+## XRegExp.isRegExp(value)
 
 Returns `true` if an object is a regex; `false` if it isn't. This works correctly for regexes
 created in another frame, when `instanceof` and `constructor` checks would fail.
- *
-@memberOf XRegExp
-@param {*} value Object to check.
-@returns {Boolean} Whether the object is a `RegExp` object.
-@example
- *
+
+`value`
+: {any type allowed} The object to check.
+
+Returns a {Boolean} value indicating whether the object is a `RegExp` object.
+
+```js
+
 XRegExp.isRegExp('string'); // -> false
 XRegExp.isRegExp(/regex/i); // -> true
 XRegExp.isRegExp(RegExp('^  'm')); // -> true
 XRegExp.isRegExp(XRegExp('(?s).')); // -> true
-
-XRegExp.isRegExp = function(value) {
-
+```
 
 
-## XRegExp.match = function(str, regex, scope) {
+
+
+## XRegExp.match(str, regex, scope)
 
 Returns the first matched string, or in global mode, an array containing all matched strings.
 This is essentially a more convenient re-implementation of `String.prototype.match` that gives
 the result types you actually want (string instead of `exec`-style array in match-first mode,
 and an empty array instead of `null` when no matches are found in match-all mode). It also lets
 you override flag g and ignore `lastIndex`, and fixes browser bugs.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {RegExp} regex Regex to search with.
-@param {String} [scope='one'] Use 'one' to return the first match as a string. Use 'all' to
-  return an array of all matched strings. If not explicitly specified and `regex` uses flag g,
-  `scope` is 'all'.
-@returns {String|Array} In match-first mode: First match as a string, or `null`. In match-all
-  mode: Array of all matched strings, or an empty array.
-@example
- *
+
+`str`
+: {String} String to search.
+
+`regex`
+: {RegExp} Regex to search with.
+
+`scope`
+: {String} [default: `scope='one'`] Use `'one'` to return the first match as a string. Use `'all'` to
+  return an array of all matched strings. If not explicitly specified and `regex` uses flag `g`,
+  `scope` is `'all'`.
+
+Returns a {String} in match-first mode: First match as a string, or `null`. 
+
+Returns an {Array} in match-all mode: Array of all matched strings, or an empty array.
+
+```js
 // Match first
 XRegExp.match('abc  /\w/); // -> 'a'
 XRegExp.match('abc  /\w/g, 'one'); // -> 'a'
 XRegExp.match('abc  /x/g, 'one'); // -> null
- *
+
 // Match all
 XRegExp.match('abc  /\w/g); // -> ['a  'b  'c']
 XRegExp.match('abc  /\w/, 'all'); // -> ['a  'b  'c']
 XRegExp.match('abc  /x/, 'all'); // -> []
-
-XRegExp.match = function(str, regex, scope) {
-
+```
 
 
-## XRegExp.matchChain = function(str, chain) {
+
+
+## XRegExp.matchChain(str, chain)
 
 Retrieves the matches from searching a string using a chain of regexes that successively search
 within previous matches. The provided `chain` array can contain regexes and or objects with
 `regex` and `backref` properties. When a backreference is specified, the named or numbered
 backreference is passed forward to the next regex or returned.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {Array} chain Regexes that each search for matches within preceding results.
-@returns {Array} Matches by the last regex in the chain, or an empty array.
-@example
- *
+
+`str`
+: {String} String to search.
+
+`chain`
+: {Array} Regexes that each search for matches within preceding results.
+
+Returns an {Array} of matches by the last regex in the chain, or an empty array.
+
+```js
 // Basic usage; matches numbers within <b> tags
 XRegExp.matchChain('1 <b>2</b> 3 <b>4 a 56</b>  [
   XRegExp('(?is)<b>.*?</b>'),
   /\d+/
 ]);
 // -> ['2  '4  '56']
- *
+
 // Passing forward and returning specific backreferences
 html = '<a href="http://xregexp.com/api/">XRegExp</a>\
         <a href="http://www.google.com/">Google</a>';
@@ -723,12 +674,12 @@ XRegExp.matchChain(html, [
   {regex: XRegExp('(?i)^https?://(?<domain>[^/?#]+)'), backref: 'domain'}
 ]);
 // -> ['xregexp.com  'www.google.com']
-
-XRegExp.matchChain = function(str, chain) {
-
+```
 
 
-## XRegExp.replace = function(str, search, replacement, scope) {
+
+
+## XRegExp.replace(str, search, replacement, scope)
 
 Returns a new string with one or all matches of a pattern replaced. The pattern can be a string
 or regex, and the replacement can be a string or a function to be called for each match. To
@@ -736,12 +687,18 @@ perform a global search and replace, use the optional `scope` argument or includ
 a regex. Replacement strings can use `${n}` for named and numbered backreferences. Replacement
 functions can use named backreferences via `arguments[0].name`. Also fixes browser bugs compared
 to the native `String.prototype.replace` and can be used reliably cross-browser.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {RegExp|String} search Search pattern to be replaced.
-@param {String|Function} replacement Replacement string or a function invoked to create it.
+
+`str`
+: {String} String to search.
+
+`search`
+: {RegExp|String} Search pattern to be replaced.
+
+`replacement`
+: {String|Function} Replacement string or a function invoked to create it.
+  
   Replacement strings can include special replacement syntax:
+
     <li>$$ - Inserts a literal $ character.
     <li>$&, $0 - Inserts the matched substring.
     <li>$` - Inserts the string that precedes the matched substring (left context).
@@ -750,50 +707,58 @@ to the native `String.prototype.replace` and can be used reliably cross-browser.
       backreference n/nn.
     <li>${n} - Where n is a name or any number of digits that reference an existent capturing
       group, inserts backreference n.
+
   Replacement functions are invoked with three or more arguments:
+
     <li>The matched substring (corresponds to $& above). Named backreferences are accessible as
       properties of this first argument.
     <li>0..n arguments, one for each backreference (corresponding to $1, $2, etc. above).
     <li>The zero-based index of the match within the total search string.
     <li>The total string being searched.
-@param {String} [scope='one'] Use 'one' to replace the first match only, or 'all'. If not
-  explicitly specified and using a regex with flag g, `scope` is 'all'.
-@returns {String} New string with one or all matches replaced.
-@example
- *
+
+`scope`
+: {String} [default: `scope='one'`] Use `'one'` to replace the first match only, or `'all'`. If not
+  explicitly specified and using a regex with flag `g`, `scope` is `'all'`.
+
+Returns a new string with one or all matches replaced.
+
+```js
 // Regex search, using named backreferences in replacement string
 var name = XRegExp('(?<first>\\w+) (?<last>\\w+)');
 XRegExp.replace('John Smith  name, '${last}, ${first}');
 // -> 'Smith, John'
- *
+
 // Regex search, using named backreferences in replacement function
 XRegExp.replace('John Smith  name, function(match) {
   return match.last +   ' + match.first;
 });
 // -> 'Smith, John'
- *
+ 
 // String search, with replace-all
 XRegExp.replace('RegExp builds RegExps  'RegExp  'XRegExp  'all');
 // -> 'XRegExp builds XRegExps'
-
-XRegExp.replace = function(str, search, replacement, scope) {
-
+```
 
 
-## XRegExp.replaceEach = function(str, replacements) {
+
+
+## XRegExp.replaceEach(str, replacements)
 
 Performs batch processing of string replacements. Used like `XRegExp.replace`, but accepts an
 array of replacement details. Later replacements operate on the output of earlier replacements.
 Replacement details are accepted as an array with a regex or string to search for, the
 replacement string or function, and an optional scope of 'one' or 'all'. Uses the XRegExp
 replacement text syntax, which supports named backreference properties via `${name}`.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {Array} replacements Array of replacement detail arrays.
-@returns {String} New string with all replacements.
-@example
- *
+
+`str`
+: {String} String to search.
+
+`replacements`
+: {Array} Array of replacement detail arrays.
+
+Return a new string with all replacements.
+
+```js
 str = XRegExp.replaceEach(str, [
   [XRegExp('(?<name>a)'), 'z${name}'],
   [/b/gi, 'y'],
@@ -804,135 +769,158 @@ str = XRegExp.replaceEach(str, [
     return $0.toUpperCase();
   }]
 ]);
-
-XRegExp.replaceEach = function(str, replacements) {
-
+```
 
 
-## XRegExp.split = function(str, separator, limit) {
+
+
+## XRegExp.split(str, separator, limit)
 
 Splits a string into an array of strings using a regex or string separator. Matches of the
 separator are not included in the result array. However, if `separator` is a regex that contains
 capturing groups, backreferences are spliced into the result each time `separator` is matched.
 Fixes browser bugs compared to the native `String.prototype.split` and can be used reliably
 cross-browser.
- *
-@memberOf XRegExp
-@param {String} str String to split.
-@param {RegExp|String} separator Regex or string to use for separating the string.
-@param {Number} [limit] Maximum number of items to include in the result array.
-@returns {Array} Array of substrings.
-@example
- *
+
+`str`
+: {String} String to split.
+
+`separator`
+: {RegExp|String} Regex or string to use for separating the string.
+
+`limit`
+: {Number} (Optional argument) Maximum number of items to include in the result array.
+
+Returns an array of substrings.
+
+```js
 // Basic use
 XRegExp.split('a b c  ' ');
 // -> ['a  'b  'c']
- *
+ 
 // With limit
 XRegExp.split('a b c  '   2);
 // -> ['a  'b']
- *
+ 
 // Backreferences in result array
 XRegExp.split('..word1..  /([a-z]+)(\d+)/i);
 // -> ['..  'word  '1  '..']
-
-XRegExp.split = function(str, separator, limit) {
-
+```
 
 
-## XRegExp.test = function(str, regex, pos, sticky) {
+
+
+## XRegExp.test(str, regex, pos, sticky) 
 
 Executes a regex search in a specified string. Returns `true` or `false`. Optional `pos` and
 `sticky` arguments specify the search start position, and whether the match must start at the
 specified position only. The `lastIndex` property of the provided regex is not used, but is
 updated for compatibility. Also fixes browser bugs compared to the native
 `RegExp.prototype.test` and can be used reliably cross-browser.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {RegExp} regex Regex to search with.
-@param {Number} [pos=0] Zero-based index at which to start the search.
-@param {Boolean|String} [sticky=false] Whether the match must start at the specified position
+
+`str`
+: {String} String to search.
+
+`regex`
+: {RegExp} Regex to search with.
+
+`pos`
+: {Number} [default: `pos=0`] Zero-based index at which to start the search.
+
+`sticky`
+: {Boolean|String} [default: `sticky=false`] Whether the match must start at the specified position
   only. The string `'sticky'` is accepted as an alternative to `true`.
-@returns {Boolean} Whether the regex matched the provided value.
-@example
- *
+
+Returns a {Boolean} value indicating whether the regex matched the provided value.
+
+```js
 // Basic use
 XRegExp.test('abc  /c/); // -> true
- *
+ 
 // With pos and sticky
 XRegExp.test('abc  /c/, 0, 'sticky'); // -> false
 XRegExp.test('abc  /c/, 2, 'sticky'); // -> true
-
-XRegExp.test = function(str, regex, pos, sticky) {
-
+```
 
 
-## XRegExp.uninstall = function(options) {
+
+
+## XRegExp.uninstall(options) 
 
 Uninstalls optional features according to the specified options. All optional features start out
 uninstalled, so this is used to undo the actions of `XRegExp.install`.
- *
-@memberOf XRegExp
-@param {Object|String} options Options object or string.
-@example
- *
+ 
+`options`
+: {Object|String} Feature options object or features string. These features are supported:
+
+  <li>`astral`
+  <li>`natives`
+
+```js
 // With an options object
 XRegExp.uninstall({
   // Disables support for astral code points in Unicode addons
   astral: true,
- *
+ 
   // DEPRECATED: Restores native regex methods
   natives: true
 });
- *
+
 // With an options string
 XRegExp.uninstall('astral natives');
-
-XRegExp.uninstall = function(options) {
-
+```
 
 
-## XRegExp.join = function(patterns, separator, flags) {
+
+
+## XRegExp.join(patterns, separator, flags)
 
 Returns an XRegExp object that is the concatenation of the given patterns. Patterns can be provided as
 regex objects or strings. Metacharacters are escaped in patterns provided as strings.
 Backreferences in provided regex objects are automatically renumbered to work correctly within
 the larger combined pattern. Native flags used by provided regexes are ignored in favor of the
 `flags` argument.
- *
-@memberOf XRegExp
-@param {Array} patterns Regexes and strings to combine.
-@param {String|RegExp} separator Regex or string to use as the joining separator.
-@param {String} [flags] Any combination of XRegExp flags.
-@returns {RegExp} Union of the provided regexes and strings.
-@example
- *
+
+`patterns`
+: {Array} Regexes and strings to combine.
+
+`separator`
+: {String|RegExp} Regex or string to use as the joining separator.
+
+`flags`
+: {String} (Optional argument) Any combination of XRegExp flags.
+
+Returns the union regexp of the provided regexes and strings.
+
+```js
 XRegExp.join(['a+b*c  /(dogs)\1/, /(cats)\1/], 'i');
 // -> /a\+b\*c(dogs)\1(cats)\2/i
-
-XRegExp.join = function(patterns, separator, flags) {
-
+```
 
 
-## XRegExp.union = function(patterns, flags) {
+
+
+## XRegExp.union(patterns, flags)
 
 Returns an XRegExp object that is the union of the given patterns. Patterns can be provided as
 regex objects or strings. Metacharacters are escaped in patterns provided as strings.
 Backreferences in provided regex objects are automatically renumbered to work correctly within
 the larger combined pattern. Native flags used by provided regexes are ignored in favor of the
 `flags` argument.
- *
-@memberOf XRegExp
-@param {Array} patterns Regexes and strings to combine.
-@param {String} [flags] Any combination of XRegExp flags.
-@returns {RegExp} Union of the provided regexes and strings.
-@example
- *
+
+`patterns`
+: {Array} Regexes and strings to combine.
+
+`flags`
+: {String} (Optional argument) Any combination of XRegExp flags.
+
+Returns the union regexp of the provided regexes and strings.
+
+```js
 XRegExp.union(['a+b*c  /(dogs)\1/, /(cats)\1/], 'i');
 // -> /a\+b\*c|(dogs)\1|(cats)\2/i
+```
 
-XRegExp.union = function(patterns, flags) {
 
 
 
@@ -942,49 +930,51 @@ Calling `XRegExp.install('natives')` uses this to
 override the native methods.
 
 
-### RegExp.exec = function(str) {
+
+### RegExp.exec(str) 
 
 Adds named capture support (with backreferences returned as `result.name`), and fixes browser
 bugs in the native `RegExp.prototype.exec`. Calling `XRegExp.install('natives')` uses this to
 override the native method. Use via `XRegExp.exec` without overriding natives.
- *
-@private
-@param {String} str String to search.
-@returns {Array} Match array with named backreference properties, or `null`.
 
-fixed.exec = function(str) {
+`str`
+: {String} String to search.
 
+Returns the match array with named backreference properties, or `null`.
 
 
-### RegExp.test = function(str) {
+
+
+### RegExp.test(str)
 
 Fixes browser bugs in the native `RegExp.prototype.test`. Calling `XRegExp.install('natives')`
 uses this to override the native method.
- *
-@private
-@param {String} str String to search.
-@returns {Boolean} Whether the regex matched the provided value.
 
-fixed.test = function(str) {
+`str`
+: {String} String to search.
 
+Returns a {Boolean} value indicating whether the regex matched the provided value.
 
 
-### String.match = function(regex) {
+
+
+### String.match(regex)
 
 Adds named capture support (with backreferences returned as `result.name`), and fixes browser
 bugs in the native `String.prototype.match`. Calling `XRegExp.install('natives')` uses this to
 override the native method.
- *
-@private
-@param {RegExp|*} regex Regex to search with. If not a regex object, it is passed to `RegExp`.
-@returns {Array} If `regex` uses flag g, an array of match strings or `null`. Without flag g,
-  the result of calling `regex.exec(this)`.
 
-fixed.match = function(regex) {
+`regex`
+: {RegExp|*} Regex to search with. If not a regex object, it is passed to the `RegExp` constructor.
+
+Returns an array of match strings or `null`, if `regex` uses flag `g`. 
+
+Returns the result of calling `regex.exec(this)`, if `regex` was without flag `g`.
 
 
 
-### String.replace = function(search, replacement) {
+
+### String.replace(search, replacement)
 
 Adds support for `${n}` tokens for named and numbered backreferences in replacement text, and
 provides named backreferences to replacement functions as `arguments[0].name`. Also fixes browser
@@ -993,26 +983,30 @@ the value of a replacement regex's `lastIndex` property during replacement itera
 completion. Calling `XRegExp.install('natives')` uses this to override the native method. Note
 that this doesn't support SpiderMonkey's proprietary third (`flags`) argument. Use via
 `XRegExp.replace` without overriding natives.
- *
-@private
-@param {RegExp|String} search Search pattern to be replaced.
-@param {String|Function} replacement Replacement string or a function invoked to create it.
-@returns {String} New string with one or all matches replaced.
 
-fixed.replace = function(search, replacement) {
+`search`
+: {RegExp|String} Search pattern to be replaced.
+
+`replacement`
+: {String|Function} Replacement string or a function invoked to create it.
+
+Returns a new string with one or all matches replaced.
 
 
-### String.split = function(separator, limit) {
+
+### String.split(separator, limit) 
 
 Fixes browser bugs in the native `String.prototype.split`. Calling `XRegExp.install('natives')`
 uses this to override the native method. Use via `XRegExp.split` without overriding natives.
- *
-@private
-@param {RegExp|String} separator Regex or string to use for separating the string.
-@param {Number} [limit] Maximum number of items to include in the result array.
-@returns {Array} Array of substrings.
 
-fixed.split = function(separator, limit) {
+`separator`
+: {RegExp|String} Regex or string to use for separating the string.
+
+`limit`
+: {Number} (Optional argument) Maximum number of items to include in the result array.
+
+Returns an array of substrings.
+
 
 
 ## Enhanced regex support features
@@ -1024,8 +1018,10 @@ Letter escapes that natively match literal characters: `\a`, `\A`, etc. These sh
 SyntaxErrors but are allowed in web reality. XRegExp makes them errors for cross-browser
 consistency and to reserve their syntax, but lets them be superseded by addons.
 
+```js
 XRegExp.addToken(
-    /\\([ABCE-RTUVXYZaeg-mopqyz]|c(?![A-Za-z])|u(?![\dA-Fa-f]{4}|{[\dA-Fa-f]+})|x(?![\dA-Fa-f]{2}))/,
+    /\\([ABCE-RTUVXYZaeg-mopqyz]|c(?![A-Za-z])|u(?![\dA-Fa-f]{4}|{[\dA-Fa-f]+})|x(?![\dA-Fa-f]{2}))/, ...
+```
 
 
 ### Unicode code point escapes (with curly braces)
@@ -1037,8 +1033,10 @@ surrogate pairs (which could be done without flag `u`), since that could lead to
 if you follow a `\u{N..}` token that references a code point above U+FFFF with a quantifier, or
 if you use the same in a character class.
 
+```js
 XRegExp.addToken(
-    /\\u{([\dA-Fa-f]+)}/,
+    /\\u{([\dA-Fa-f]+)}/, ...
+```
 
 
 ### Empty character class
@@ -1047,31 +1045,37 @@ Empty character class: `[]` or `[^]`. This fixes a critical cross-browser syntax
 Unless this is standardized (per the ES spec), regex syntax can't be accurately parsed because
 character class endings can't be determined.
 
+```js
 XRegExp.addToken(
-    /\[(\^?)\]/,
-
+    /\[(\^?)\]/, ...
+```
 
 ### Regex comment pattern
 
 Comment pattern: `(?# )`. Inline comments are an alternative to the line comments allowed in
-free-spacing mode (flag x).
+free-spacing mode (flag `x`).
 
+```js
 XRegExp.addToken(
-    /\(\?#[^)]*\)/,
+    /\(\?#[^)]*\)/, ...
+```
 
 
 ### Free-spacing mode a.k.a. extended mode regexes
 
-Whitespace and line comments, in free-spacing mode (aka extended mode, flag x) only.
+Whitespace and line comments, in free-spacing mode (aka extended mode, flag `x`) only.
 
+```js
 XRegExp.addToken(
-    /\s+|#[^\n]*\n?/,
+    /\s+|#[^\n]*\n?/, ...
+```
 
 
-### Dotall mode a.k.a. ingleline mode (`s` flag)
+### Dotall mode a.k.a. singleline mode (`s` flag)
 
-Dot, in dotall mode (aka singleline mode, flag s) only.
+Dot, in dotall mode (aka singleline mode, flag `s`) only.
 
+```js
 XRegExp.addToken(
     /\./,
     function() {
@@ -1082,6 +1086,7 @@ XRegExp.addToken(
         leadChar: '.'
     }
 );
+```
 
 
 ### Named backreference
@@ -1089,8 +1094,10 @@ XRegExp.addToken(
 Named backreference: `\k<name>`. Backreference names can use the characters A-Z, a-z, 0-9, _,
 and $ only. Also allows numbered backreferences as `\k<n>`.
 
+```js
 XRegExp.addToken(
-    /\\k<([\w$]+)>/,
+    /\\k<([\w$]+)>/, ...
+```
 
 
 ### Numbered backreference
@@ -1099,8 +1106,10 @@ Numbered backreference or octal, plus any following digits: `\0`, `\11`, etc. Oc
 not followed by 0-9 and backreferences to unopened capture groups throw an error. Other matches
 are returned unaltered. IE < 9 doesn't support backreferences above `\99` in regex syntax.
 
+```js
 XRegExp.addToken(
-    /\\(\d+)/,
+    /\\(\d+)/, ...
+```
 
 
 
@@ -1112,41 +1121,51 @@ characters A-Z, a-z, 0-9, _, and $ only. Names can't be integers. Supports Pytho
 supported the Python-style syntax. Otherwise, XRegExp might treat numbered backreferences to
 Python-style named capture as octals.
 
+```js
 XRegExp.addToken(
-    /\(\?P?<([\w$]+)>/,
+    /\(\?P?<([\w$]+)>/, ...
+```
+
 
 
 ### Capture group & explicit capture mode (`n` flag)
 
 Capturing group; match the opening parenthesis only. Required for support of named capturing
-groups. Also adds explicit capture mode (flag n).
+groups. Also adds explicit capture mode (flag `n`).
 
+```js
 XRegExp.addToken(
     /\((?!\?)/,
     {
         optionalFlags: 'n
         leadChar: '('
     }
+```
 
 
 
 
-## XRegExp.build = function(pattern, subs, flags) {
+## XRegExp.build(pattern, subs, flags) 
 
 Builds regexes using named subpatterns, for readability and pattern reuse. Backreferences in
 the outer pattern and provided subpatterns are automatically renumbered to work correctly.
 Native flags used by provided subpatterns are ignored in favor of the `flags` argument.
- *
-@memberOf XRegExp
-@param {String} pattern XRegExp pattern using `{{name}}` for embedded subpatterns. Allows
+
+`pattern`
+: {String} XRegExp pattern using `{{name}}` for embedded subpatterns. Allows
   `({{name}})` as shorthand for `(?<name>{{name}})`. Patterns cannot be embedded within
   character classes.
-@param {Object} subs Lookup object for named subpatterns. Values can be strings or regexes. A
+
+`subs`  
+: {Object} Lookup object for named subpatterns. Values can be strings or regexes. A
   leading `^` and trailing unescaped `$` are stripped from subpatterns, if both are present.
-@param {String} [flags] Any combination of XRegExp flags.
-@returns {RegExp} Regex with interpolated subpatterns.
-@example
- *
+
+`flags`
+: {String} (Optional argument) Any combination of XRegExp flags.
+
+Returns a regexp with interpolated subpatterns.
+
+```js
 var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $  {
   hours: XRegExp.build('{{h12}} : | {{h24}}  {
     h12: /1[0-2]|0?[1-9]/,
@@ -1156,32 +1175,42 @@ var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $  {
 });
 time.test('10:59'); // -> true
 XRegExp.exec('10:59  time).minutes; // -> '59'
-
-XRegExp.build = function(pattern, subs, flags) {
-
+```
 
 
 
-## XRegExp.matchRecursive = function(str, left, right, flags, options) {
+
+
+
+## XRegExp.matchRecursive(str, left, right, flags, options) 
 
 Returns an array of match strings between outermost left and right delimiters, or an array of
 objects with detailed match parts and position data. An error is thrown if delimiters are
 unbalanced within the data.
- *
-@memberOf XRegExp
-@param {String} str String to search.
-@param {String} left Left delimiter as an XRegExp pattern.
-@param {String} right Right delimiter as an XRegExp pattern.
-@param {String} [flags] Any native or XRegExp flags, used for the left and right delimiters.
-@param {Object} [options] Lets you specify `valueNames` and `escapeChar` options.
-@returns {Array} Array of matches, or an empty array.
-@example
- *
+
+`str`
+: {String} String to search.
+
+`left`
+: {String} Left delimiter as an XRegExp pattern.
+
+`right`
+: {String} Right delimiter as an XRegExp pattern.
+
+`flags`
+: {String} (Optional argument) Any native or XRegExp flags, used for the left and right delimiters.
+
+`options`
+: {Object} (Optional argument) Lets you specify `valueNames` and `escapeChar` options.
+
+Returns an array of matches, or an empty array.
+
+```js
 // Basic usage
 var str = '(t((e))s)t()(ing)';
 XRegExp.matchRecursive(str, '\\(  '\\)  'g');
 // -> ['t((e))s  '  'ing']
- *
+ 
 // Extended information mode with valueNames
 str = 'Here is <div> <div>an</div></div> example';
 XRegExp.matchRecursive(str, '<div\\s*>  '</div>  'gi  {
@@ -1194,7 +1223,7 @@ XRegExp.matchRecursive(str, '<div\\s*>  '</div>  'gi  {
 // {- right    value: '</div>          start: 27, end: 33},
 // {- between  value: ' example        start: 33, end: 41}
 // ]
- *
+ 
 // Omitting unneeded parts with null valueNames, and using escapeChar
 str = '...{1}.\\{{function(x,y){return {y:x}}}';
 XRegExp.matchRecursive(str, '{  '}  'g  {
@@ -1207,44 +1236,41 @@ XRegExp.matchRecursive(str, '{  '}  'g  {
 // {- literal  value: '.\\{  start: 6, end: 9},
 // {- value    value: 'function(x,y){return {y:x}}  start: 10, end: 37}
 // ]
- *
+ 
 // Sticky mode via flag y
 str = '<1><<<2>>><3>4<5>';
 XRegExp.matchRecursive(str, '<  '>  'gy');
 // -> ['1  '<<2>>  '3']
-
-XRegExp.matchRecursive = function(str, left, right, flags, options) {
-
+```
 
 
 
-### Unicode matching (`\p{..}`, `\P{..}`, `\p{^..}`, `\pC`) & astral mode (`A` flag)
 
-Adds base support for Unicode matching:
+
+## Unicode matching (`\p{..}`, `\P{..}`, `\p{^..}`, `\pC`) & astral mode (`A` flag)
+
+XRegExp adds base support for Unicode matching:
+
 - Adds syntax `\p{..}` for matching Unicode tokens. Tokens can be inverted using `\P{..}` or
   `\p{^..}`. Token names ignore case, spaces, hyphens, and underscores. You can omit the
   braces for token names that are a single letter (e.g. `\pL` or `PL`).
-- Adds flag A (astral), which enables 21-bit Unicode support.
+
+- Adds flag `A` (astral), which enables 21-bit Unicode support.
+
 - Adds the `XRegExp.addUnicodeData` method used by other addons to provide character data.
- *
+ 
 Unicode Base relies on externally provided Unicode character data. Official addons are
-available to provide data for Unicode categories, scripts, blocks, and properties.
- *
-@requires XRegExp
+available to provide data for Unicode categories, scripts, blocks, and properties via 
+`XRegExp.addToken()` API.
 
 
 
-
-
-Add Unicode token syntax: `\p{..}`, `\P{..}`, `\p{^..}`, `\pC`. Also add astral mode (flag A).
-
-XRegExp.addToken(
-
+## XRegExp.addUnicodeData(data)
 
 Adds to the list of Unicode tokens that XRegExp regexes can match via `\p` or `\P`.
- *
-@memberOf XRegExp
-@param {Array} data Objects with named character ranges. Each object may have properties
+
+`data`
+{Array} Objects with named character ranges. Each object may have properties
   `name`, `alias`, `isBmpLast`, `inverseOf`, `bmp`, and `astral`. All but `name` are
   optional, although one of `bmp` or `astral` is required (unless `inverseOf` is set). If
   `astral` is absent, the `bmp` data is used for BMP and astral modes. If `bmp` is absent,
@@ -1258,8 +1284,8 @@ Adds to the list of Unicode tokens that XRegExp regexes can match via `\p` or `\
   character classes and alternation, and should use surrogate pairs to represent astral code
   points. `inverseOf` can be used to avoid duplicating character data if a Unicode token is
   defined as the exact inverse of another token.
-@example
- *
+
+```js
 // Basic use
 XRegExp.addUnicodeData([{
   - XDigit
@@ -1267,51 +1293,133 @@ XRegExp.addUnicodeData([{
   bmp: '0-9A-Fa-f'
 }]);
 XRegExp('\\p{XDigit}:\\p{Hexadecimal}+').test('0:3D'); // -> true
-
-XRegExp.addUnicodeData = function(data) {
-
+```
 
 
 
-## XRegExp._getUnicodeProperty = function(name) {
 
-@ignore
- *
+
+## Private / Unofficial / Unsupported APIs
+
+
+### XRegExp._registeredFlags()
+
+> 'Unofficial/Unsupported API': interface may be subject to change between any XRegExp releases; used in tests and addons; suitable for advanced users of the library only.
+
+Returns a reference to the internal registered flags object, where each flag is a hash key:
+
+```js
+var flags = XRegExp._registeredFlags();
+assert(flags['u'], "expected native Unicode support");
+```
+
+
+### function setNatives(on)
+
+> 'Unofficial/Unsupported API': interface may be subject to change between any XRegExp releases; used in tests and addons; suitable for advanced users of the library only.
+
+Enables or disables native method overrides.
+
+`on`
+: {Boolean} `true` to enable; `false` to disable.
+
+Used internally by the `XRegExp.install()` and `XRegExp.uninstall()` APIs; `setNatives()` is itself not accessibly externally (private function).
+
+
+### XRegExp._hasNativeFlag(flag)
+
+> 'Unofficial/Unsupported API': interface may be subject to change between any XRegExp releases; used in tests and addons; suitable for advanced users of the library only.
+
+Check if the regex flag is supported natively in your environment.
+
+Returns {Boolean}.
+
+> Developer Note:
+>
+> Can't check based on the presence of properties/getters since browsers might support such
+> properties even when they don't support the corresponding flag in regex construction (tested
+> in Chrome 48, where `'unicode' in /x/` is true but trying to construct a regex with flag `u`
+> throws an error)
+
+
+### XRegExp._dec(hex)
+
+> 'Unofficial/Unsupported API': interface may be subject to change between any XRegExp releases; used in tests and addons; suitable for advanced users of the library only.
+
+Converts hexadecimal to decimal.
+
+`hex`
+: {String}
+
+Returns {Number}
+
+
+
+### XRegExp._hex(dec)
+
+> 'Unofficial/Unsupported API': interface may be subject to change between any XRegExp releases; used in tests and addons; suitable for advanced users of the library only.
+
+Converts decimal to hexadecimal.
+
+`dec`
+: {Number|String}
+
+Returns {String}
+
+
+
+### XRegExp._pad4(str)
+
+> 'Unofficial/Unsupported API': interface may be subject to change between any XRegExp releases; used in tests and addons; suitable for advanced users of the library only.
+
+Adds leading zeros if shorter than four characters. Used for fixed-length hexadecimal values.
+
+`str`
+: {String}
+
+Returns {String}
+
+
+
+
+
+### XRegExp._getUnicodeProperty(name)
+
+> 'Unofficial/Unsupported API': interface may be subject to change between any XRegExp releases; used in tests and addons; suitable for advanced users of the library only.
+
 Return a reference to the internal Unicode definition structure for the given Unicode Property
 if the given name is a legal Unicode Property for use in XRegExp `\p` or `\P` regex constructs.
- *
-@memberOf XRegExp
-@param {String} name Name by which the Unicode Property may be recognized (case-insensitive),
+
+`name`
+: {String} Name by which the Unicode Property may be recognized (case-insensitive),
   e.g. `'N'` or `'Number'`.
 
   The given name is matched against all registered Unicode Properties and Property Aliases.
- *
-@return {Object} Reference to definition structure when the name matches a Unicode Property;
+
+  Token names are case insensitive, and any spaces, hyphens, and underscores are ignored.
+
+Returns {Object} reference to definition structure when the name matches a Unicode Property;
 `false` when the name does not match *any* Unicode Property or Property Alias.
- *
-@note
+
+
+#### Notes
+
 For more info on Unicode Properties, see also http://unicode.org/reports/tr18/#Categories.
- *
-@note
+
 This method is *not* part of the officially documented and published API and is meant 'for
 advanced use only' where userland code wishes to re-use the (large) internal Unicode
 structures set up by XRegExp as a single point of Unicode 'knowledge' in the application.
- *
+
 See some example usage of this functionality, used as a boolean check if the given name
 is legal and to obtain internal structural data:
 - `function prepareMacros(...)` in https://github.com/GerHobbelt/jison-lex/blob/master/regexp-lexer.js#L885
 - `function generateRegexesInitTableCode(...)` in https://github.com/GerHobbelt/jison-lex/blob/master/regexp-lexer.js#L1999
- *
+
 Note that the second function in the example (`function generateRegexesInitTableCode(...)`)
 uses a approach without using this API to obtain a Unicode range spanning regex for use in environments
 which do not support XRegExp by simply expanding the XRegExp instance to a String through
 the `map()` mapping action and subsequent `join()`.
 
-XRegExp._getUnicodeProperty = function(name) {
-// Generates a token lookup name: lowercase, with hyphens, spaces, and underscores removed
-function normalize(name) {
-    return name.replace(/[- _]+/g, '').toLowerCase();
-}
 
 
 
@@ -1320,575 +1428,563 @@ function normalize(name) {
 
 ## Unicode Blocks, Categories, Properties and Scripts
 
-Adds support for all Unicode blocks. Block names use the prefix 'In'. E.g.,
+XRegExp adds support for all Unicode blocks. Block names use the prefix 'In'. E.g.
 `\p{InBasicLatin}`. Token names are case insensitive, and any spaces, hyphens, and
 underscores are ignored.
- *
-Uses Unicode 8.0.0.
- *
-@requires XRegExp, Unicode Base
 
+Currently XRegExp supports the Unicode 8.0.0 block names listed below:
 
-- InAegean_Numbers
-- InAhom
-- InAlchemical_Symbols
-- InAlphabetic_Presentation_Forms
-- InAnatolian_Hieroglyphs
-- InAncient_Greek_Musical_Notation
-- InAncient_Greek_Numbers
-- InAncient_Symbols
-- InArabic
-- InArabic_Extended_A
-- InArabic_Mathematical_Alphabetic_Symbols
-- InArabic_Presentation_Forms_A
-- InArabic_Presentation_Forms_B
-- InArabic_Supplement
-- InArmenian
-- InArrows
-- InAvestan
-- InBalinese
-- InBamum
-- InBamum_Supplement
-- InBasic_Latin
-- InBassa_Vah
-- InBatak
-- InBengali
-- InBlock_Elements
-- InBopomofo
-- InBopomofo_Extended
-- InBox_Drawing
-- InBrahmi
-- InBraille_Patterns
-- InBuginese
-- InBuhid
-- InByzantine_Musical_Symbols
-- InCarian
-- InCaucasian_Albanian
-- InChakma
-- InCham
-- InCherokee
-- InCherokee_Supplement
-- InCJK_Compatibility
-- InCJK_Compatibility_Forms
-- InCJK_Compatibility_Ideographs
-- InCJK_Compatibility_Ideographs_Supplement
-- InCJK_Radicals_Supplement
-- InCJK_Strokes
-- InCJK_Symbols_and_Punctuation
-- InCJK_Unified_Ideographs
-- InCJK_Unified_Ideographs_Extension_A
-- InCJK_Unified_Ideographs_Extension_B
-- InCJK_Unified_Ideographs_Extension_C
-- InCJK_Unified_Ideographs_Extension_D
-- InCJK_Unified_Ideographs_Extension_E
-- InCombining_Diacritical_Marks
-- InCombining_Diacritical_Marks_Extended
-- InCombining_Diacritical_Marks_for_Symbols
-- InCombining_Diacritical_Marks_Supplement
-- InCombining_Half_Marks
-- InCommon_Indic_Number_Forms
-- InControl_Pictures
-- InCoptic
-- InCoptic_Epact_Numbers
-- InCounting_Rod_Numerals
-- InCuneiform
-- InCuneiform_Numbers_and_Punctuation
-- InCurrency_Symbols
-- InCypriot_Syllabary
-- InCyrillic
-- InCyrillic_Extended_A
-- InCyrillic_Extended_B
-- InCyrillic_Supplement
-- InDeseret
-- InDevanagari
-- InDevanagari_Extended
-- InDingbats
-- InDomino_Tiles
-- InDuployan
-- InEarly_Dynastic_Cuneiform
-- InEgyptian_Hieroglyphs
-- InElbasan
-- InEmoticons
-- InEnclosed_Alphanumeric_Supplement
-- InEnclosed_Alphanumerics
-- InEnclosed_CJK_Letters_and_Months
-- InEnclosed_Ideographic_Supplement
-- InEthiopic
-- InEthiopic_Extended
-- InEthiopic_Extended_A
-- InEthiopic_Supplement
-- InGeneral_Punctuation
-- InGeometric_Shapes
-- InGeometric_Shapes_Extended
-- InGeorgian
-- InGeorgian_Supplement
-- InGlagolitic
-- InGothic
-- InGrantha
-- InGreek_and_Coptic
-- InGreek_Extended
-- InGujarati
-- InGurmukhi
-- InHalfwidth_and_Fullwidth_Forms
-- InHangul_Compatibility_Jamo
-- InHangul_Jamo
-- InHangul_Jamo_Extended_A
-- InHangul_Jamo_Extended_B
-- InHangul_Syllables
-- InHanunoo
-- InHatran
-- InHebrew
-- InHigh_Private_Use_Surrogates
-- InHigh_Surrogates
-- InHiragana
-- InIdeographic_Description_Characters
-- InImperial_Aramaic
-- InInscriptional_Pahlavi
-- InInscriptional_Parthian
-- InIPA_Extensions
-- InJavanese
-- InKaithi
-- InKana_Supplement
-- InKanbun
-- InKangxi_Radicals
-- InKannada
-- InKatakana
-- InKatakana_Phonetic_Extensions
-- InKayah_Li
-- InKharoshthi
-- InKhmer
-- InKhmer_Symbols
-- InKhojki
-- InKhudawadi
-- InLao
-- InLatin_1_Supplement
-- InLatin_Extended_A
-- InLatin_Extended_Additional
-- InLatin_Extended_B
-- InLatin_Extended_C
-- InLatin_Extended_D
-- InLatin_Extended_E
-- InLepcha
-- InLetterlike_Symbols
-- InLimbu
-- InLinear_A
-- InLinear_B_Ideograms
-- InLinear_B_Syllabary
-- InLisu
-- InLow_Surrogates
-- InLycian
-- InLydian
-- InMahajani
-- InMahjong_Tiles
-- InMalayalam
-- InMandaic
-- InManichaean
-- InMathematical_Alphanumeric_Symbols
-- InMathematical_Operators
-- InMeetei_Mayek
-- InMeetei_Mayek_Extensions
-- InMende_Kikakui
-- InMeroitic_Cursive
-- InMeroitic_Hieroglyphs
-- InMiao
-- InMiscellaneous_Mathematical_Symbols_A
-- InMiscellaneous_Mathematical_Symbols_B
-- InMiscellaneous_Symbols
-- InMiscellaneous_Symbols_and_Arrows
-- InMiscellaneous_Symbols_and_Pictographs
-- InMiscellaneous_Technical
-- InModi
-- InModifier_Tone_Letters
-- InMongolian
-- InMro
-- InMultani
-- InMusical_Symbols
-- InMyanmar
-- InMyanmar_Extended_A
-- InMyanmar_Extended_B
-- InNabataean
-- InNew_Tai_Lue
-- InNKo
-- InNumber_Forms
-- InOgham
-- InOl_Chiki
-- InOld_Hungarian
-- InOld_Italic
-- InOld_North_Arabian
-- InOld_Permic
-- InOld_Persian
-- InOld_South_Arabian
-- InOld_Turkic
-- InOptical_Character_Recognition
-- InOriya
-- InOrnamental_Dingbats
-- InOsmanya
-- InPahawh_Hmong
-- InPalmyrene
-- InPau_Cin_Hau
-- InPhags_pa
-- InPhaistos_Disc
-- InPhoenician
-- InPhonetic_Extensions
-- InPhonetic_Extensions_Supplement
-- InPlaying_Cards
-- InPrivate_Use_Area
-- InPsalter_Pahlavi
-- InRejang
-- InRumi_Numeral_Symbols
-- InRunic
-- InSamaritan
-- InSaurashtra
-- InSharada
-- InShavian
-- InShorthand_Format_Controls
-- InSiddham
-- InSinhala
-- InSinhala_Archaic_Numbers
-- InSmall_Form_Variants
-- InSora_Sompeng
-- InSpacing_Modifier_Letters
-- InSpecials
-- InSundanese
-- InSundanese_Supplement
-- InSuperscripts_and_Subscripts
-- InSupplemental_Arrows_A
-- InSupplemental_Arrows_B
-- InSupplemental_Arrows_C
-- InSupplemental_Mathematical_Operators
-- InSupplemental_Punctuation
-- InSupplemental_Symbols_and_Pictographs
-- InSupplementary_Private_Use_Area_A
-- InSupplementary_Private_Use_Area_B
-- InSutton_SignWriting
-- InSyloti_Nagri
-- InSyriac
-- InTagalog
-- InTagbanwa
-- InTags
-- InTai_Le
-- InTai_Tham
-- InTai_Viet
-- InTai_Xuan_Jing_Symbols
-- InTakri
-- InTamil
-- InTelugu
-- InThaana
-- InThai
-- InTibetan
-- InTifinagh
-- InTirhuta
-- InTransport_and_Map_Symbols
-- InUgaritic
-- InUnified_Canadian_Aboriginal_Syllabics
-- InUnified_Canadian_Aboriginal_Syllabics_Extended
-- InVai
-- InVariation_Selectors
-- InVariation_Selectors_Supplement
-- InVedic_Extensions
-- InVertical_Forms
-- InWarang_Citi
-- InYi_Radicals
-- InYi_Syllables
-- InYijing_Hexagram_Symbols
+- `InAegean_Numbers`
+- `InAhom`
+- `InAlchemical_Symbols`
+- `InAlphabetic_Presentation_Forms`
+- `InAnatolian_Hieroglyphs`
+- `InAncient_Greek_Musical_Notation`
+- `InAncient_Greek_Numbers`
+- `InAncient_Symbols`
+- `InArabic`
+- `InArabic_Extended_A`
+- `InArabic_Mathematical_Alphabetic_Symbols`
+- `InArabic_Presentation_Forms_A`
+- `InArabic_Presentation_Forms_B`
+- `InArabic_Supplement`
+- `InArmenian`
+- `InArrows`
+- `InAvestan`
+- `InBalinese`
+- `InBamum`
+- `InBamum_Supplement`
+- `InBasic_Latin`
+- `InBassa_Vah`
+- `InBatak`
+- `InBengali`
+- `InBlock_Elements`
+- `InBopomofo`
+- `InBopomofo_Extended`
+- `InBox_Drawing`
+- `InBrahmi`
+- `InBraille_Patterns`
+- `InBuginese`
+- `InBuhid`
+- `InByzantine_Musical_Symbols`
+- `InCarian`
+- `InCaucasian_Albanian`
+- `InChakma`
+- `InCham`
+- `InCherokee`
+- `InCherokee_Supplement`
+- `InCJK_Compatibility`
+- `InCJK_Compatibility_Forms`
+- `InCJK_Compatibility_Ideographs`
+- `InCJK_Compatibility_Ideographs_Supplement`
+- `InCJK_Radicals_Supplement`
+- `InCJK_Strokes`
+- `InCJK_Symbols_and_Punctuation`
+- `InCJK_Unified_Ideographs`
+- `InCJK_Unified_Ideographs_Extension_A`
+- `InCJK_Unified_Ideographs_Extension_B`
+- `InCJK_Unified_Ideographs_Extension_C`
+- `InCJK_Unified_Ideographs_Extension_D`
+- `InCJK_Unified_Ideographs_Extension_E`
+- `InCombining_Diacritical_Marks`
+- `InCombining_Diacritical_Marks_Extended`
+- `InCombining_Diacritical_Marks_for_Symbols`
+- `InCombining_Diacritical_Marks_Supplement`
+- `InCombining_Half_Marks`
+- `InCommon_Indic_Number_Forms`
+- `InControl_Pictures`
+- `InCoptic`
+- `InCoptic_Epact_Numbers`
+- `InCounting_Rod_Numerals`
+- `InCuneiform`
+- `InCuneiform_Numbers_and_Punctuation`
+- `InCurrency_Symbols`
+- `InCypriot_Syllabary`
+- `InCyrillic`
+- `InCyrillic_Extended_A`
+- `InCyrillic_Extended_B`
+- `InCyrillic_Supplement`
+- `InDeseret`
+- `InDevanagari`
+- `InDevanagari_Extended`
+- `InDingbats`
+- `InDomino_Tiles`
+- `InDuployan`
+- `InEarly_Dynastic_Cuneiform`
+- `InEgyptian_Hieroglyphs`
+- `InElbasan`
+- `InEmoticons`
+- `InEnclosed_Alphanumeric_Supplement`
+- `InEnclosed_Alphanumerics`
+- `InEnclosed_CJK_Letters_and_Months`
+- `InEnclosed_Ideographic_Supplement`
+- `InEthiopic`
+- `InEthiopic_Extended`
+- `InEthiopic_Extended_A`
+- `InEthiopic_Supplement`
+- `InGeneral_Punctuation`
+- `InGeometric_Shapes`
+- `InGeometric_Shapes_Extended`
+- `InGeorgian`
+- `InGeorgian_Supplement`
+- `InGlagolitic`
+- `InGothic`
+- `InGrantha`
+- `InGreek_and_Coptic`
+- `InGreek_Extended`
+- `InGujarati`
+- `InGurmukhi`
+- `InHalfwidth_and_Fullwidth_Forms`
+- `InHangul_Compatibility_Jamo`
+- `InHangul_Jamo`
+- `InHangul_Jamo_Extended_A`
+- `InHangul_Jamo_Extended_B`
+- `InHangul_Syllables`
+- `InHanunoo`
+- `InHatran`
+- `InHebrew`
+- `InHigh_Private_Use_Surrogates`
+- `InHigh_Surrogates`
+- `InHiragana`
+- `InIdeographic_Description_Characters`
+- `InImperial_Aramaic`
+- `InInscriptional_Pahlavi`
+- `InInscriptional_Parthian`
+- `InIPA_Extensions`
+- `InJavanese`
+- `InKaithi`
+- `InKana_Supplement`
+- `InKanbun`
+- `InKangxi_Radicals`
+- `InKannada`
+- `InKatakana`
+- `InKatakana_Phonetic_Extensions`
+- `InKayah_Li`
+- `InKharoshthi`
+- `InKhmer`
+- `InKhmer_Symbols`
+- `InKhojki`
+- `InKhudawadi`
+- `InLao`
+- `InLatin_1_Supplement`
+- `InLatin_Extended_A`
+- `InLatin_Extended_Additional`
+- `InLatin_Extended_B`
+- `InLatin_Extended_C`
+- `InLatin_Extended_D`
+- `InLatin_Extended_E`
+- `InLepcha`
+- `InLetterlike_Symbols`
+- `InLimbu`
+- `InLinear_A`
+- `InLinear_B_Ideograms`
+- `InLinear_B_Syllabary`
+- `InLisu`
+- `InLow_Surrogates`
+- `InLycian`
+- `InLydian`
+- `InMahajani`
+- `InMahjong_Tiles`
+- `InMalayalam`
+- `InMandaic`
+- `InManichaean`
+- `InMathematical_Alphanumeric_Symbols`
+- `InMathematical_Operators`
+- `InMeetei_Mayek`
+- `InMeetei_Mayek_Extensions`
+- `InMende_Kikakui`
+- `InMeroitic_Cursive`
+- `InMeroitic_Hieroglyphs`
+- `InMiao`
+- `InMiscellaneous_Mathematical_Symbols_A`
+- `InMiscellaneous_Mathematical_Symbols_B`
+- `InMiscellaneous_Symbols`
+- `InMiscellaneous_Symbols_and_Arrows`
+- `InMiscellaneous_Symbols_and_Pictographs`
+- `InMiscellaneous_Technical`
+- `InModi`
+- `InModifier_Tone_Letters`
+- `InMongolian`
+- `InMro`
+- `InMultani`
+- `InMusical_Symbols`
+- `InMyanmar`
+- `InMyanmar_Extended_A`
+- `InMyanmar_Extended_B`
+- `InNabataean`
+- `InNew_Tai_Lue`
+- `InNKo`
+- `InNumber_Forms`
+- `InOgham`
+- `InOl_Chiki`
+- `InOld_Hungarian`
+- `InOld_Italic`
+- `InOld_North_Arabian`
+- `InOld_Permic`
+- `InOld_Persian`
+- `InOld_South_Arabian`
+- `InOld_Turkic`
+- `InOptical_Character_Recognition`
+- `InOriya`
+- `InOrnamental_Dingbats`
+- `InOsmanya`
+- `InPahawh_Hmong`
+- `InPalmyrene`
+- `InPau_Cin_Hau`
+- `InPhags_pa`
+- `InPhaistos_Disc`
+- `InPhoenician`
+- `InPhonetic_Extensions`
+- `InPhonetic_Extensions_Supplement`
+- `InPlaying_Cards`
+- `InPrivate_Use_Area`
+- `InPsalter_Pahlavi`
+- `InRejang`
+- `InRumi_Numeral_Symbols`
+- `InRunic`
+- `InSamaritan`
+- `InSaurashtra`
+- `InSharada`
+- `InShavian`
+- `InShorthand_Format_Controls`
+- `InSiddham`
+- `InSinhala`
+- `InSinhala_Archaic_Numbers`
+- `InSmall_Form_Variants`
+- `InSora_Sompeng`
+- `InSpacing_Modifier_Letters`
+- `InSpecials`
+- `InSundanese`
+- `InSundanese_Supplement`
+- `InSuperscripts_and_Subscripts`
+- `InSupplemental_Arrows_A`
+- `InSupplemental_Arrows_B`
+- `InSupplemental_Arrows_C`
+- `InSupplemental_Mathematical_Operators`
+- `InSupplemental_Punctuation`
+- `InSupplemental_Symbols_and_Pictographs`
+- `InSupplementary_Private_Use_Area_A`
+- `InSupplementary_Private_Use_Area_B`
+- `InSutton_SignWriting`
+- `InSyloti_Nagri`
+- `InSyriac`
+- `InTagalog`
+- `InTagbanwa`
+- `InTags`
+- `InTai_Le`
+- `InTai_Tham`
+- `InTai_Viet`
+- `InTai_Xuan_Jing_Symbols`
+- `InTakri`
+- `InTamil`
+- `InTelugu`
+- `InThaana`
+- `InThai`
+- `InTibetan`
+- `InTifinagh`
+- `InTirhuta`
+- `InTransport_and_Map_Symbols`
+- `InUgaritic`
+- `InUnified_Canadian_Aboriginal_Syllabics`
+- `InUnified_Canadian_Aboriginal_Syllabics_Extended`
+- `InVai`
+- `InVariation_Selectors`
+- `InVariation_Selectors_Supplement`
+- `InVedic_Extensions`
+- `InVertical_Forms`
+- `InWarang_Citi`
+- `InYi_Radicals`
+- `InYi_Syllables`
+- `InYijing_Hexagram_Symbols`
 
-
-
-
-
-
-Adds support for Unicode's general categories. E.g., `\p{Lu}` or `\p{Uppercase Letter}`. See
+XRegExp adds support for Unicode's general categories. E.g., `\p{Lu}` or `\p{Uppercase Letter}`. See
 category descriptions in UAX #44 <http://unicode.org/reports/tr44/#GC_Values_Table>. Token
 names are case insensitive, and any spaces, hyphens, and underscores are ignored.
- *
-Uses Unicode 8.0.0.
- *
-@requires XRegExp, Unicode Base
 
+Currently XRegExp supports the Unicode 8.0.0 category names listed below:
 
+- `Close_Punctuation`
+- `Connector_Punctuation`
+- `Control`
+- `Currency_Symbol`
+- `Dash_Punctuation`
+- `Decimal_Number`
+- `Enclosing_Mark`
+- `Final_Punctuation`
+- `Format`
+- `Initial_Punctuation`
+- `Letter`
+- `Letter_Number`
+- `Line_Separator`
+- `Lowercase_Letter`
+- `Mark`
+- `Math_Symbol`
+- `Modifier_Letter`
+- `Modifier_Symbol`
+- `Nonspacing_Mark`
+- `Number`
+- `Open_Punctuation`
+- `Other`
+- `Other_Letter`
+- `Other_Number`
+- `Other_Punctuation`
+- `Other_Symbol`
+- `Paragraph_Separator`
+- `Private_Use`
+- `Punctuation`
+- `Separator`
+- `Space_Separator`
+- `Spacing_Mark`
+- `Surrogate`
+- `Symbol`
+- `Titlecase_Letter`
+- `Unassigned`
+- `Uppercase_Letter`
+- `C`
+- `Cc`
+- `Cf`
+- `Cn`
+- `Co`
+- `Cs`
+- `L`
+- `Ll`
+- `Lm`
+- `Lo`
+- `Lt`
+- `Lu`
+- `M`
+- `Mc`
+- `Me`
+- `Mn`
+- `N`
+- `Nd`
+- `Nl`
+- `No`
+- `P`
+- `Pc`
+- `Pd`
+- `Pe`
+- `Pf`
+- `Pi`
+- `Po`
+- `Ps`
+- `S`
+- `Sc`
+- `Sk`
+- `Sm`
+- `So`
+- `Z`
+- `Zl`
+- `Zp`
+- `Zs`
 
-
-alias: 'Close_Punctuation
-alias: 'Connector_Punctuation
-alias: 'Control
-alias: 'Currency_Symbol
-alias: 'Dash_Punctuation
-alias: 'Decimal_Number
-alias: 'Enclosing_Mark
-alias: 'Final_Punctuation
-alias: 'Format
-alias: 'Initial_Punctuation
-alias: 'Letter
-alias: 'Letter_Number
-alias: 'Line_Separator
-alias: 'Lowercase_Letter
-alias: 'Mark
-alias: 'Math_Symbol
-alias: 'Modifier_Letter
-alias: 'Modifier_Symbol
-alias: 'Nonspacing_Mark
-alias: 'Number
-alias: 'Open_Punctuation
-alias: 'Other
-alias: 'Other_Letter
-alias: 'Other_Number
-alias: 'Other_Punctuation
-alias: 'Other_Symbol
-alias: 'Paragraph_Separator
-alias: 'Private_Use
-alias: 'Punctuation
-alias: 'Separator
-alias: 'Space_Separator
-alias: 'Spacing_Mark
-alias: 'Surrogate
-alias: 'Symbol
-alias: 'Titlecase_Letter
-alias: 'Unassigned
-alias: 'Uppercase_Letter
-- C
-- Cc
-- Cf
-- Cn
-- Co
-- Cs
-- L
-- Ll
-- Lm
-- Lo
-- Lt
-- Lu
-- M
-- Mc
-- Me
-- Mn
-- N
-- Nd
-- Nl
-- No
-- P
-- Pc
-- Pd
-- Pe
-- Pf
-- Pi
-- Po
-- Ps
-- S
-- Sc
-- Sk
-- Sm
-- So
-- Z
-- Zl
-- Zp
-- Zs
-
-
-
-
-
-Adds properties to meet the UTS #18 Level 1 RL1.2 requirements for Unicode regex support. See
+XRegExp adds properties to meet the UTS #18 Level 1 RL1.2 requirements for Unicode regex support. See
 <http://unicode.org/reports/tr18/#RL1.2>. Following are definitions of these properties from
 UAX #44 <http://unicode.org/reports/tr44/>:
- *
-- Alphabetic
-  Characters with the Alphabetic property. Generated from: Lowercase + Uppercase + Lt + Lm +
-  Lo + Nl + Other_Alphabetic.
- *
-- Default_Ignorable_Code_Point
+
+- `Alphabetic`
+
+  Characters with the Alphabetic property. Generated from: `Lowercase + Uppercase + Lt + Lm +
+  Lo + Nl + Other_Alphabetic`.
+
+- `Default_Ignorable_Code_Point`
+
   For programmatic determination of default ignorable code points. New characters that should
   be ignored in rendering (unless explicitly supported) will be assigned in these ranges,
   permitting programs to correctly handle the default rendering of such characters when not
   otherwise supported.
- *
-- Lowercase
-  Characters with the Lowercase property. Generated from: Ll + Other_Lowercase.
- *
-- Noncharacter_Code_Point
+ 
+- `Lowercase`
+
+  Characters with the Lowercase property. Generated from: `Ll + Other_Lowercase`.
+ 
+- `Noncharacter_Code_Point`
+
   Code points permanently reserved for internal use.
- *
-- Uppercase
-  Characters with the Uppercase property. Generated from: Lu + Other_Uppercase.
- *
-- White_Space
+
+- `Uppercase`
+
+  Characters with the Uppercase property. Generated from: `Lu + Other_Uppercase`.
+
+- `White_Space`
+
   Spaces, separator characters and other control characters which should be treated by
   programming languages as "white space" for the purpose of parsing elements.
- *
-The properties ASCII, Any, and Assigned are also included but are not defined in UAX #44. UTS
-#18 RL1.2 additionally requires support for Unicode scripts and general categories. These are
+ 
+The properties `ASCII`, `Any`, and `Assigned` are also included but are not defined in UAX #44. 
+UTS #18 RL1.2 additionally requires support for Unicode scripts and general categories. These are
 included in XRegExp's Unicode Categories and Unicode Scripts addons.
- *
+ 
 Token names are case insensitive, and any spaces, hyphens, and underscores are ignored.
- *
-Uses Unicode 8.0.0.
- *
-@requires XRegExp, Unicode Base
+
+Currently XRegExp supports the Unicode 8.0.0 property names listed below:
+
+- `Alphabetic`
+- `Any`
+- `ASCII`
+- `Default_Ignorable_Code_Point`
+- `Lowercase`
+- `Noncharacter_Code_Point`
+- `Uppercase`
+- `White_Space`
+
+Next to these, this property name is available as well:
+
+- `Assigned`
+
+  This is defined as the inverse of Unicode category `Cn` (`Unassigned`)
 
 
-
-- Alphabetic
-- Any
-- ASCII
-- Default_Ignorable_Code_Point
-- Lowercase
-- Noncharacter_Code_Point
-- Uppercase
-- White_Space
-
-
-
-- Assigned     // this is defined as the inverse of Unicode category Cn (Unassigned)
-
-
-
-
-
-
-
-
-Adds support for all Unicode scripts. E.g., `\p{Latin}`. Token names are case insensitive,
+XRegExp adds support for all Unicode scripts. E.g., `\p{Latin}`. Token names are case insensitive,
 and any spaces, hyphens, and underscores are ignored.
- *
-Uses Unicode 8.0.0.
- *
-@requires XRegExp, Unicode Base
 
-XRegExp.addUnicodeData(unicodeData);
+Currently XRegExp supports the Unicode 8.0.0 script names listed below:
 
+- `Ahom`
+- `Anatolian_Hieroglyphs`
+- `Arabic`
+- `Armenian`
+- `Avestan`
+- `Balinese`
+- `Bamum`
+- `Bassa_Vah`
+- `Batak`
+- `Bengali`
+- `Bopomofo`
+- `Brahmi`
+- `Braille`
+- `Buginese`
+- `Buhid`
+- `Canadian_Aboriginal`
+- `Carian`
+- `Caucasian_Albanian`
+- `Chakma`
+- `Cham`
+- `Cherokee`
+- `Common`
+- `Coptic`
+- `Cuneiform`
+- `Cypriot`
+- `Cyrillic`
+- `Deseret`
+- `Devanagari`
+- `Duployan`
+- `Egyptian_Hieroglyphs`
+- `Elbasan`
+- `Ethiopic`
+- `Georgian`
+- `Glagolitic`
+- `Gothic`
+- `Grantha`
+- `Greek`
+- `Gujarati`
+- `Gurmukhi`
+- `Han`
+- `Hangul`
+- `Hanunoo`
+- `Hatran`
+- `Hebrew`
+- `Hiragana`
+- `Imperial_Aramaic`
+- `Inherited`
+- `Inscriptional_Pahlavi`
+- `Inscriptional_Parthian`
+- `Javanese`
+- `Kaithi`
+- `Kannada`
+- `Katakana`
+- `Kayah_Li`
+- `Kharoshthi`
+- `Khmer`
+- `Khojki`
+- `Khudawadi`
+- `Lao`
+- `Latin`
+- `Lepcha`
+- `Limbu`
+- `Linear_A`
+- `Linear_B`
+- `Lisu`
+- `Lycian`
+- `Lydian`
+- `Mahajani`
+- `Malayalam`
+- `Mandaic`
+- `Manichaean`
+- `Meetei_Mayek`
+- `Mende_Kikakui`
+- `Meroitic_Cursive`
+- `Meroitic_Hieroglyphs`
+- `Miao`
+- `Modi`
+- `Mongolian`
+- `Mro`
+- `Multani`
+- `Myanmar`
+- `Nabataean`
+- `New_Tai_Lue`
+- `Nko`
+- `Ogham`
+- `Ol_Chiki`
+- `Old_Hungarian`
+- `Old_Italic`
+- `Old_North_Arabian`
+- `Old_Permic`
+- `Old_Persian`
+- `Old_South_Arabian`
+- `Old_Turkic`
+- `Oriya`
+- `Osmanya`
+- `Pahawh_Hmong`
+- `Palmyrene`
+- `Pau_Cin_Hau`
+- `Phags_Pa`
+- `Phoenician`
+- `Psalter_Pahlavi`
+- `Rejang`
+- `Runic`
+- `Samaritan`
+- `Saurashtra`
+- `Sharada`
+- `Shavian`
+- `Siddham`
+- `SignWriting`
+- `Sinhala`
+- `Sora_Sompeng`
+- `Sundanese`
+- `Syloti_Nagri`
+- `Syriac`
+- `Tagalog`
+- `Tagbanwa`
+- `Tai_Le`
+- `Tai_Tham`
+- `Tai_Viet`
+- `Takri`
+- `Tamil`
+- `Telugu`
+- `Thaana`
+- `Thai`
+- `Tibetan`
+- `Tifinagh`
+- `Tirhuta`
+- `Ugaritic`
+- `Vai`
+- `Warang_Citi`
+- `Yi`
 
+Additional token names may be defined via the `XRegExp.addUnicodeData(unicodeData)` API.
 
-
-- Ahom
-- Anatolian_Hieroglyphs
-- Arabic
-- Armenian
-- Avestan
-- Balinese
-- Bamum
-- Bassa_Vah
-- Batak
-- Bengali
-- Bopomofo
-- Brahmi
-- Braille
-- Buginese
-- Buhid
-- Canadian_Aboriginal
-- Carian
-- Caucasian_Albanian
-- Chakma
-- Cham
-- Cherokee
-- Common
-- Coptic
-- Cuneiform
-- Cypriot
-- Cyrillic
-- Deseret
-- Devanagari
-- Duployan
-- Egyptian_Hieroglyphs
-- Elbasan
-- Ethiopic
-- Georgian
-- Glagolitic
-- Gothic
-- Grantha
-- Greek
-- Gujarati
-- Gurmukhi
-- Han
-- Hangul
-- Hanunoo
-- Hatran
-- Hebrew
-- Hiragana
-- Imperial_Aramaic
-- Inherited
-- Inscriptional_Pahlavi
-- Inscriptional_Parthian
-- Javanese
-- Kaithi
-- Kannada
-- Katakana
-- Kayah_Li
-- Kharoshthi
-- Khmer
-- Khojki
-- Khudawadi
-- Lao
-- Latin
-- Lepcha
-- Limbu
-- Linear_A
-- Linear_B
-- Lisu
-- Lycian
-- Lydian
-- Mahajani
-- Malayalam
-- Mandaic
-- Manichaean
-- Meetei_Mayek
-- Mende_Kikakui
-- Meroitic_Cursive
-- Meroitic_Hieroglyphs
-- Miao
-- Modi
-- Mongolian
-- Mro
-- Multani
-- Myanmar
-- Nabataean
-- New_Tai_Lue
-- Nko
-- Ogham
-- Ol_Chiki
-- Old_Hungarian
-- Old_Italic
-- Old_North_Arabian
-- Old_Permic
-- Old_Persian
-- Old_South_Arabian
-- Old_Turkic
-- Oriya
-- Osmanya
-- Pahawh_Hmong
-- Palmyrene
-- Pau_Cin_Hau
-- Phags_Pa
-- Phoenician
-- Psalter_Pahlavi
-- Rejang
-- Runic
-- Samaritan
-- Saurashtra
-- Sharada
-- Shavian
-- Siddham
-- SignWriting
-- Sinhala
-- Sora_Sompeng
-- Sundanese
-- Syloti_Nagri
-- Syriac
-- Tagalog
-- Tagbanwa
-- Tai_Le
-- Tai_Tham
-- Tai_Viet
-- Takri
-- Tamil
-- Telugu
-- Thaana
-- Thai
-- Tibetan
-- Tifinagh
-- Tirhuta
-- Ugaritic
-- Vai
-- Warang_Citi
-- Yi
+ 
 
 
+
+## Info for XRegExp Developers
+
+(Re)generation of the `xregexp-all.js` source file is handled in the `npm postinstall` hook, hence to regenerate it you can simply run the command
+
+```bash
+npm install
+```
+
+in the base directory of the repository.
 
