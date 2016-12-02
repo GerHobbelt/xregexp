@@ -1,5 +1,5 @@
-[XRegExp](http://xregexp.com/) 3.1.2-8
-======================================
+[XRegExp](http://xregexp.com/) 3.1.2-11
+=======================================
 
 XRegExp provides augmented (and extensible) JavaScript regular expressions. You get new modern syntax and flags beyond what browsers support natively. XRegExp is also a regex utility belt with tools to make your client-side grepping and parsing easier, while freeing you from worrying about pesky aspects of JavaScript regexes like cross-browser inconsistencies or manually manipulating `lastIndex`.
 
@@ -258,18 +258,18 @@ is in fact a native `RegExp` and works with all native methods.
 
   Native flags:
 
-    <li>`g` - global
-    <li>`i` - ignore case
-    <li>`m` - multiline anchors
-    <li>`u` - unicode (ES6)
-    <li>`y` - sticky (Firefox 3+, ES6)
+  - `g` - global
+  - `i` - ignore case
+  - `m` - multiline anchors
+  - `u` - unicode (ES6)
+  - `y` - sticky (Firefox 3+, ES6)
 
   Additional XRegExp flags:
 
-    <li>`n` - explicit capture
-    <li>`s` - dot matches all (aka singleline)
-    <li>`x` - free-spacing and line comments (aka extended)
-    <li>`A` - astral (requires the Unicode Base addon)
+  - `n` - explicit capture
+  - `s` - dot matches all (aka singleline)
+  - `x` - free-spacing and line comments (aka extended)
+  - `A` - astral (requires the Unicode Base addon)
 
   Flags cannot be provided when constructing one `RegExp` from another.
 
@@ -283,7 +283,7 @@ Returns {RegExp} Extended regular expression object.
 // With named capture and flag x
 XRegExp('(?<year>  [0-9]{4} ) -?  # year  \n\
          (?<month> [0-9]{2} ) -?  # month \n\
-         (?<day>   [0-9]{2} )     # day   'x');
+         (?<day>   [0-9]{2} )     # day   ', 'x');
 
 // Providing a regex object copies it. Native regexes are recompiled using native (not XRegExp)
 // syntax. Copies maintain extended data, are augmented with `XRegExp.prototype` properties, and
@@ -319,9 +319,9 @@ create XRegExp addons. If more than one token can match the same string, the las
   to replace the matched token within all future XRegExp regexes. Has access to persistent
   properties of the regex being built, through `this`. Invoked with three arguments:
 
-  <li>The match array, with named backreference properties.
-  <li>The regex scope where the match was found: 'default' or 'class'.
-  <li>The flags used by the regex, including any flags in a leading mode modifier.
+  - The match array, with named backreference properties.
+  - The regex scope where the match was found: 'default' or 'class'.
+  - The flags used by the regex, including any flags in a leading mode modifier.
 
   The handler function becomes part of the XRegExp construction process, so be careful not to
   construct XRegExps within the function or you will trigger infinite recursion.
@@ -329,16 +329,16 @@ create XRegExp addons. If more than one token can match the same string, the las
 `options`
 : {Object} (optional) Options object with optional properties:
 
-  <li>`scope` {String} Scope where the token applies: 'default  'class  or 'all'.
-  <li>`flag` {String} Single-character flag that triggers the token. This also registers the
+  - `scope` {String} Scope where the token applies: 'default  'class  or 'all'.
+  - `flag` {String} Single-character flag that triggers the token. This also registers the
     flag, which prevents XRegExp from throwing an 'unknown flag' error when the flag is used.
-  <li>`optionalFlags` {String} Any custom flags checked for within the token `handler` that are
+  - `optionalFlags` {String} Any custom flags checked for within the token `handler` that are
     not required to trigger the token. This registers the flags, to prevent XRegExp from
     throwing an 'unknown flag' error when any of the flags are used.
-  <li>`reparse` {Boolean} Whether the `handler` function's output should not be treated as
+  - `reparse` {Boolean} Whether the `handler` function's output should not be treated as
     final, and instead be reparseable by other tokens (including the current token). Allows
     token chaining or deferring.
-  <li>`leadChar` {String} Single character that occurs at the beginning of any successful match
+  - `leadChar` {String} Single character that occurs at the beginning of any successful match
     of the token (not always applicable). This doesn't change the behavior of the token unless
     you provide an erroneous value. However, providing it can increase the token's performance
     since the token can be skipped at any positions where this character doesn't appear.
@@ -362,8 +362,8 @@ XRegExp.addToken(
   function(match) {return match[1] + (match[2] ? '' : '?');},
   {flag: 'U'}
 );
-XRegExp('a+  'U').exec('aaa')[0]; // -> 'a'
-XRegExp('a+?  'U').exec('aaa')[0]; // -> 'aaa'
+XRegExp('a+', 'U').exec('aaa')[0]; // -> 'a'
+XRegExp('a+?', 'U').exec('aaa')[0]; // -> 'aaa'
 ```
 
 
@@ -385,7 +385,7 @@ Returns {RegExp} Cached XRegExp object.
 ### Example
 
 ```
-while (match = XRegExp.cache('.  'gs').exec(str)) {
+while (match = XRegExp.cache('.', 'gs').exec(str)) {
   // The regex is compiled once only
 }
 ```
@@ -444,16 +444,16 @@ Returns the match array with named backreference properties, or `null`.
 
 ```js
 // Basic use, with named backreference
-var match = XRegExp.exec('U+2620  XRegExp('U\\+(?<hex>[0-9A-F]{4})'));
+var match = XRegExp.exec('U+2620', XRegExp('U\\+(?<hex>[0-9A-F]{4})'));
 match.hex; // -> '2620'
 
 // With pos and sticky, in a loop
 var pos = 2, result = [], match;
-while (match = XRegExp.exec('<1><2><3><4>5<6>  /<(\d)>/, pos, 'sticky')) {
+while (match = XRegExp.exec('<1><2><3><4>5<6>', /<(\d)>/, pos, 'sticky')) {
   result.push(match[1]);
   pos = match.index + match[0].length;
 }
-// result -> ['2  '3  '4']
+// result -> ['2', '3', '4']
 ```
 
 
@@ -473,17 +473,17 @@ initial `lastIndex`.
 `callback`
 : {Function} Function to execute for each match. Invoked with four arguments:
 
-  <li>The match array, with named backreference properties.
-  <li>The zero-based match index.
-  <li>The string being traversed.
-  <li>The regex object being used to traverse the string.
+  - The match array, with named backreference properties.
+  - The zero-based match index.
+  - The string being traversed.
+  - The regex object being used to traverse the string.
 
 ### Example
 
 ```js
 // Extracts every other digit from a string
 var evens = [];
-XRegExp.forEach('1a2345  /\d/, function(match, i) {
+XRegExp.forEach('1a2345', /\d/, function(match, i) {
   if (i % 2) evens.push(+match[0]);
 });
 // evens -> [2, 4]
@@ -501,7 +501,7 @@ regexes are not recompiled using XRegExp syntax.
 `regex`
 : {RegExp} Regex to globalize.
 
-Returns a copy of the provided regex with flag `g` added. ({RegExp} type)
+Returns a copy of the provided regex with flag `g` added.
 
 ```js
 var globalCopy = XRegExp.globalize(/regex/);
@@ -573,8 +573,8 @@ Checks whether an individual optional feature is installed.
 `feature`
 : {String} Name of the feature to check. One of:
 
-  <li>`astral`
-  <li>`natives`
+  - `astral`
+  - `natives`
 
 Return a {Boolean} value indicating whether the feature is installed.
 
@@ -595,10 +595,9 @@ created in another frame, when `instanceof` and `constructor` checks would fail.
 Returns a {Boolean} value indicating whether the object is a `RegExp` object.
 
 ```js
-
 XRegExp.isRegExp('string'); // -> false
 XRegExp.isRegExp(/regex/i); // -> true
-XRegExp.isRegExp(RegExp('^  'm')); // -> true
+XRegExp.isRegExp(RegExp('^', 'm')); // -> true
 XRegExp.isRegExp(XRegExp('(?s).')); // -> true
 ```
 
@@ -630,14 +629,14 @@ Returns an {Array} in match-all mode: Array of all matched strings, or an empty 
 
 ```js
 // Match first
-XRegExp.match('abc  /\w/); // -> 'a'
-XRegExp.match('abc  /\w/g, 'one'); // -> 'a'
-XRegExp.match('abc  /x/g, 'one'); // -> null
+XRegExp.match('abc', /\w/); // -> 'a'
+XRegExp.match('abc', /\w/g, 'one'); // -> 'a'
+XRegExp.match('abc', /x/g, 'one'); // -> null
 
 // Match all
-XRegExp.match('abc  /\w/g); // -> ['a  'b  'c']
-XRegExp.match('abc  /\w/, 'all'); // -> ['a  'b  'c']
-XRegExp.match('abc  /x/, 'all'); // -> []
+XRegExp.match('abc', /\w/g); // -> ['a  'b  'c']
+XRegExp.match('abc', /\w/, 'all'); // -> ['a  'b  'c']
+XRegExp.match('abc', /x/, 'all'); // -> []
 ```
 
 
@@ -660,11 +659,11 @@ Returns an {Array} of matches by the last regex in the chain, or an empty array.
 
 ```js
 // Basic usage; matches numbers within <b> tags
-XRegExp.matchChain('1 <b>2</b> 3 <b>4 a 56</b>  [
+XRegExp.matchChain('1 <b>2</b> 3 <b>4 a 56</b>', [
   XRegExp('(?is)<b>.*?</b>'),
   /\d+/
 ]);
-// -> ['2  '4  '56']
+// -> ['2', '4', '56']
 
 // Passing forward and returning specific backreferences
 html = '<a href="http://xregexp.com/api/">XRegExp</a>\
@@ -673,7 +672,7 @@ XRegExp.matchChain(html, [
   {regex: /<a href="([^"]+)">/i, backref: 1},
   {regex: XRegExp('(?i)^https?://(?<domain>[^/?#]+)'), backref: 'domain'}
 ]);
-// -> ['xregexp.com  'www.google.com']
+// -> ['xregexp.com', 'www.google.com']
 ```
 
 
@@ -699,22 +698,22 @@ to the native `String.prototype.replace` and can be used reliably cross-browser.
   
   Replacement strings can include special replacement syntax:
 
-    <li>$$ - Inserts a literal $ character.
-    <li>$&, $0 - Inserts the matched substring.
-    <li>$` - Inserts the string that precedes the matched substring (left context).
-    <li>$' - Inserts the string that follows the matched substring (right context).
-    <li>$n, $nn - Where n/nn are digits referencing an existent capturing group, inserts
-      backreference n/nn.
-    <li>${n} - Where n is a name or any number of digits that reference an existent capturing
-      group, inserts backreference n.
+  - `$$` - Inserts a literal `$` character.
+  - `$&`, `$0` - Inserts the matched substring.
+  - `$\`` - Inserts the string that precedes the matched substring (left context).
+  - `$'` - Inserts the string that follows the matched substring (right context).
+  - `$n`, `$nn` - Where `n`/`nn` are digits referencing an existent capturing group, inserts
+    backreference `n`/`nn`.
+  - `${n}` - Where `n` is a name or any number of digits that reference an existent capturing
+    group, inserts backreference `n`.
 
   Replacement functions are invoked with three or more arguments:
 
-    <li>The matched substring (corresponds to $& above). Named backreferences are accessible as
-      properties of this first argument.
-    <li>0..n arguments, one for each backreference (corresponding to $1, $2, etc. above).
-    <li>The zero-based index of the match within the total search string.
-    <li>The total string being searched.
+  - The matched substring (corresponds to $& above). Named backreferences are accessible as
+    properties of this first argument.
+  - 0..n arguments, one for each backreference (corresponding to $1, $2, etc. above).
+  - The zero-based index of the match within the total search string.
+  - The total string being searched.
 
 `scope`
 : {String} [default: `scope='one'`] Use `'one'` to replace the first match only, or `'all'`. If not
@@ -725,17 +724,17 @@ Returns a new string with one or all matches replaced.
 ```js
 // Regex search, using named backreferences in replacement string
 var name = XRegExp('(?<first>\\w+) (?<last>\\w+)');
-XRegExp.replace('John Smith  name, '${last}, ${first}');
+XRegExp.replace('John Smith', name, '${last}, ${first}');
 // -> 'Smith, John'
 
 // Regex search, using named backreferences in replacement function
-XRegExp.replace('John Smith  name, function(match) {
-  return match.last +   ' + match.first;
+XRegExp.replace('John Smith', name, function(match) {
+  return match.last + ', ' + match.first;
 });
 // -> 'Smith, John'
  
 // String search, with replace-all
-XRegExp.replace('RegExp builds RegExps  'RegExp  'XRegExp  'all');
+XRegExp.replace('RegExp builds RegExps', 'RegExp', 'XRegExp', 'all');
 // -> 'XRegExp builds XRegExps'
 ```
 
@@ -762,9 +761,9 @@ Return a new string with all replacements.
 str = XRegExp.replaceEach(str, [
   [XRegExp('(?<name>a)'), 'z${name}'],
   [/b/gi, 'y'],
-  [/c/g, 'x  'one'], // scope 'one' overrides /g
-  [/d/, 'w  'all'],  // scope 'all' overrides lack of /g
-  ['e  'v  'all'],  // scope 'all' allows replace-all for strings
+  [/c/g, 'x', 'one'], // scope 'one' overrides /g
+  [/d/, 'w', 'all'],  // scope 'all' overrides lack of /g
+  ['e', 'v', 'all'],  // scope 'all' allows replace-all for strings
   [/f/g, function($0) {
     return $0.toUpperCase();
   }]
@@ -789,22 +788,22 @@ cross-browser.
 : {RegExp|String} Regex or string to use for separating the string.
 
 `limit`
-: {Number} (Optional argument) Maximum number of items to include in the result array.
+: {Number} (optional) Maximum number of items to include in the result array.
 
 Returns an array of substrings.
 
 ```js
 // Basic use
-XRegExp.split('a b c  ' ');
-// -> ['a  'b  'c']
+XRegExp.split('a b c', ' ');
+// -> ['a', 'b', 'c']
  
 // With limit
-XRegExp.split('a b c  '   2);
-// -> ['a  'b']
+XRegExp.split('a b c', ' ', 2);
+// -> ['a', 'b']
  
 // Backreferences in result array
-XRegExp.split('..word1..  /([a-z]+)(\d+)/i);
-// -> ['..  'word  '1  '..']
+XRegExp.split('..word1..', /([a-z]+)(\d+)/i);
+// -> ['..', 'word', '1', '..']
 ```
 
 
@@ -835,11 +834,11 @@ Returns a {Boolean} value indicating whether the regex matched the provided valu
 
 ```js
 // Basic use
-XRegExp.test('abc  /c/); // -> true
+XRegExp.test('abc', /c/); // -> true
  
 // With pos and sticky
-XRegExp.test('abc  /c/, 0, 'sticky'); // -> false
-XRegExp.test('abc  /c/, 2, 'sticky'); // -> true
+XRegExp.test('abc', /c/, 0, 'sticky'); // -> false
+XRegExp.test('abc', /c/, 2, 'sticky'); // -> true
 ```
 
 
@@ -853,8 +852,8 @@ uninstalled, so this is used to undo the actions of `XRegExp.install`.
 `options`
 : {Object|String} Feature options object or features string. These features are supported:
 
-  <li>`astral`
-  <li>`natives`
+  - `astral`
+  - `natives`
 
 ```js
 // With an options object
@@ -888,12 +887,12 @@ the larger combined pattern. Native flags used by provided regexes are ignored i
 : {String|RegExp} Regex or string to use as the joining separator.
 
 `flags`
-: {String} (Optional argument) Any combination of XRegExp flags.
+: {String} (optional) Any combination of XRegExp flags.
 
 Returns the union regexp of the provided regexes and strings.
 
 ```js
-XRegExp.join(['a+b*c  /(dogs)\1/, /(cats)\1/], 'i');
+XRegExp.join(['a+b*c', /(dogs)\1/, /(cats)\1/], 'i');
 // -> /a\+b\*c(dogs)\1(cats)\2/i
 ```
 
@@ -912,12 +911,12 @@ the larger combined pattern. Native flags used by provided regexes are ignored i
 : {Array} Regexes and strings to combine.
 
 `flags`
-: {String} (Optional argument) Any combination of XRegExp flags.
+: {String} (optional) Any combination of XRegExp flags.
 
 Returns the union regexp of the provided regexes and strings.
 
 ```js
-XRegExp.union(['a+b*c  /(dogs)\1/, /(cats)\1/], 'i');
+XRegExp.union(['a+b*c', /(dogs)\1/, /(cats)\1/], 'i');
 // -> /a\+b\*c|(dogs)\1|(cats)\2/i
 ```
 
@@ -926,8 +925,8 @@ XRegExp.union(['a+b*c  /(dogs)\1/, /(cats)\1/], 'i');
 
 ## Fixed/extended native methods
 
-Calling `XRegExp.install('natives')` uses this to
-override the native methods.
+Calling `XRegExp.install('natives')` uses this to override the native methods.
+
 
 
 
@@ -1003,7 +1002,7 @@ uses this to override the native method. Use via `XRegExp.split` without overrid
 : {RegExp|String} Regex or string to use for separating the string.
 
 `limit`
-: {Number} (Optional argument) Maximum number of items to include in the result array.
+: {Number} (optional) Maximum number of items to include in the result array.
 
 Returns an array of substrings.
 
@@ -1082,7 +1081,7 @@ XRegExp.addToken(
         return '[\\s\\S]';
     },
     {
-        flag: 's
+        flag: 's',
         leadChar: '.'
     }
 );
@@ -1137,7 +1136,7 @@ groups. Also adds explicit capture mode (flag `n`).
 XRegExp.addToken(
     /\((?!\?)/,
     {
-        optionalFlags: 'n
+        optionalFlags: 'n',
         leadChar: '('
     }
 ```
@@ -1161,20 +1160,20 @@ Native flags used by provided subpatterns are ignored in favor of the `flags` ar
   leading `^` and trailing unescaped `$` are stripped from subpatterns, if both are present.
 
 `flags`
-: {String} (Optional argument) Any combination of XRegExp flags.
+: {String} (optional) Any combination of XRegExp flags.
 
 Returns a regexp with interpolated subpatterns.
 
 ```js
-var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $  {
-  hours: XRegExp.build('{{h12}} : | {{h24}}  {
+var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $', {
+  hours: XRegExp.build('{{h12}} : | {{h24}}', {
     h12: /1[0-2]|0?[1-9]/,
     h24: /2[0-3]|[01][0-9]/
   }, 'x'),
   minutes: /^[0-5][0-9]$/
 });
 time.test('10:59'); // -> true
-XRegExp.exec('10:59  time).minutes; // -> '59'
+XRegExp.exec('10:59', time).minutes; // -> '59'
 ```
 
 
@@ -1198,49 +1197,49 @@ unbalanced within the data.
 : {String} Right delimiter as an XRegExp pattern.
 
 `flags`
-: {String} (Optional argument) Any native or XRegExp flags, used for the left and right delimiters.
+: {String} (optional) Any native or XRegExp flags, used for the left and right delimiters.
 
 `options`
-: {Object} (Optional argument) Lets you specify `valueNames` and `escapeChar` options.
+: {Object} (optional) Lets you specify `valueNames` and `escapeChar` options.
 
 Returns an array of matches, or an empty array.
 
 ```js
 // Basic usage
 var str = '(t((e))s)t()(ing)';
-XRegExp.matchRecursive(str, '\\(  '\\)  'g');
-// -> ['t((e))s  '  'ing']
+XRegExp.matchRecursive(str, '\\(', '\\)', 'g');
+// -> ['t((e))s', ' ', 'ing']
  
 // Extended information mode with valueNames
 str = 'Here is <div> <div>an</div></div> example';
-XRegExp.matchRecursive(str, '<div\\s*>  '</div>  'gi  {
-  valueNames: ['between  'left  'match  'right']
+XRegExp.matchRecursive(str, '<div\\s*>', '</div>', 'gi', {
+  valueNames: ['between', 'left', 'match', 'right']
 });
 // -> [
-// {- between  value: 'Here is         start: 0,  end: 8},
-// {- left     value: '<div>           start: 8,  end: 13},
-// {- match    value: ' <div>an</div>  start: 13, end: 27},
-// {- right    value: '</div>          start: 27, end: 33},
-// {- between  value: ' example        start: 33, end: 41}
+// {name: 'between', value: 'Here is ',       start: 0,  end: 8},
+// {name: 'left',    value: '<div>',          start: 8,  end: 13},
+// {name: 'match',   value: ' <div>an</div>', start: 13, end: 27},
+// {name: 'right',   value: '</div>',         start: 27, end: 33},
+// {name: 'between', value: ' example',       start: 33, end: 41}
 // ]
  
 // Omitting unneeded parts with null valueNames, and using escapeChar
 str = '...{1}.\\{{function(x,y){return {y:x}}}';
-XRegExp.matchRecursive(str, '{  '}  'g  {
-  valueNames: ['literal  null, 'value  null],
+XRegExp.matchRecursive(str, '{', '}', 'g', {
+  valueNames: ['literal', null, 'value', null],
   escapeChar: '\\'
 });
 // -> [
-// {- literal  value: '...   start: 0, end: 3},
-// {- value    value: '1     start: 4, end: 5},
-// {- literal  value: '.\\{  start: 6, end: 9},
-// {- value    value: 'function(x,y){return {y:x}}  start: 10, end: 37}
+// {name: 'literal', value: '...',  start: 0, end: 3},
+// {name: 'value',   value: '1',    start: 4, end: 5},
+// {name: 'literal', value: '.\\{', start: 6, end: 9},
+// {name: 'value',   value: 'function(x,y){return {y:x};}', start: 10, end: 37}
 // ]
  
 // Sticky mode via flag y
 str = '<1><<<2>>><3>4<5>';
-XRegExp.matchRecursive(str, '<  '>  'gy');
-// -> ['1  '<<2>>  '3']
+XRegExp.matchRecursive(str, '<', '>', 'gy');
+// -> ['1', '<<2>>', '3']
 ```
 
 
@@ -1288,8 +1287,8 @@ Adds to the list of Unicode tokens that XRegExp regexes can match via `\p` or `\
 ```js
 // Basic use
 XRegExp.addUnicodeData([{
-  - XDigit
-  alias: 'Hexadecimal
+  name: 'XDigit',
+  alias: 'Hexadecimal',
   bmp: '0-9A-Fa-f'
 }]);
 XRegExp('\\p{XDigit}:\\p{Hexadecimal}+').test('0:3D'); // -> true
@@ -1310,7 +1309,7 @@ Returns a reference to the internal registered flags object, where each flag is 
 
 ```js
 var flags = XRegExp._registeredFlags();
-assert(flags['u'], "expected native Unicode support");
+assert(flags['u'], 'expected native Unicode support');
 ```
 
 
