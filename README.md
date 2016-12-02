@@ -258,18 +258,18 @@ is in fact a native `RegExp` and works with all native methods.
 
   Native flags:
 
-    <li>`g` - global
-    <li>`i` - ignore case
-    <li>`m` - multiline anchors
-    <li>`u` - unicode (ES6)
-    <li>`y` - sticky (Firefox 3+, ES6)
+    - `g` - global
+    - `i` - ignore case
+    - `m` - multiline anchors
+    - `u` - unicode (ES6)
+    - `y` - sticky (Firefox 3+, ES6)
 
   Additional XRegExp flags:
 
-    <li>`n` - explicit capture
-    <li>`s` - dot matches all (aka singleline)
-    <li>`x` - free-spacing and line comments (aka extended)
-    <li>`A` - astral (requires the Unicode Base addon)
+    - `n` - explicit capture
+    - `s` - dot matches all (aka singleline)
+    - `x` - free-spacing and line comments (aka extended)
+    - `A` - astral (requires the Unicode Base addon)
 
   Flags cannot be provided when constructing one `RegExp` from another.
 
@@ -319,9 +319,9 @@ create XRegExp addons. If more than one token can match the same string, the las
   to replace the matched token within all future XRegExp regexes. Has access to persistent
   properties of the regex being built, through `this`. Invoked with three arguments:
 
-  <li>The match array, with named backreference properties.
-  <li>The regex scope where the match was found: 'default' or 'class'.
-  <li>The flags used by the regex, including any flags in a leading mode modifier.
+  - The match array, with named backreference properties.
+  - The regex scope where the match was found: 'default' or 'class'.
+  - The flags used by the regex, including any flags in a leading mode modifier.
 
   The handler function becomes part of the XRegExp construction process, so be careful not to
   construct XRegExps within the function or you will trigger infinite recursion.
@@ -329,16 +329,16 @@ create XRegExp addons. If more than one token can match the same string, the las
 `options`
 : {Object} (optional) Options object with optional properties:
 
-  <li>`scope` {String} Scope where the token applies: 'default  'class  or 'all'.
-  <li>`flag` {String} Single-character flag that triggers the token. This also registers the
+  - `scope` {String} Scope where the token applies: 'default  'class  or 'all'.
+  - `flag` {String} Single-character flag that triggers the token. This also registers the
     flag, which prevents XRegExp from throwing an 'unknown flag' error when the flag is used.
-  <li>`optionalFlags` {String} Any custom flags checked for within the token `handler` that are
+  - `optionalFlags` {String} Any custom flags checked for within the token `handler` that are
     not required to trigger the token. This registers the flags, to prevent XRegExp from
     throwing an 'unknown flag' error when any of the flags are used.
-  <li>`reparse` {Boolean} Whether the `handler` function's output should not be treated as
+  - `reparse` {Boolean} Whether the `handler` function's output should not be treated as
     final, and instead be reparseable by other tokens (including the current token). Allows
     token chaining or deferring.
-  <li>`leadChar` {String} Single character that occurs at the beginning of any successful match
+  - `leadChar` {String} Single character that occurs at the beginning of any successful match
     of the token (not always applicable). This doesn't change the behavior of the token unless
     you provide an erroneous value. However, providing it can increase the token's performance
     since the token can be skipped at any positions where this character doesn't appear.
@@ -473,10 +473,10 @@ initial `lastIndex`.
 `callback`
 : {Function} Function to execute for each match. Invoked with four arguments:
 
-  <li>The match array, with named backreference properties.
-  <li>The zero-based match index.
-  <li>The string being traversed.
-  <li>The regex object being used to traverse the string.
+  - The match array, with named backreference properties.
+  - The zero-based match index.
+  - The string being traversed.
+  - The regex object being used to traverse the string.
 
 ### Example
 
@@ -573,8 +573,8 @@ Checks whether an individual optional feature is installed.
 `feature`
 : {String} Name of the feature to check. One of:
 
-  <li>`astral`
-  <li>`natives`
+  - `astral`
+  - `natives`
 
 Return a {Boolean} value indicating whether the feature is installed.
 
@@ -699,22 +699,22 @@ to the native `String.prototype.replace` and can be used reliably cross-browser.
   
   Replacement strings can include special replacement syntax:
 
-    <li>$$ - Inserts a literal $ character.
-    <li>$&, $0 - Inserts the matched substring.
-    <li>$` - Inserts the string that precedes the matched substring (left context).
-    <li>$' - Inserts the string that follows the matched substring (right context).
-    <li>$n, $nn - Where n/nn are digits referencing an existent capturing group, inserts
-      backreference n/nn.
-    <li>${n} - Where n is a name or any number of digits that reference an existent capturing
-      group, inserts backreference n.
+  - `$$` - Inserts a literal `$` character.
+  - `$&`, `$0` - Inserts the matched substring.
+  - `$\`` - Inserts the string that precedes the matched substring (left context).
+  - `$'` - Inserts the string that follows the matched substring (right context).
+  - `$n`, `$nn` - Where `n`/`nn` are digits referencing an existent capturing group, inserts
+    backreference `n`/`nn`.
+  - `${n}` - Where `n` is a name or any number of digits that reference an existent capturing
+    group, inserts backreference `n`.
 
   Replacement functions are invoked with three or more arguments:
 
-    <li>The matched substring (corresponds to $& above). Named backreferences are accessible as
+    - The matched substring (corresponds to $& above). Named backreferences are accessible as
       properties of this first argument.
-    <li>0..n arguments, one for each backreference (corresponding to $1, $2, etc. above).
-    <li>The zero-based index of the match within the total search string.
-    <li>The total string being searched.
+    - 0..n arguments, one for each backreference (corresponding to $1, $2, etc. above).
+    - The zero-based index of the match within the total search string.
+    - The total string being searched.
 
 `scope`
 : {String} [default: `scope='one'`] Use `'one'` to replace the first match only, or `'all'`. If not
@@ -853,8 +853,8 @@ uninstalled, so this is used to undo the actions of `XRegExp.install`.
 `options`
 : {Object|String} Feature options object or features string. These features are supported:
 
-  <li>`astral`
-  <li>`natives`
+  - `astral`
+  - `natives`
 
 ```js
 // With an options object
