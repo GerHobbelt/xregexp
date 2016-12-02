@@ -709,11 +709,11 @@ to the native `String.prototype.replace` and can be used reliably cross-browser.
 
   Replacement functions are invoked with three or more arguments:
 
-    - The matched substring (corresponds to $& above). Named backreferences are accessible as
-      properties of this first argument.
-    - 0..n arguments, one for each backreference (corresponding to $1, $2, etc. above).
-    - The zero-based index of the match within the total search string.
-    - The total string being searched.
+  - The matched substring (corresponds to $& above). Named backreferences are accessible as
+    properties of this first argument.
+  - 0..n arguments, one for each backreference (corresponding to $1, $2, etc. above).
+  - The zero-based index of the match within the total search string.
+  - The total string being searched.
 
 `scope`
 : {String} [default: `scope='one'`] Use `'one'` to replace the first match only, or `'all'`. If not
@@ -1081,7 +1081,7 @@ XRegExp.addToken(
         return '[\\s\\S]';
     },
     {
-        flag: 's
+        flag: 's',
         leadChar: '.'
     }
 );
@@ -1136,7 +1136,7 @@ groups. Also adds explicit capture mode (flag `n`).
 XRegExp.addToken(
     /\((?!\?)/,
     {
-        optionalFlags: 'n
+        optionalFlags: 'n',
         leadChar: '('
     }
 ```
@@ -1165,7 +1165,7 @@ Native flags used by provided subpatterns are ignored in favor of the `flags` ar
 Returns a regexp with interpolated subpatterns.
 
 ```js
-var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $, {
+var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $', {
   hours: XRegExp.build('{{h12}} : | {{h24}}', {
     h12: /1[0-2]|0?[1-9]/,
     h24: /2[0-3]|[01][0-9]/
