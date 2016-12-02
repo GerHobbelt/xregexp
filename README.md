@@ -1979,10 +1979,10 @@ Additional token names may be defined via the `XRegExp.addUnicodeData(unicodeDat
 
 ## Info for XRegExp Developers
 
-(Re)generation of the `xregexp-all.js` source file is handled in the `npm postinstall` hook, hence to regenerate it you can simply run the command
+To regenerate the `xregexp-all.js` source file you can simply run the command
 
 ```bash
-npm install
+npm run build
 ```
 
 in the base directory of the repository.
