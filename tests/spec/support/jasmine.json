@@ -1,11 +1,10 @@
 {
   "spec_dir": ".",
   "spec_files": [
-    "node-test-suite.js",
-    "spec/**/*[sS]-xyz-*.js"
+    "node-test-suite.js"
   ],
   "helpers": [
-    "helpers/**/xyz*.js"
+    "helpers/**/h-xyz*.js"
   ],
   "stopSpecOnExpectationFailure": false,
   "random": false

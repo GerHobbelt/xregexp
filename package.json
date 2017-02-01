@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "bash ./tools/concatenate-source.sh",
-    "test": "bash ./tests/run-tests.sh"
+    "test":  "bash ./tests/run-tests.sh"
   },
   "devDependencies": {
     "jasmine": "2.5.3"

@@ -4,12 +4,7 @@
 
 pushd $(dirname $0)                                                                                     2> /dev/null  > /dev/null
 
-pwd
-echo "----------------------------" 
-find .
-echo "----------------------------" 
-ls -lr
-echo "----------------------------" 
+
 
 echo "Constructing consolidated test file (otherwise jasmine won't test correctly!)"
 
@@ -34,8 +29,11 @@ cat spec/s-addons-matchrecursive.js >> node-test-suite.js
 cat spec/s-addons-unicode.js >> node-test-suite.js
 
 
+
 echo ""
 echo ""
+
+
 
 ../node_modules/.bin/jasmine
 
