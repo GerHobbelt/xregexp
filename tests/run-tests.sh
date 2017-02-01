@@ -4,6 +4,12 @@
 
 pushd $(dirname $0)                                                                                     2> /dev/null  > /dev/null
 
+pwd
+echo "----------------------------" 
+find .
+echo "----------------------------" 
+ls -lr
+echo "----------------------------" 
 
 echo "Constructing consolidated test file (otherwise jasmine won't test correctly!)"
 
