@@ -1,6 +1,6 @@
 {
   "name": "xregexp",
-  "version": "3.1.2-12",
+  "version": "3.1.2-13",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "bash ./tools/concatenate-source.sh",
-    "test":  "bash ./tests/run-tests.sh"
+    "test": "bash ./tests/run-tests.sh"
   },
   "devDependencies": {
     "jasmine": "2.5.3"
