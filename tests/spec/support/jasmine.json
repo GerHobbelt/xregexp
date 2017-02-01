@@ -1,0 +1,12 @@
+{
+  "spec_dir": ".",
+  "spec_files": [
+    "node-test-suite.js",
+    "spec/**/*[sS]-xyz-*.js"
+  ],
+  "helpers": [
+    "helpers/**/xyz*.js"
+  ],
+  "stopSpecOnExpectationFailure": false,
+  "random": false
+}
