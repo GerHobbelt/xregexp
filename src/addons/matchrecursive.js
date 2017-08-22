@@ -4,9 +4,7 @@
  * Steven Levithan (c) 2009-2017 MIT License
  */
 
-module.exports = function(XRegExp) {
-
-    'use strict';
+export default (XRegExp) => {
 
     /**
      * Returns a match detail object composed of the provided values.
@@ -15,10 +13,10 @@ module.exports = function(XRegExp) {
      */
     function row(name, value, start, end) {
         return {
-            name: name,
-            value: value,
-            start: start,
-            end: end
+            name,
+            value,
+            start,
+            end
         };
     }
 
@@ -37,7 +35,7 @@ module.exports = function(XRegExp) {
      * @example
      *
      * // Basic usage
-     * var str = '(t((e))s)t()(ing)';
+     * let str = '(t((e))s)t()(ing)';
      * XRegExp.matchRecursive(str, '\\(', '\\)', 'g');
      * // -> ['t((e))s', '', 'ing']
      *
@@ -72,25 +70,25 @@ module.exports = function(XRegExp) {
      * XRegExp.matchRecursive(str, '<', '>', 'gy');
      * // -> ['1', '<<2>>', '3']
      */
-    XRegExp.matchRecursive = function(str, left, right, flags, options) {
+    XRegExp.matchRecursive = (str, left, right, flags, options) => {
         flags = flags || '';
         options = options || {};
-        var global = flags.indexOf('g') > -1;
-        var sticky = flags.indexOf('y') > -1;
+        const global = flags.includes('g');
+        const sticky = flags.includes('y');
         // Flag `y` is controlled internally
-        var basicFlags = flags.replace(/y/g, '');
-        var escapeChar = options.escapeChar;
-        var vN = options.valueNames;
-        var output = [];
-        var openTokens = 0;
-        var delimStart = 0;
-        var delimEnd = 0;
-        var lastOuterEnd = 0;
-        var outerStart;
-        var innerStart;
-        var leftMatch;
-        var rightMatch;
-        var esc;
+        const basicFlags = flags.replace(/y/g, '');
+        let escapeChar = options.escapeChar;
+        const vN = options.valueNames;
+        const output = [];
+        let openTokens = 0;
+        let delimStart = 0;
+        let delimEnd = 0;
+        let lastOuterEnd = 0;
+        let outerStart;
+        let innerStart;
+        let leftMatch;
+        let rightMatch;
+        let esc;
         left = XRegExp(left, basicFlags);
         right = XRegExp(right, basicFlags);
 
@@ -105,13 +103,13 @@ module.exports = function(XRegExp) {
             // `right`: '>'
             // Regex is: /(?:%[\S\s]|(?:(?!<|>)[^%])+)+/
             esc = new RegExp(
-                '(?:' + escapeChar + '[\\S\\s]|(?:(?!' +
+                `(?:${escapeChar}[\\S\\s]|(?:(?!${
                     // Using `XRegExp.union` safely rewrites backreferences in `left` and `right`.
                     // Intentionally not passing `basicFlags` to `XRegExp.union` since any syntax
                     // transformation resulting from those flags was already applied to `left` and
                     // `right` when they were passed through the XRegExp constructor above.
-                    XRegExp.union([left, right], '', {conjunction: 'or'}).source +
-                    ')[^' + escapeChar + '])+)+',
+                    XRegExp.union([left, right], '', {conjunction: 'or'}).source
+                })[^${escapeChar}])+)+`,
                 // Flags `gy` not needed here
                 flags.replace(/[^imu]+/g, '')
             );

@@ -1,6 +1,6 @@
 {
   "name": "xregexp",
-  "version": "3.2.0-15",
+  "version": "3.2.0-18",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -15,20 +15,34 @@
     "regular expression",
     "unicode"
   ],
-  "main": "xregexp-all.js",
+  "main": "./lib",
   "files": [
     "src",
+    "lib",
     "xregexp-all.js",
     "LICENSE"
   ],
   "scripts": {
+    "lint": "eslint src",
+    "babel": "babel src -d lib",
+    "prebuild-orig": "npm run lint && npm run babel",
+    "prebuild": "npm run lint",
+    "build-orig": "browserify lib/index.js --standalone XRegExp > xregexp-all.js",
     "build": "bash ./tools/concatenate-source.sh",
-    "build-orig": "browserify src/index.js --standalone XRegExp > xregexp-all.js",
     "pretest": "npm run build",
-    "test": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json"
+    "test": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json",
+    "test-saucelabs": "npm run pretest && zuul tests/spec/*.js",
+    "test-browser": "npm run test-saucelabs -- --local --open"
   },
   "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-plugin-array-includes": "2.0.3",
+    "babel-plugin-transform-xregexp": "0.0.6",
+    "babel-preset-env": "1.6.0",
     "browserify": "14.4.0",
-    "jasmine": "2.7.0"
+    "eslint": "4.5.0",
+    "jasmine": "2.5.3",
+    "zuul": "3.11.1"
   }
 }
