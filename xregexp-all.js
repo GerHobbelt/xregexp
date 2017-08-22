@@ -738,7 +738,7 @@ XRegExp.prototype = /(?:)/;
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '3.2.0-17';
+XRegExp.version = '3.2.0-18';
 
 // ==--------------------------==
 // Public methods
