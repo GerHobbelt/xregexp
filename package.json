@@ -22,9 +22,12 @@
   ],
   "scripts": {
     "build": "bash ./tools/concatenate-source.sh",
-    "test": "bash ./tests/run-tests.sh"
+    "build-orig": "browserify src/index.js --standalone XRegExp > xregexp-all.js",
+    "pretest": "npm run build",
+    "test": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json"
   },
   "devDependencies": {
+    "browserify": "14.4.0",
     "jasmine": "2.7.0"
   }
 }
