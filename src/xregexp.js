@@ -394,7 +394,7 @@ function prepareFlags(pattern, flags) {
     }
 
     // Strip and apply a leading mode modifier with any combination of flags except g or y
-    pattern = nativ.replace.call(pattern, /^\(\?([\w$]+)\)/, function($0, $1) {
+    var output = nativ.replace.call(pattern, /^\(\?([\w$]+)\)/, function($0, $1) {
         if (nativ.test.call(/[gy]/, $1)) {
             throw new SyntaxError('Cannot use flag g or y in mode modifier ' + $0);
         }
@@ -411,7 +411,7 @@ function prepareFlags(pattern, flags) {
     }
 
     return {
-        pattern: pattern,
+        pattern: output,
         flags: flags
     };
 }
@@ -553,37 +553,36 @@ function toObject(value) {
  * @returns {Array} modified patterns RegExps and Strings to be combined.
  */
 function prepareJoin(patterns) {
-    var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g,
-        output = [],
-        numCaptures = 0,
-        numPriorCaptures,
-        captureNames,
-        pattern,
-        rewrite = function(match, paren, backref) {
-            var name = captureNames[numCaptures - numPriorCaptures];
+    var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
+    var output = [];
+    var numCaptures = 0;
+    var numPriorCaptures;
+    var captureNames;
+    var pattern;
+    var rewrite = function (match, paren, backref) {
+        var name = captureNames[numCaptures - numPriorCaptures];
 
-            // Capturing group
-            if (paren) {
-                ++numCaptures;
-                // If the current capture has a name, preserve the name
-                if (name) {
-                    return '(?<' + name + '>';
-                }
-            // Backreference
-            } else if (backref) {
-                // Rewrite the backreference
-                return '\\' + (+backref + numPriorCaptures);
+        // Capturing group
+        if (paren) {
+            ++numCaptures;
+            // If the current capture has a name, preserve the name
+            if (name) {
+                return '(?<' + name + '>';
             }
+        // Backreference
+        } else if (backref) {
+            // Rewrite the backreference
+            return '\\' + (+backref + numPriorCaptures);
+        }
 
-            return match;
-        },
-        i;
+        return match;
+    };
 
     if (!(isType(patterns, 'Array') && patterns.length)) {
         throw new TypeError('Must provide a nonempty array of patterns to merge');
     }
 
-    for (i = 0; i < patterns.length; ++i) {
+    for (var i = 0; i < patterns.length; ++i) {
         pattern = patterns[i];
 
         if (XRegExp.isRegExp(pattern)) {

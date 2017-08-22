@@ -22,7 +22,8 @@ if [ -f ../package.json ]; then
     v=$( node -e 'var pkg = require("../package.json"); console.log(pkg.version);' )
     for file in $source_files
     do
-        cat "${file}" | sed -e "s/\\* XRegExp\\([ -][^0-9]*\\)\\([0-9]\\+\\..*\\)\$/* XRegExp\\1$v/" > __tmp__
+        cat "${file}" | sed -e "s/\\* XRegExp\\([ -][^0-9]*\\)\\([0-9]\\+\\..*\\)\$/* XRegExp\\1$v/" -e "s/XRegExp\.version = [^;]\\+;/XRegExp.version = '$v';/" > __tmp__
+
         cat __tmp__ > "${file}"
     done
     rm -f __tmp__ 
