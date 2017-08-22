@@ -8,6 +8,12 @@ describe('XRegExp.build addon:', function() {
             expect(function() {XRegExp.build('(?x)({{a}})', {a: /#/});}).toThrow();
         });
 
+        it('should ignore newlines when using flag x', function() {
+            expect(XRegExp.build('(?x)\n', {}).test('')).toBe(true);
+            expect(XRegExp.build('\n', {}, 'x').test('')).toBe(true);
+            expect(XRegExp.build('{{sub}}', {sub: '\n'}, 'x').test('')).toBe(true);
+        });
+
         it('should apply a mode modifier with a native flag in the outer pattern to the final result', function() {
             expect(XRegExp.build('(?m){{a}}', {a: /a/}).multiline).toBe(true);
             expect(XRegExp.build('(?i){{a}}', {a: /a/}).ignoreCase).toBe(true);

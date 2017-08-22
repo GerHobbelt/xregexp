@@ -1,7 +1,7 @@
 /*!
  * XRegExp.matchRecursive
  * <xregexp.com>
- * Steven Levithan (c) 2009-2016 MIT License
+ * Steven Levithan (c) 2009-2017 MIT License
  */
 
 module.exports = function(XRegExp) {
@@ -75,22 +75,22 @@ module.exports = function(XRegExp) {
     XRegExp.matchRecursive = function(str, left, right, flags, options) {
         flags = flags || '';
         options = options || {};
-        var global = flags.indexOf('g') > -1,
-            sticky = flags.indexOf('y') > -1,
-            // Flag `y` is controlled internally
-            basicFlags = flags.replace(/y/g, ''),
-            escapeChar = options.escapeChar,
-            vN = options.valueNames,
-            output = [],
-            openTokens = 0,
-            delimStart = 0,
-            delimEnd = 0,
-            lastOuterEnd = 0,
-            outerStart,
-            innerStart,
-            leftMatch,
-            rightMatch,
-            esc;
+        var global = flags.indexOf('g') > -1;
+        var sticky = flags.indexOf('y') > -1;
+        // Flag `y` is controlled internally
+        var basicFlags = flags.replace(/y/g, '');
+        var escapeChar = options.escapeChar;
+        var vN = options.valueNames;
+        var output = [];
+        var openTokens = 0;
+        var delimStart = 0;
+        var delimEnd = 0;
+        var lastOuterEnd = 0;
+        var outerStart;
+        var innerStart;
+        var leftMatch;
+        var rightMatch;
+        var esc;
         left = XRegExp(left, basicFlags);
         right = XRegExp(right, basicFlags);
 
@@ -99,10 +99,18 @@ module.exports = function(XRegExp) {
                 throw new Error('Cannot use more than one escape character');
             }
             escapeChar = XRegExp.escape(escapeChar);
-            // Using `XRegExp.union` safely rewrites backreferences in `left` and `right`
+            // Example of concatenated `esc` regex:
+            // `escapeChar`: '%'
+            // `left`: '<'
+            // `right`: '>'
+            // Regex is: /(?:%[\S\s]|(?:(?!<|>)[^%])+)+/
             esc = new RegExp(
                 '(?:' + escapeChar + '[\\S\\s]|(?:(?!' +
-                    XRegExp.union([left, right]).source +
+                    // Using `XRegExp.union` safely rewrites backreferences in `left` and `right`.
+                    // Intentionally not passing `basicFlags` to `XRegExp.union` since any syntax
+                    // transformation resulting from those flags was already applied to `left` and
+                    // `right` when they were passed through the XRegExp constructor above.
+                    XRegExp.union([left, right], '', {conjunction: 'or'}).source +
                     ')[^' + escapeChar + '])+)+',
                 // Flags `gy` not needed here
                 flags.replace(/[^imu]+/g, '')
