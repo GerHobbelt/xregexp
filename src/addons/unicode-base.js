@@ -1,5 +1,5 @@
 /*!
- * XRegExp Unicode Base 
+ * XRegExp Unicode Base
  * <xregexp.com>
  * Steven Levithan (c) 2008-2017 MIT License
  */
@@ -53,8 +53,8 @@ function invertBmp(range) {
     var lastEnd = -1;
 
     XRegExp.forEach(
-        range, 
-        /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/, 
+        range,
+        /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/,
         function(m) {
             var start = charCode(m[1]);
             if (start > lastEnd + 1) {
@@ -246,19 +246,19 @@ XRegExp.addUnicodeData = function(data) {
  * @returns {Object} Reference to definition structure when the name matches a Unicode Property.
  *
  * @note
- * For more info on Unicode Properties, see also http://unicode.org/reports/tr18/#Categories. 
+ * For more info on Unicode Properties, see also http://unicode.org/reports/tr18/#Categories.
  *
  * @note
  * This method is *not* part of the officially documented API and may change or be removed in
  * the future. It is meant for userland code that wishes to reuse the (large) internal Unicode
  * structures set up by XRegExp as a single point of Unicode 'knowledge' in the application.
  *
- * See some example usage of this functionality, used as a boolean check if the given name 
+ * See some example usage of this functionality, used as a boolean check if the given name
  * is legal and to obtain internal structural data:
- * - `function prepareMacros(...)` in https://github.com/GerHobbelt/jison-lex/blob/master/regexp-lexer.js#L885  
+ * - `function prepareMacros(...)` in https://github.com/GerHobbelt/jison-lex/blob/master/regexp-lexer.js#L885
  * - `function generateRegexesInitTableCode(...)` in https://github.com/GerHobbelt/jison-lex/blob/master/regexp-lexer.js#L1999
  *
- * Note that the second function in the example (`function generateRegexesInitTableCode(...)`) 
+ * Note that the second function in the example (`function generateRegexesInitTableCode(...)`)
  * uses a approach without using this API to obtain a Unicode range spanning regex for use in environments
  * which do not support XRegExp by simply expanding the XRegExp instance to a String through
  * the `map()` mapping action and subsequent `join()`.

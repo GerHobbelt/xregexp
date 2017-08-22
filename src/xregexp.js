@@ -1,5 +1,5 @@
 /*!
- * XRegExp 
+ * XRegExp
  * <xregexp.com>
  * Steven Levithan (c) 2007-2017 MIT License
  */
@@ -557,7 +557,8 @@ function prepareJoin(patterns) {
     var numPriorCaptures;
     var captureNames;
     var pattern;
-    var rewrite = function (match, paren, backref) {
+
+    function rewrite(match, paren, backref) {
         var name = captureNames[numCaptures - numPriorCaptures];
 
         // Capturing group
@@ -574,7 +575,7 @@ function prepareJoin(patterns) {
         }
 
         return match;
-    };
+    }
 
     if (!(isType(patterns, 'Array') && patterns.length)) {
         throw new TypeError('Must provide a nonempty array of patterns to merge');
@@ -658,6 +659,8 @@ function XRegExp(pattern, flags) {
         patternCache[pattern] = {};
     }
 
+    var appliedFlags;
+
     if (!patternCache[pattern][flags]) {
         var context = {
             hasNamedCapture: false,
@@ -671,7 +674,7 @@ function XRegExp(pattern, flags) {
         // Check for flag-related errors, and strip/apply flags in a leading mode modifier
         var applied = prepareFlags(pattern, flags);
         var appliedPattern = applied.pattern;
-        var appliedFlags = applied.flags;
+        appliedFlags = applied.flags;
 
         // Use XRegExp's tokens to translate the pattern to a native regex pattern.
         // `appliedPattern.length` may change on each iteration if tokens use `reparse`
@@ -717,7 +720,7 @@ function XRegExp(pattern, flags) {
     }
 
     var generated = patternCache[pattern][flags];
-        
+
     // Strip all but custom flags, except the 'A' flag
     var customFlags = flags;
     if (appliedFlags) {
@@ -757,7 +760,9 @@ XRegExp.version = '3.2.0-16';
 // Intentionally undocumented; used in tests and addons
 XRegExp._clipDuplicates = clipDuplicates;
 XRegExp._hasNativeFlag = hasNativeFlag;
-XRegExp._registeredFlags = function _getRegisteredFlags() { return registeredFlags };
+XRegExp._registeredFlags = function _getRegisteredFlags() {
+    return registeredFlags;
+};
 XRegExp._dec = dec;
 XRegExp._hex = hex;
 XRegExp._pad4 = pad4;
@@ -1150,8 +1155,9 @@ XRegExp.match = function(str, regex, scope) {
     if (regex.global) {
         regex.lastIndex = (
             (scope === 'one' && result) ?
-                // Can't use `r2.lastIndex` since `r2` is nonglobal in this case
-                (result.index + result[0].length) : 0
+            // Can't use `r2.lastIndex` since `r2` is nonglobal in this case
+            result.index + result[0].length :
+            0
         );
     }
 
@@ -1448,8 +1454,8 @@ XRegExp.uninstall = function(options) {
  */
 XRegExp.join = function(patterns, separator, flags) {
     separator = separator || '';
-    var separatorStr = XRegExp.isRegExp(separator) ? separator.source : XRegExp.escape(separator),
-        output = prepareJoin(patterns);
+    var separatorStr = XRegExp.isRegExp(separator) ? separator.source : XRegExp.escape(separator);
+    var output = prepareJoin(patterns);
     return XRegExp(output.join(separatorStr), flags);
 };
 
