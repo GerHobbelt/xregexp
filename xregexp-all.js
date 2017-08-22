@@ -645,9 +645,9 @@ function prepareJoin(patterns) {
  * @example
  *
  * // With named capture and flag x
- * XRegExp('(?<year>  [0-9]{4} ) -?  # year  \n\
- *          (?<month> [0-9]{2} ) -?  # month \n\
- *          (?<day>   [0-9]{2} )     # day   ', 'x');
+ * XRegExp(`(?<year>  [0-9]{4} ) -?  # year
+ *          (?<month> [0-9]{2} ) -?  # month
+ *          (?<day>   [0-9]{2} )     # day`, 'x');
  *
  * // Providing a regex object copies it. Native regexes are recompiled using native (not XRegExp)
  * // syntax. Copies maintain extended data, are augmented with `XRegExp.prototype` properties, and
@@ -1498,27 +1498,27 @@ XRegExp.union = function (patterns, flags, options) {
 fixed.exec = function (str) {
     var origLastIndex = this.lastIndex;
     var match = nativ.exec.apply(this, arguments);
-    var name;
-    var r2;
-    var i;
 
     if (match) {
         // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating capturing
         // groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of older IEs. IE 9
         // in standards mode follows the spec.
         if (!correctExecNpcg && match.length > 1 && indexOf(match, '') > -1) {
-            r2 = copyRegex(this, {
+            var r2 = copyRegex(this, {
                 removeG: true,
                 isInternalOnly: true
             });
             // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
             // matching due to characters outside the match
             nativ.replace.call(String(str).slice(match.index), r2, function () {
-                var len = arguments.length;
-                var i;
+                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                    args[_key] = arguments[_key];
+                }
+
+                var len = args.length;
                 // Skip index 0 and the last 2
-                for (i = 1; i < len - 2; ++i) {
-                    if (arguments[i] === undefined) {
+                for (var i = 1; i < len - 2; ++i) {
+                    if (args[i] === undefined) {
                         match[i] = undefined;
                     }
                 }
@@ -1528,8 +1528,8 @@ fixed.exec = function (str) {
         // Attach named capture properties
         if (this[REGEX_DATA] && this[REGEX_DATA].captureNames) {
             // Skip index 0
-            for (i = 1; i < match.length; ++i) {
-                name = this[REGEX_DATA].captureNames[i - 1];
+            for (var i = 1; i < match.length; ++i) {
+                var name = this[REGEX_DATA].captureNames[i - 1];
                 if (name) {
                     if (match[i] != undefined || match[name] == undefined) {
                         match[name] = match[i];
@@ -1576,13 +1576,11 @@ fixed.test = function (str) {
  *   the result of calling `regex.exec(this)`.
  */
 fixed.match = function (regex) {
-    var result;
-
     if (!XRegExp.isRegExp(regex)) {
         // Use the native `RegExp` rather than `XRegExp`
         regex = new RegExp(regex);
     } else if (regex.global) {
-        result = nativ.match.apply(this, arguments);
+        var result = nativ.match.apply(this, arguments);
         // Fixes IE bug
         regex.lastIndex = 0;
 
@@ -1627,14 +1625,16 @@ fixed.replace = function (search, replacement) {
         // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
         // functions isn't type-converted to a string
         result = nativ.replace.call(String(this), search, function () {
-            var args = arguments;
-            var i;
+            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                args[_key2] = arguments[_key2];
+            }
+
             if (captureNames) {
-                // Change the `arguments[0]` string primitive to a `String` object that can store
+                // Change the `args[0]` string primitive to a `String` object that can store
                 // properties. This really does need to use `String` as a constructor
                 args[0] = new String(args[0]);
                 // Store named backreferences on the first argument
-                for (i = 0; i < captureNames.length; ++i) {
+                for (var i = 0; i < captureNames.length; ++i) {
                     if (captureNames[i]) {
                         args[0][captureNames[i]] = args[i + 1];
                     }
@@ -1652,14 +1652,15 @@ fixed.replace = function (search, replacement) {
         // Ensure that the last value of `args` will be a string when given nonstring `this`,
         // while still throwing on null or undefined context
         result = nativ.replace.call(this == null ? this : String(this), search, function () {
-            // Keep this function's `arguments` available through closure
-            var args = arguments;
+            for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+                args[_key3] = arguments[_key3];
+            }
+
             return nativ.replace.call(String(replacement), replacementToken, replacer);
 
             function replacer($0, bracketed, angled, dollarToken) {
                 bracketed = bracketed || angled;
-                var n;
-                // Named or numbered backreference with curly braces
+                // Named or numbered backreference with curly or angled braces
                 if (bracketed) {
                     // XRegExp behavior for `${n}` or `$<n>`:
                     // 1. Backreference to numbered capture, if `n` is an integer. Use `0` for the
@@ -1670,7 +1671,7 @@ fixed.replace = function (search, replacement) {
                     //    integer as the name.
                     // 3. If the name or number does not refer to an existing capturing group, it's
                     //    an error.
-                    n = +bracketed; // Type-convert; drop leading zeros
+                    var n = +bracketed; // Type-convert; drop leading zeros
                     if (n <= args.length - 3) {
                         return args[n] || '';
                     }
@@ -1698,7 +1699,7 @@ fixed.replace = function (search, replacement) {
                     // $' (right context)
                     return args[args.length - 1].slice(args[args.length - 2] + args[0].length);
                 }
-                // Else, numbered backreference without curly braces
+                // Else, numbered backreference without braces
                 dollarToken = +dollarToken; // Type-convert; drop leading zero
                 // XRegExp behavior for `$n` and `$nn`:
                 // - Backrefs end after 1 or 2 digits. Use `${..}` or `$<..>` for more digits.
@@ -2042,8 +2043,11 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
      * XRegExp.exec('10:59', time).minutes; // -> '59'
      */
     XRegExp.tag = function (flags) {
-        return function (literals /*, ...substitutions */) {
-            var substitutions = [].slice.call(arguments, 1);
+        return function (literals) {
+            for (var _len = arguments.length, substitutions = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+                substitutions[_key - 1] = arguments[_key];
+            }
+
             var subpatterns = substitutions.map(interpolate).reduce(reduceToSubpatternsObject, {});
             var pattern = literals.raw.map(embedSubpatternAfter).join('');
             return XRegExp.build(pattern, subpatterns, flags);
