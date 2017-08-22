@@ -777,7 +777,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '3.1.2-12';
+XRegExp.version = '3.2.0-15';
 
 // ==--------------------------==
 // Public methods
@@ -1472,7 +1472,7 @@ XRegExp.uninstall = function(options) {
  * // -> /a\+b\*c(dogs)\1(cats)\2/i
  */
 XRegExp.join = function(patterns, separator, flags) {
-    separator = separator || "";
+    separator = separator || '';
     var separatorStr = XRegExp.isRegExp(separator) ? separator.source : XRegExp.escape(separator),
         output = prepareJoin(patterns);
     return XRegExp(output.join(separatorStr), flags);
@@ -1502,7 +1502,7 @@ XRegExp.join = function(patterns, separator, flags) {
 XRegExp.union = function(patterns, flags, options) {
     options = options || {};
     var conjunction = options.conjunction || 'or';
-    var separator = conjunction === 'none' ? '' : '|';
+    var separator = conjunction === 'none' ? '' : /|/;
     return XRegExp.join(patterns, separator, flags);
 };
 
