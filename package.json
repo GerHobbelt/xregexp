@@ -18,16 +18,20 @@
   "main": "xregexp-all.js",
   "files": [
     "src",
+    "lib",
     "xregexp-all.js",
     "LICENSE"
   ],
   "scripts": {
+    "prebuild-orig": "babel src -d lib",
     "build": "bash ./tools/concatenate-source.sh",
-    "build-orig": "browserify src/index.js --standalone XRegExp > xregexp-all.js",
+    "build-orig": "browserify lib/index.js --standalone XRegExp > xregexp-all.js",
     "pretest": "npm run build",
     "test": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json"
   },
   "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-preset-env": "1.6.0",
     "browserify": "14.4.0",
     "jasmine": "2.7.0"
   }
