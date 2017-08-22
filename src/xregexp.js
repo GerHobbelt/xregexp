@@ -900,7 +900,7 @@ XRegExp.escape = function(str) {
 XRegExp.exec = function(str, regex, pos, sticky) {
     var cacheKey = 'g',
         addY = false,
-        sourceY,
+        fakeY = false,
         match,
         r2;
 
@@ -913,7 +913,7 @@ XRegExp.exec = function(str, regex, pos, sticky) {
         // and will not search the rest of the subject string. We'll know that the original regex
         // has failed if that last capture is `''` rather than `undefined` (i.e., if that last
         // capture participated in the match).
-        sourceY = regex.source + '|()';
+        fakeY = true;
         cacheKey += 'FakeY';
     }
 
@@ -924,7 +924,7 @@ XRegExp.exec = function(str, regex, pos, sticky) {
         regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
             addG: true,
             addY: addY,
-            source: sourceY,
+            source: fakeY ? regex.source + '|()' : undefined,
             removeY: sticky === false,
             isInternalOnly: true
         })
@@ -938,7 +938,7 @@ XRegExp.exec = function(str, regex, pos, sticky) {
 
     // Get rid of the capture added by the pseudo-sticky matcher if needed. An empty string means
     // the original regexp failed (see above).
-    if (sourceY && match && match.pop() === '') {
+    if (fakeY && match && match.pop() === '') {
         match = null;
     }
 
