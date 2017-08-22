@@ -1,9 +1,8 @@
 language: node_js
 node_js:
+  - 8
+  - 7
   - 6
-  - 6.0
   - 5
-  - 5.0
   - 4
-  - 4.0
-  - stable
+  - node

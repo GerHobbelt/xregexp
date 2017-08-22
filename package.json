@@ -1,6 +1,6 @@
 {
   "name": "xregexp",
-  "version": "3.1.2-14",
+  "version": "3.2.0-15",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -17,8 +17,9 @@
   ],
   "main": "xregexp-all.js",
   "files": [
-    "LICENSE",
-    "xregexp-all.js"
+    "src",
+    "xregexp-all.js",
+    "LICENSE"
   ],
   "scripts": {
     "build": "bash ./tools/concatenate-source.sh",
