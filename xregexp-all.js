@@ -24,13 +24,13 @@
 }(this, function() {
     "use strict";
 
+
+
 /*!
  * XRegExp
  * <xregexp.com>
  * Steven Levithan (c) 2007-2017 MIT License
  */
-
-
 
 /**
  * XRegExp provides augmented, extensible regular expressions. You get additional regex syntax and
@@ -44,7 +44,6 @@
 // ==--------------------------==
 
 // Property name used for extended regex instance data
-
 var REGEX_DATA = 'xregexp';
 // Optional features that can be installed and uninstalled
 var features = {
@@ -129,7 +128,7 @@ var registeredFlags = {
  * @returns {RegExp} Augmented regex.
  */
 function augment(regex, captureNames, xSource, xFlags, isNotNative, isInternalOnly) {
-    var p;
+    var p = void 0;
 
     regex[REGEX_DATA] = {
         captureNames: captureNames
@@ -281,7 +280,7 @@ function dec(hex) {
 function getContextualTokenSeparator(match, scope, flags) {
     if (
     // No need to separate tokens if at the beginning or end of a group
-    match.input.charAt(match.index - 1) === '(' || match.input.charAt(match.index + match[0].length) === ')' ||
+    match.input[match.index - 1] === '(' || match.input[match.index + match[0].length] === ')' ||
     // Avoid separating tokens when the following token is a quantifier
     isQuantifierNext(match.input, match.index + match[0].length, flags)) {
         return '';
@@ -330,27 +329,6 @@ function hex(dec) {
 }
 
 /**
- * Returns the first index at which a given value can be found in an array.
- *
- * @private
- * @param {Array} array Array to search.
- * @param {*} value Value to locate in the array.
- * @returns {Number} Zero-based index at which the item is found, or -1.
- */
-function indexOf(array, value) {
-    var len = array.length;
-    var i;
-
-    for (i = 0; i < len; ++i) {
-        if (array[i] === value) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
-/**
  * Checks whether the next nonignorable token after the specified position is a quantifier.
  *
  * @private
@@ -363,7 +341,7 @@ function isQuantifierNext(pattern, pos, flags) {
     var inlineCommentPattern = '\\(\\?#[^)]*\\)';
     var lineCommentPattern = '#[^#\\n]*';
     var quantifierPattern = '[?*+]|{\\d+(?:,\\d*)?}';
-    return nativ.test.call(flags.indexOf('x') > -1 ?
+    return nativ.test.call(flags.indexOf('x') !== -1 ?
     // Ignore any leading whitespace, line comments, and inline comments
     /^(?:\s|#[^#\n]*|\(\?#[^)]*\))*(?:[?*+]|{\d+(?:,\d*)?})/ :
     // Ignore any leading inline comments
@@ -406,7 +384,7 @@ function pad4(str) {
  * @returns {Object} Object with properties `pattern` and `flags`.
  */
 function prepareFlags(pattern, flags) {
-    var i;
+    var i = void 0;
 
     // Recent browsers throw on duplicate flags, so copy this behavior for nonnative flags
     if (clipDuplicates(flags) !== flags) {
@@ -425,8 +403,8 @@ function prepareFlags(pattern, flags) {
 
     // Throw on unknown native or nonnative flags
     for (i = 0; i < flags.length; ++i) {
-        if (!registeredFlags[flags.charAt(i)]) {
-            throw new SyntaxError('Unknown regex flag ' + flags.charAt(i));
+        if (!registeredFlags[flags[i]]) {
+            throw new SyntaxError('Unknown regex flag ' + flags[i]);
         }
     }
 
@@ -485,15 +463,15 @@ function registerFlag(flag) {
  */
 function runTokens(pattern, flags, pos, scope, context) {
     var i = tokens.length;
-    var leadChar = pattern.charAt(pos);
+    var leadChar = pattern[pos];
     var result = null;
-    var match;
-    var t;
+    var match = void 0;
+    var t = void 0;
 
     // Run in reverse insertion order
     while (i--) {
         t = tokens[i];
-        if (t.leadChar && t.leadChar !== leadChar || t.scope !== scope && t.scope !== 'all' || t.flag && flags.indexOf(t.flag) === -1) {
+        if (t.leadChar && t.leadChar !== leadChar || t.scope !== scope && t.scope !== 'all' || t.flag && !(flags.indexOf(t.flag) !== -1)) {
             continue;
         }
 
@@ -666,7 +644,7 @@ function XRegExp(pattern, flags) {
     pattern = pattern === undefined ? '' : String(pattern);
     flags = flags === undefined ? '' : String(flags);
 
-    if (XRegExp.isInstalled('astral') && flags.indexOf('A') === -1) {
+    if (XRegExp.isInstalled('astral') && !(flags.indexOf('A') !== -1)) {
         // This causes an error to be thrown if the Unicode Base addon is not available
         flags += 'A';
     }
@@ -685,11 +663,12 @@ function XRegExp(pattern, flags) {
         var scope = defaultScope;
         var output = '';
         var pos = 0;
-        var result;
+        var result = void 0;
 
         // Check for flag-related errors, and strip/apply flags in a leading mode modifier
         var applied = prepareFlags(pattern, flags);
         var appliedPattern = applied.pattern;
+
         appliedFlags = applied.flags;
 
         // Use XRegExp's tokens to translate the pattern to a native regex pattern.
@@ -827,7 +806,7 @@ XRegExp._pad4 = pad4;
 XRegExp.addToken = function (regex, handler, options) {
     options = options || {};
     var optionalFlags = options.optionalFlags;
-    var i;
+    var i = void 0;
 
     if (options.flag) {
         registerFlag(options.flag);
@@ -925,11 +904,11 @@ XRegExp.escape = function (str) {
  * @example
  *
  * // Basic use, with named backreference
- * var match = XRegExp.exec('U+2620', XRegExp('U\\+(?<hex>[0-9A-F]{4})'));
+ * let match = XRegExp.exec('U+2620', XRegExp('U\\+(?<hex>[0-9A-F]{4})'));
  * match.hex; // -> '2620'
  *
  * // With pos and sticky, in a loop
- * var pos = 2, result = [], match;
+ * let pos = 2, result = [], match;
  * while (match = XRegExp.exec('<1><2><3><4>5<6>', /<(\d)>/, pos, 'sticky')) {
  *   result.push(match[1]);
  *   pos = match.index + match[0].length;
@@ -940,8 +919,7 @@ XRegExp.exec = function (str, regex, pos, sticky) {
     var cacheKey = 'g';
     var addY = false;
     var fakeY = false;
-    var match;
-    var r2;
+    var match = void 0;
 
     addY = hasNativeY && !!(sticky || regex.sticky && sticky !== false);
     if (addY) {
@@ -959,7 +937,7 @@ XRegExp.exec = function (str, regex, pos, sticky) {
     regex[REGEX_DATA] = regex[REGEX_DATA] || {};
 
     // Shares cached copies with `XRegExp.match`/`replace`
-    r2 = regex[REGEX_DATA][cacheKey] || (regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
+    var r2 = regex[REGEX_DATA][cacheKey] || (regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
         addG: true,
         addY: addY,
         source: fakeY ? regex.source + '|()' : undefined,
@@ -1002,7 +980,7 @@ XRegExp.exec = function (str, regex, pos, sticky) {
  * @example
  *
  * // Extracts every other digit from a string
- * var evens = [];
+ * const evens = [];
  * XRegExp.forEach('1a2345', /\d/, function(match, i) {
  *   if (i % 2) evens.push(+match[0]);
  * });
@@ -1011,7 +989,7 @@ XRegExp.exec = function (str, regex, pos, sticky) {
 XRegExp.forEach = function (str, regex, callback) {
     var pos = 0;
     var i = -1;
-    var match;
+    var match = void 0;
 
     while (match = XRegExp.exec(str, regex, pos)) {
         // Because `regex` is provided to `callback`, the function could use the deprecated/
@@ -1036,7 +1014,7 @@ XRegExp.forEach = function (str, regex, callback) {
  * @returns {RegExp} Copy of the provided regex with flag `g` added.
  * @example
  *
- * var globalCopy = XRegExp.globalize(/regex/);
+ * const globalCopy = XRegExp.globalize(/regex/);
  * globalCopy.global; // -> true
  */
 XRegExp.globalize = function (regex) {
@@ -1107,8 +1085,7 @@ XRegExp.isInstalled = function (feature) {
  */
 XRegExp.isRegExp = function (value) {
     return toString.call(value) === '[object RegExp]';
-    //return isType(value, 'RegExp');
-};
+}; // isType(value, 'RegExp');
 
 /**
  * Returns the first matched string, or in global mode, an array containing all matched strings.
@@ -1140,19 +1117,17 @@ XRegExp.isRegExp = function (value) {
 XRegExp.match = function (str, regex, scope) {
     var global = regex.global && scope !== 'one' || scope === 'all';
     var cacheKey = (global ? 'g' : '') + (regex.sticky ? 'y' : '') || 'noGY';
-    var result;
-    var r2;
 
     regex[REGEX_DATA] = regex[REGEX_DATA] || {};
 
     // Shares cached copies with `XRegExp.exec`/`replace`
-    r2 = regex[REGEX_DATA][cacheKey] || (regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
+    var r2 = regex[REGEX_DATA][cacheKey] || (regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
         addG: !!global,
         removeG: scope === 'one',
         isInternalOnly: true
     }));
 
-    result = nativ.match.call(toObject(str), r2);
+    var result = nativ.match.call(toObject(str), r2);
 
     if (regex.global) {
         regex.lastIndex = scope === 'one' && result ?
@@ -1254,7 +1229,7 @@ XRegExp.matchChain = function (str, chain) {
  * @example
  *
  * // Regex search, using named backreferences in replacement string
- * var name = XRegExp('(?<first>\\w+) (?<last>\\w+)');
+ * const name = XRegExp('(?<first>\\w+) (?<last>\\w+)');
  * XRegExp.replace('John Smith', name, '${last}, ${first}');
  * // -> 'Smith, John'
  *
@@ -1276,7 +1251,6 @@ XRegExp.replace = function (str, search, replacement, scope) {
     var global = search.global && scope !== 'one' || scope === 'all';
     var cacheKey = (global ? 'g' : '') + (search.sticky ? 'y' : '') || 'noGY';
     var s2 = search;
-    var result;
 
     if (isRegex) {
         search[REGEX_DATA] = search[REGEX_DATA] || {};
@@ -1293,7 +1267,7 @@ XRegExp.replace = function (str, search, replacement, scope) {
     }
 
     // Fixed `replace` required for named backreferences, etc.
-    result = fixed.replace.call(toObject(str), s2, replacement);
+    var result = fixed.replace.call(toObject(str), s2, replacement);
 
     if (isRegex && search.global) {
         // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
@@ -1329,8 +1303,8 @@ XRegExp.replace = function (str, search, replacement, scope) {
  * ]);
  */
 XRegExp.replaceEach = function (str, replacements) {
-    var i;
-    var r;
+    var i = void 0;
+    var r = void 0;
 
     for (i = 0; i < replacements.length; ++i) {
         r = replacements[i];
@@ -1393,8 +1367,8 @@ XRegExp.split = function (str, separator, limit) {
  * XRegExp.test('abc', /c/, 0, 'sticky'); // -> false
  * XRegExp.test('abc', /c/, 2, 'sticky'); // -> true
  */
+// Do this the easy way :-)
 XRegExp.test = function (str, regex, pos, sticky) {
-    // Do this the easy way :-)
     return !!XRegExp.exec(str, regex, pos, sticky);
 };
 
@@ -1503,7 +1477,7 @@ fixed.exec = function (str) {
         // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating capturing
         // groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of older IEs. IE 9
         // in standards mode follows the spec.
-        if (!correctExecNpcg && match.length > 1 && indexOf(match, '') > -1) {
+        if (!correctExecNpcg && match.length > 1 && match.indexOf('') !== -1) {
             var r2 = copyRegex(this, {
                 removeG: true,
                 isInternalOnly: true
@@ -1606,9 +1580,9 @@ fixed.match = function (regex) {
  */
 fixed.replace = function (search, replacement) {
     var isRegex = XRegExp.isRegExp(search);
-    var origLastIndex;
-    var captureNames;
-    var result;
+    var origLastIndex = void 0;
+    var captureNames = void 0;
+    var result = void 0;
 
     if (isRegex) {
         if (search[REGEX_DATA]) {
@@ -1676,7 +1650,7 @@ fixed.replace = function (search, replacement) {
                         return args[n] || '';
                     }
                     // Groups with the same name is an error, else would need `lastIndexOf`
-                    n = captureNames ? indexOf(captureNames, bracketed) : -1;
+                    n = captureNames ? captureNames.indexOf(bracketed) : -1;
                     if (n < 0) {
                         throw new SyntaxError('Backreference to undefined group ' + $0);
                     }
@@ -1758,7 +1732,7 @@ fixed.split = function (separator, limit) {
     var output = [];
     var origLastIndex = separator.lastIndex;
     var lastLastIndex = 0;
-    var lastLength;
+    var lastLength = void 0;
 
     // Values for `limit`, per the spec:
     // If undefined: pow(2,32) - 1
@@ -1833,7 +1807,7 @@ XRegExp.addToken(/\\u{([\dA-Fa-f]+)}/, function (match, scope, flags) {
         return '\\u' + pad4(hex(code));
     }
     // If `code` is between 0xFFFF and 0x10FFFF, require and defer to native handling
-    if (hasNativeU && flags.indexOf('u') > -1) {
+    if (hasNativeU && flags.indexOf('u') !== -1) {
         return match[0];
     }
     throw new SyntaxError('Cannot use Unicode code point above \\u{FFFF} without flag u');
@@ -1847,11 +1821,15 @@ XRegExp.addToken(/\\u{([\dA-Fa-f]+)}/, function (match, scope, flags) {
  * Unless this is standardized (per the ES spec), regex syntax can't be accurately parsed because
  * character class endings can't be determined.
  */
-XRegExp.addToken(/\[(\^?)\]/, function (match) {
-    // For cross-browser compatibility with ES3, convert [] to \b\B and [^] to [\s\S].
-    // (?!) should work like \b\B, but is unreliable in some versions of Firefox
+XRegExp.addToken(/\[(\^?)\]/,
+// For cross-browser compatibility with ES3, convert [] to \b\B and [^] to [\s\S].
+// (?!) should work like \b\B, but is unreliable in some versions of Firefox
+/* eslint-disable no-confusing-arrow */
+function (match) {
     return match[1] ? '[\\s\\S]' : '\\b\\B';
-}, { leadChar: '[' });
+},
+/* eslint-enable no-confusing-arrow */
+{ leadChar: '[' });
 
 /*
  * Comment pattern: `(?# )`. Inline comments are an alternative to the line comments allowed in
@@ -1880,14 +1858,14 @@ XRegExp.addToken(/\./, function () {
  */
 XRegExp.addToken(/\\k<([\w$]+)>/, function (match) {
     // Groups with the same name is an error, else would need `lastIndexOf`
-    var index = isNaN(match[1]) ? indexOf(this.captureNames, match[1]) + 1 : +match[1];
+    var index = isNaN(match[1]) ? this.captureNames.indexOf(match[1]) + 1 : +match[1];
     var endIndex = match.index + match[0].length;
     if (!index || index > this.captureNames.length) {
         throw new SyntaxError('Backreference to undefined group ' + match[0]);
     }
     // Keep backreferences separate from subsequent literal numbers. This avoids e.g.
     // inadvertedly changing `(?<n>)\k<n>1` to `()\11`.
-    return '\\' + index + (endIndex === match.input.length || isNaN(match.input.charAt(endIndex)) ? '' : '(?:)');
+    return '\\' + index + (endIndex === match.input.length || isNaN(match.input[endIndex]) ? '' : '(?:)');
 }, { leadChar: '\\' });
 
 /*
@@ -1921,7 +1899,7 @@ XRegExp.addToken(/\(\?P?<([\w$]+)>/, function (match) {
     if (match[1] === 'length' || match[1] === '__proto__') {
         throw new SyntaxError('Cannot use reserved word as capture name ' + match[0]);
     }
-    if (indexOf(this.captureNames, match[1]) > -1) {
+    if (this.captureNames.indexOf(match[1]) !== -1) {
         throw new SyntaxError('Cannot use same name for multiple groups ' + match[0]);
     }
     this.captureNames.push(match[1]);
@@ -1934,7 +1912,7 @@ XRegExp.addToken(/\(\?P?<([\w$]+)>/, function (match) {
  * groups. Also adds explicit capture mode (flag n).
  */
 XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
-    if (flags.indexOf('n') > -1) {
+    if (flags.indexOf('n') !== -1) {
         return '(?:';
     }
     this.captureNames.push(null);
@@ -1951,6 +1929,8 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
+
 /*!
  * XRegExp.build
  * <xregexp.com>
@@ -1959,8 +1939,6 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
  */
 
 
-
-    
 
     var REGEX_DATA = 'xregexp';
     var subParts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
@@ -2039,12 +2017,12 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
      * @returns {Function} Handler for template literals that construct regexes with XRegExp syntax.
      * @example
      *
-     * var h12 = /1[0-2]|0?[1-9]/;
-     * var h24 = /2[0-3]|[01][0-9]/;
-     * var hours = XRegExp.tag('x')`${h12} : | ${h24}`;
-     * var minutes = /^[0-5][0-9]$/;
+     * const h12 = /1[0-2]|0?[1-9]/;
+     * const h24 = /2[0-3]|[01][0-9]/;
+     * const hours = XRegExp.tag('x')`${h12} : | ${h24}`;
+     * const minutes = /^[0-5][0-9]$/;
      * // Note that explicitly naming the 'minutes' group is required for named backreferences
-     * var time = XRegExp.tag('x')`^ ${hours} (?<minutes>${minutes}) $`;
+     * const time = XRegExp.tag('x')`^ ${hours} (?<minutes>${minutes}) $`;
      * time.test('10:59'); // -> true
      * XRegExp.exec('10:59', time).minutes; // -> '59'
      */
@@ -2075,7 +2053,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
      * @returns {RegExp} Regex with interpolated subpatterns.
      * @example
      *
-     * var time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $', {
+     * const time = XRegExp.build('(?x)^ {{hours}} ({{minutes}}) $', {
      *   hours: XRegExp.build('{{h12}} : | {{h24}}', {
      *     h12: /1[0-2]|0?[1-9]/,
      *     h24: /2[0-3]|[01][0-9]/
@@ -2090,7 +2068,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
         // Used with `asXRegExp` calls for `pattern` and subpatterns in `subs`, to work around how
         // some browsers convert `RegExp('\n')` to a regex that contains the literal characters `\`
         // and `n`. See more details at <https://github.com/slevithan/xregexp/pull/163>.
-        var addFlagX = flags.indexOf('x') > -1;
+        var addFlagX = flags.indexOf('x') !== -1;
         var inlineFlags = /^\(\?([\w$]+)\)/.exec(pattern);
         // Add flags within a leading mode modifier to the overall pattern's flags
         if (inlineFlags) {
@@ -2120,15 +2098,15 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
         // 'Caps' is short for 'captures'
         var numCaps = 0;
-        var numPriorCaps;
+        var numPriorCaps = void 0;
         var numOuterCaps = 0;
         var outerCapsMap = [0];
         var outerCapNames = patternAsRegex[REGEX_DATA].captureNames || [];
         var output = patternAsRegex.source.replace(parts, function ($0, $1, $2, $3, $4) {
             var subName = $1 || $2;
-            var capName;
-            var intro;
-            var localCapIndex;
+            var capName = void 0;
+            var intro = void 0;
+            var localCapIndex = void 0;
             // Named subpattern
             if (subName) {
                 if (!data.hasOwnProperty(subName)) {
@@ -2189,6 +2167,10 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
+
+
+
 /*!
  * XRegExp.matchRecursive
  * <xregexp.com>
@@ -2197,14 +2179,11 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
-    
-
     /**
      * Returns a match detail object composed of the provided values.
      *
      * @private
      */
-
     function row(name, value, start, end) {
         return {
             name: name,
@@ -2229,7 +2208,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
      * @example
      *
      * // Basic usage
-     * var str = '(t((e))s)t()(ing)';
+     * let str = '(t((e))s)t()(ing)';
      * XRegExp.matchRecursive(str, '\\(', '\\)', 'g');
      * // -> ['t((e))s', '', 'ing']
      *
@@ -2267,8 +2246,8 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
     XRegExp.matchRecursive = function (str, left, right, flags, options) {
         flags = flags || '';
         options = options || {};
-        var global = flags.indexOf('g') > -1;
-        var sticky = flags.indexOf('y') > -1;
+        var global = flags.indexOf('g') !== -1;
+        var sticky = flags.indexOf('y') !== -1;
         // Flag `y` is controlled internally
         var basicFlags = flags.replace(/y/g, '');
         var escapeChar = options.escapeChar;
@@ -2278,11 +2257,11 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
         var delimStart = 0;
         var delimEnd = 0;
         var lastOuterEnd = 0;
-        var outerStart;
-        var innerStart;
-        var leftMatch;
-        var rightMatch;
-        var esc;
+        var outerStart = void 0;
+        var innerStart = void 0;
+        var leftMatch = void 0;
+        var rightMatch = void 0;
+        var esc = void 0;
         left = XRegExp(left, basicFlags);
         right = XRegExp(right, basicFlags);
 
@@ -2388,6 +2367,10 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
+
+
+
 /*!
  * XRegExp Unicode Base
  * <xregexp.com>
@@ -2395,8 +2378,6 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
  */
 
 
-
-    
 
     /**
      * Adds base support for Unicode matching:
@@ -2417,7 +2398,6 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
     // ==--------------------------==
 
     // Storage for Unicode data
-
     var unicode = {};
 
     // Reuse utils
@@ -2433,7 +2413,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
     // Gets the decimal code of a literal code unit, \xHH, \uHHHH, or a backslash-escaped literal
     function charCode(chr) {
         var esc = /^\\[xu](.+)/.exec(chr);
-        return esc ? dec(esc[1]) : chr.charCodeAt(chr.charAt(0) === '\\' ? 1 : 0);
+        return esc ? dec(esc[1]) : chr.charCodeAt(chr[0] === '\\' ? 1 : 0);
     }
 
     // Inverts a list of ordered BMP characters and ranges
@@ -2511,7 +2491,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
         // Negated via \P{..} or \p{^..}
         var isNegated = match[1] === 'P' || !!match[2];
         // Switch from BMP (0-FFFF) to astral (0-10FFFF) mode via flag A
-        var isAstralMode = flags.indexOf('A') > -1;
+        var isAstralMode = flags.indexOf('A') !== -1;
         // Token lookup name. Check `[4]` first to avoid passing `undefined` via `\p{}`
         var slug = normalize(match[4] || match[3]);
         // Token data object
@@ -2583,7 +2563,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
     XRegExp.addUnicodeData = function (data) {
         var ERR_NO_NAME = 'Unicode token requires name';
         var ERR_NO_DATA = 'Unicode token has no character data ';
-        var item;
+        var item = void 0;
 
         for (var i = 0; i < data.length; ++i) {
             item = data[i];
@@ -2639,6 +2619,9 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
         var slug = normalize(name);
         return unicode[slug];
     };
+
+
+
 
 
 
@@ -3690,6 +3673,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
 /*!
  * XRegExp Unicode Properties 
  * <xregexp.com>
@@ -3698,8 +3682,6 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
  */
 
 
-
-    
 
     /**
      * Adds properties to meet the UTS #18 Level 1 RL1.2 requirements for Unicode regex support. See
@@ -3786,6 +3768,9 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
     });
 
     XRegExp.addUnicodeData(unicodeData);
+
+
+
 
 
 

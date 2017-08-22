@@ -206,7 +206,7 @@ function copyRegex(regex, options) {
     // searching for special tokens. That would be wrong for regexes constructed by `RegExp`, and
     // unnecessary for regexes constructed by `XRegExp` because the regex has already undergone the
     // translation to native regex syntax
-    let hasCaptureNames = hasNamedCapture(regex);
+    const hasCaptureNames = hasNamedCapture(regex);
 
     // Strip all but custom flags, except the 'A' flag
     customFlags = flags;
@@ -369,7 +369,7 @@ function prepareFlags(pattern, flags) {
     }
 
     // Strip and apply a leading mode modifier with any combination of flags except g or y
-    let output = nativ.replace.call(pattern, /^\(\?([\w$]+)\)/, function($0, $1) {
+    const output = nativ.replace.call(pattern, /^\(\?([\w$]+)\)/, function($0, $1) {
         if (nativ.test.call(/[gy]/, $1)) {
             throw new SyntaxError('Cannot use flag g or y in mode modifier ' + $0);
         }
@@ -529,7 +529,7 @@ function toObject(value) {
  */
 function prepareJoin(patterns) {
     const parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
-    let output = [];
+    var output = [];
     let numCaptures = 0;
     var numPriorCaptures;
     var captureNames;

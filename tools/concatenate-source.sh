@@ -68,9 +68,13 @@ do
     cat "${file}" | sed -e 's/^\}; *\/\/ *End of module.*$//' \
                         -e 's/^module\.exports *= *function *(XRegExp) *{//' \
                         -e 's/module\.exports *= *XRegExp;//' \
+                        -e "s/module\\.exports *= *exports\\['default'\\];//" \
+                        -e 's/exports\.default *= *XRegExp;//' \
+                        -e 's/exports\.default *= *function *(XRegExp) *{//' \
                         -e "s/'use strict';//" \
                         -e "s/REGEX_DATA = 'xregexp',//" \
                         -e '/\/\/ Adds leading zeros if shorter than four characters/,/\/\/ Gets the decimal code/ { /Gets the decimal/ p; d; }' \
+                        -e '/Object\.defineProperty(exports, "__esModule", {/,+2d' \
                         >> "${output_file}"
     echo '' >> "${output_file}"
 done
