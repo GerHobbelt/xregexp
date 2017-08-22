@@ -173,7 +173,6 @@ function copyRegex(regex, options) {
     let flagsToRemove = '';
     let xregexpSource = null;
     let xregexpFlags = null;
-    var customFlags;
 
     options = options || {};
 
@@ -209,7 +208,7 @@ function copyRegex(regex, options) {
     const hasCaptureNames = hasNamedCapture(regex);
 
     // Strip all but custom flags, except the 'A' flag
-    customFlags = flags;
+    let customFlags = flags;
     if (xregexpFlags) {
         customFlags += xregexpFlags;
     }
@@ -636,7 +635,7 @@ function XRegExp(pattern, flags) {
         patternCache[pattern] = {};
     }
 
-    var appliedFlags;
+    let appliedFlags;
 
     if (!patternCache[pattern][flags]) {
         const context = {
@@ -1439,9 +1438,9 @@ XRegExp.union = (patterns, flags, options) => {
     return XRegExp.join(patterns, separator, flags);
 };
 
-/* ==============================
- * Fixed/extended native methods
- * ============================== */
+// ==--------------------------==
+// Fixed/extended native methods
+// ==--------------------------==
 
 /**
  * Adds named capture support (with backreferences returned as `result.name`), and fixes browser

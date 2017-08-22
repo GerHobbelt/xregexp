@@ -201,7 +201,6 @@ function copyRegex(regex, options) {
     var flagsToRemove = '';
     var xregexpSource = null;
     var xregexpFlags = null;
-    var customFlags;
 
     options = options || {};
 
@@ -245,7 +244,7 @@ function copyRegex(regex, options) {
     var hasCaptureNames = hasNamedCapture(regex);
 
     // Strip all but custom flags, except the 'A' flag
-    customFlags = flags;
+    var customFlags = flags;
     if (xregexpFlags) {
         customFlags += xregexpFlags;
     }
@@ -653,7 +652,7 @@ function XRegExp(pattern, flags) {
         patternCache[pattern] = {};
     }
 
-    var appliedFlags;
+    var appliedFlags = void 0;
 
     if (!patternCache[pattern][flags]) {
         var context = {
@@ -1449,9 +1448,9 @@ XRegExp.union = function (patterns, flags, options) {
     return XRegExp.join(patterns, separator, flags);
 };
 
-/* ==============================
- * Fixed/extended native methods
- * ============================== */
+// ==--------------------------==
+// Fixed/extended native methods
+// ==--------------------------==
 
 /**
  * Adds named capture support (with backreferences returned as `result.name`), and fixes browser
@@ -2619,6 +2618,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
 /*!
  * XRegExp Unicode Blocks 
  * <xregexp.com>
@@ -2627,8 +2627,6 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
  */
 
 
-
-    
 
     /**
      * Adds support for all Unicode blocks. Block names use the prefix 'In'. E.g.,
@@ -3467,6 +3465,10 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
+
+
+
 /*!
  * XRegExp Unicode Categories 
  * <xregexp.com>
@@ -3475,8 +3477,6 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
  */
 
 
-
-    
 
     /**
      * Adds support for Unicode's general categories. E.g., `\p{Lu}` or `\p{Uppercase Letter}`. See
@@ -3668,6 +3668,9 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
+
+
 /*!
  * XRegExp Unicode Properties 
  * <xregexp.com>
@@ -3768,6 +3771,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
 
 
 
+
 /*!
  * XRegExp Unicode Scripts 
  * <xregexp.com>
@@ -3776,8 +3780,6 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
  */
 
 
-
-    
 
     /**
      * Adds support for all Unicode scripts. E.g., `\p{Latin}`. Token names are case insensitive,
@@ -4215,6 +4217,9 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
         name: 'Yi',
         bmp: '\uA000-\uA48C\uA490-\uA4C6'
     }]);
+
+
+
 
 return XRegExp;
 
