@@ -191,6 +191,7 @@ function clipDuplicates(str) {
  *   <li>`isInternalOnly` {Boolean} Whether the copied regex will be used only for internal
  *     operations, and never exposed to users. For internal-only regexes, we can improve perf by
  *     skipping some operations like attaching `XRegExp.prototype` properties.
+ *   <li>`source` {String} Overrides `<regex>.source`, for special cases.
  * @returns {RegExp} Copy of the provided regex, possibly with modified flags.
  */
 function copyRegex(regex, options) {
@@ -246,7 +247,7 @@ function copyRegex(regex, options) {
     }
     customFlags = nativ.replace.call(clipDuplicates(customFlags), /[Agimuy]+/g, '');
     regex = augment(
-        new RegExp(regex.source, flags),
+        new RegExp(options.source || regex.source, flags),
         hasCaptureNames ? xData.captureNames.slice(0) : null,
         xregexpSource,
         xregexpFlags,
@@ -925,12 +926,21 @@ XRegExp.escape = function(str) {
 XRegExp.exec = function(str, regex, pos, sticky) {
     var cacheKey = 'g',
         addY = false,
+        sourceY,
         match,
         r2;
 
     addY = hasNativeY && !!(sticky || (regex.sticky && sticky !== false));
     if (addY) {
         cacheKey += 'y';
+    } else if (sticky) {
+        // Simulate sticky matching by appending an empty capture to the original regex. The
+        // resulting regex will succeed no matter what at the current index (set with `lastIndex`),
+        // and will not search the rest of the subject string. We'll know that the original regex
+        // has failed if that last capture is `''` rather than `undefined` (i.e., if that last
+        // capture participated in the match).
+        sourceY = regex.source + '|()';
+        cacheKey += 'FakeY';
     }
 
     regex[REGEX_DATA] = regex[REGEX_DATA] || {};
@@ -940,17 +950,21 @@ XRegExp.exec = function(str, regex, pos, sticky) {
         regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
             addG: true,
             addY: addY,
+            source: sourceY,
             removeY: sticky === false,
             isInternalOnly: true
         })
     );
 
-    r2.lastIndex = pos = pos || 0;
+    pos = pos || 0;
+    r2.lastIndex = pos;
 
     // Fixed `exec` required for `lastIndex` fix, named backreferences, etc.
     match = fixed.exec.call(r2, str);
 
-    if (sticky && match && match.index !== pos) {
+    // Get rid of the capture added by the pseudo-sticky matcher if needed. An empty string means
+    // the original regexp failed (see above).
+    if (sourceY && match && match.pop() === '') {
         match = null;
     }
 
@@ -2405,8 +2419,9 @@ function charCode(chr) {
 
 // Inverts a list of ordered BMP characters and ranges
 function invertBmp(range) {
-    var output = '',
-        lastEnd = -1;
+    var output = '';
+    var lastEnd = -1;
+
     XRegExp.forEach(
         range, 
         /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/, 
@@ -2420,28 +2435,32 @@ function invertBmp(range) {
             }
             lastEnd = charCode(m[2] || m[1]);
         }
-);
+    );
+
     if (lastEnd < 0xFFFF) {
         output += '\\u' + pad4(hex(lastEnd + 1));
         if (lastEnd < 0xFFFE) {
             output += '-\\uFFFF';
         }
     }
+
     return output;
 }
 
 // Generates an inverted BMP range on first use
 function cacheInvertedBmp(slug) {
     var prop = 'b!';
-    return unicode[slug][prop] || (
-        unicode[slug][prop] = invertBmp(unicode[slug].bmp)
+    return (
+        unicode[slug][prop] ||
+        (unicode[slug][prop] = invertBmp(unicode[slug].bmp))
     );
 }
 
 // Combines and optionally negates BMP and astral data
 function buildAstral(slug, isNegated) {
-    var item = unicode[slug],
-        combined = '';
+    var item = unicode[slug];
+    var combined = '';
+
     if (item.bmp && !item.isBmpLast) {
         combined = '[' + item.bmp + ']' + (item.astral ? '|' : '');
     }
@@ -2451,6 +2470,7 @@ function buildAstral(slug, isNegated) {
     if (item.isBmpLast && item.bmp) {
         combined += (item.astral ? '|' : '') + '[' + item.bmp + ']';
     }
+
     // Astral Unicode tokens always match a code point, never a code unit
     return isNegated ?
         '(?:(?!' + combined + ')(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[\0-\uFFFF]))' :
@@ -2460,8 +2480,9 @@ function buildAstral(slug, isNegated) {
 // Builds a complete astral pattern on first use
 function cacheAstral(slug, isNegated) {
     var prop = isNegated ? 'a!' : 'a=';
-    return unicode[slug][prop] || (
-        unicode[slug][prop] = buildAstral(slug, isNegated)
+    return (
+        unicode[slug][prop] ||
+        (unicode[slug][prop] = buildAstral(slug, isNegated))
     );
 }
 
@@ -2470,25 +2491,25 @@ function cacheAstral(slug, isNegated) {
 // ==--------------------------==
 
 /*
- * Add Unicode token syntax: `\p{..}`, `\P{..}`, `\p{^..}`, `\pC`. Also add astral mode (flag A).
+ * Add astral mode (flag A) and Unicode token syntax: `\p{..}`, `\P{..}`, `\p{^..}`, `\pC`.
  */
 XRegExp.addToken(
     // Use `*` instead of `+` to avoid capturing `^` as the token name in `\p{^}`
     /\\([pP])(?:{(\^?)([^}]*)}|([A-Za-z]))/,
     function(match, scope, flags) {
-        var ERR_DOUBLE_NEG = 'Invalid double negation ',
-            ERR_UNKNOWN_NAME = 'Unknown Unicode token ',
-            ERR_UNKNOWN_REF = 'Unicode token missing data ',
-            ERR_ASTRAL_ONLY = 'Astral mode required for Unicode token ',
-            ERR_ASTRAL_IN_CLASS = 'Astral mode does not support Unicode tokens within character classes',
-            // Negated via \P{..} or \p{^..}
-            isNegated = match[1] === 'P' || !!match[2],
-            // Switch from BMP (0-FFFF) to astral (0-10FFFF) mode via flag A
-            isAstralMode = flags.indexOf('A') > -1,
-            // Token lookup name. Check `[4]` first to avoid passing `undefined` via `\p{}`
-            slug = normalize(match[4] || match[3]),
-            // Token data object
-            item = unicode[slug];
+        var ERR_DOUBLE_NEG = 'Invalid double negation ';
+        var ERR_UNKNOWN_NAME = 'Unknown Unicode token ';
+        var ERR_UNKNOWN_REF = 'Unicode token missing data ';
+        var ERR_ASTRAL_ONLY = 'Astral mode required for Unicode token ';
+        var ERR_ASTRAL_IN_CLASS = 'Astral mode does not support Unicode tokens within character classes';
+        // Negated via \P{..} or \p{^..}
+        var isNegated = match[1] === 'P' || !!match[2];
+        // Switch from BMP (0-FFFF) to astral (0-10FFFF) mode via flag A
+        var isAstralMode = flags.indexOf('A') > -1;
+        // Token lookup name. Check `[4]` first to avoid passing `undefined` via `\p{}`
+        var slug = normalize(match[4] || match[3]);
+        // Token data object
+        var item = unicode[slug];
 
         if (match[1] === 'P' && match[2]) {
             throw new SyntaxError(ERR_DOUBLE_NEG + match[0]);
@@ -2558,12 +2579,11 @@ XRegExp.addToken(
  * XRegExp('\\p{XDigit}:\\p{Hexadecimal}+').test('0:3D'); // -> true
  */
 XRegExp.addUnicodeData = function(data) {
-    var ERR_NO_NAME = 'Unicode token requires name',
-        ERR_NO_DATA = 'Unicode token has no character data ',
-        item,
-        i;
+    var ERR_NO_NAME = 'Unicode token requires name';
+    var ERR_NO_DATA = 'Unicode token has no character data ';
+    var item;
 
-    for (i = 0; i < data.length; ++i) {
+    for (var i = 0; i < data.length; ++i) {
         item = data[i];
         if (!item.name) {
             throw new Error(ERR_NO_NAME);
@@ -2585,24 +2605,22 @@ XRegExp.addUnicodeData = function(data) {
 /**
  * @ignore
  *
- * Return a reference to the internal Unicode definition structure for the given Unicode Property 
- * if the given name is a legal Unicode Property for use in XRegExp `\p` or `\P` regex constructs.
+ * Return a reference to the internal Unicode definition structure for the given Unicode
+ * Property if the given name is a legal Unicode Property for use in XRegExp `\p` or `\P` regex
+ * constructs.
  *
  * @memberOf XRegExp
  * @param {String} name Name by which the Unicode Property may be recognized (case-insensitive),
- *   e.g. `'N'` or `'Number'`.
- *   
- *   The given name is matched against all registered Unicode Properties and Property Aliases.
- *
- * @return {Object} Reference to definition structure when the name matches a Unicode Property; 
- * `false` when the name does not match *any* Unicode Property or Property Alias. 
+ *   e.g. `'N'` or `'Number'`. The given name is matched against all registered Unicode
+ *   Properties and Property Aliases.
+ * @returns {Object} Reference to definition structure when the name matches a Unicode Property.
  *
  * @note
  * For more info on Unicode Properties, see also http://unicode.org/reports/tr18/#Categories. 
  *
  * @note
- * This method is *not* part of the officially documented and published API and is meant 'for
- * advanced use only' where userland code wishes to re-use the (large) internal Unicode 
+ * This method is *not* part of the officially documented API and may change or be removed in
+ * the future. It is meant for userland code that wishes to reuse the (large) internal Unicode
  * structures set up by XRegExp as a single point of Unicode 'knowledge' in the application.
  *
  * See some example usage of this functionality, used as a boolean check if the given name 
@@ -2617,7 +2635,7 @@ XRegExp.addUnicodeData = function(data) {
  */
 XRegExp._getUnicodeProperty = function(name) {
     var slug = normalize(name);
-    return unicode[slug] || false;
+    return unicode[slug];
 };
 
 

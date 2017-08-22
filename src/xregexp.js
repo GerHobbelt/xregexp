@@ -165,6 +165,7 @@ function clipDuplicates(str) {
  *   <li>`isInternalOnly` {Boolean} Whether the copied regex will be used only for internal
  *     operations, and never exposed to users. For internal-only regexes, we can improve perf by
  *     skipping some operations like attaching `XRegExp.prototype` properties.
+ *   <li>`source` {String} Overrides `<regex>.source`, for special cases.
  * @returns {RegExp} Copy of the provided regex, possibly with modified flags.
  */
 function copyRegex(regex, options) {
@@ -220,7 +221,7 @@ function copyRegex(regex, options) {
     }
     customFlags = nativ.replace.call(clipDuplicates(customFlags), /[Agimuy]+/g, '');
     regex = augment(
-        new RegExp(regex.source, flags),
+        new RegExp(options.source || regex.source, flags),
         hasCaptureNames ? xData.captureNames.slice(0) : null,
         xregexpSource,
         xregexpFlags,
@@ -899,12 +900,21 @@ XRegExp.escape = function(str) {
 XRegExp.exec = function(str, regex, pos, sticky) {
     var cacheKey = 'g',
         addY = false,
+        sourceY,
         match,
         r2;
 
     addY = hasNativeY && !!(sticky || (regex.sticky && sticky !== false));
     if (addY) {
         cacheKey += 'y';
+    } else if (sticky) {
+        // Simulate sticky matching by appending an empty capture to the original regex. The
+        // resulting regex will succeed no matter what at the current index (set with `lastIndex`),
+        // and will not search the rest of the subject string. We'll know that the original regex
+        // has failed if that last capture is `''` rather than `undefined` (i.e., if that last
+        // capture participated in the match).
+        sourceY = regex.source + '|()';
+        cacheKey += 'FakeY';
     }
 
     regex[REGEX_DATA] = regex[REGEX_DATA] || {};
@@ -914,17 +924,21 @@ XRegExp.exec = function(str, regex, pos, sticky) {
         regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
             addG: true,
             addY: addY,
+            source: sourceY,
             removeY: sticky === false,
             isInternalOnly: true
         })
     );
 
-    r2.lastIndex = pos = pos || 0;
+    pos = pos || 0;
+    r2.lastIndex = pos;
 
     // Fixed `exec` required for `lastIndex` fix, named backreferences, etc.
     match = fixed.exec.call(r2, str);
 
-    if (sticky && match && match.index !== pos) {
+    // Get rid of the capture added by the pseudo-sticky matcher if needed. An empty string means
+    // the original regexp failed (see above).
+    if (sourceY && match && match.pop() === '') {
         match = null;
     }
 

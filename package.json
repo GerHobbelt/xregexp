@@ -25,6 +25,6 @@
     "test": "bash ./tests/run-tests.sh"
   },
   "devDependencies": {
-    "jasmine": "2.5.3"
+    "jasmine": "2.7.0"
   }
 }
