@@ -6,3 +6,6 @@ node_js:
   - 5
   - 4
   - node
+script:
+  - npm test
+  - '[ -z "$SAUCE_USERNAME" ] || [ -z "$SAUCE_ACCESS_KEY" ] || npm run test-saucelabs'

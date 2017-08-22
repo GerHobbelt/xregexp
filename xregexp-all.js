@@ -546,12 +546,9 @@ function toObject(value) {
  * @returns {Array} modified patterns RegExps and Strings to be combined.
  */
 function prepareJoin(patterns) {
-    var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
-    var output = [];
     var numCaptures = 0;
-    var numPriorCaptures;
-    var captureNames;
-    var pattern;
+    var numPriorCaptures = void 0;
+    var captureNames = void 0;
 
     function rewrite(match, paren, backref) {
         var name = captureNames[numCaptures - numPriorCaptures];
@@ -576,6 +573,9 @@ function prepareJoin(patterns) {
         throw new TypeError('Must provide a nonempty array of patterns to merge');
     }
 
+    var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
+    var output = [];
+    var pattern = void 0;
     for (var i = 0; i < patterns.length; ++i) {
         pattern = patterns[i];
 
@@ -583,8 +583,8 @@ function prepareJoin(patterns) {
             numPriorCaptures = numCaptures;
             captureNames = pattern[REGEX_DATA] && pattern[REGEX_DATA].captureNames || [];
 
-            // Rewrite backreferences. Passing to XRegExp dies on octals and ensures patterns
-            // are independently valid; helps keep this simple. Named captures are put back
+            // Rewrite backreferences. Passing to XRegExp dies on octals and ensures patterns are
+            // independently valid; helps keep this simple. Named captures are put back
             output.push(nativ.replace.call(XRegExp(pattern.source).source, parts, rewrite));
         } else {
             output.push(XRegExp.escape(pattern));
@@ -787,7 +787,7 @@ XRegExp._pad4 = pad4;
  * // Basic usage: Add \a for the ALERT control code
  * XRegExp.addToken(
  *   /\\a/,
- *   function() {return '\\x07';},
+ *   () => '\\x07',
  *   {scope: 'all'}
  * );
  * XRegExp('\\a[\\a-\\n]+').test('\x07\n\x07'); // -> true
@@ -797,7 +797,7 @@ XRegExp._pad4 = pad4;
  * // character classes only)
  * XRegExp.addToken(
  *   /([?*+]|{\d+(?:,\d*)?})(\??)/,
- *   function(match) {return match[1] + (match[2] ? '' : '?');},
+ *   (match) => `${match[1]}${match[2] ? '' : '?'}`,
  *   {flag: 'U'}
  * );
  * XRegExp('a+', 'U').exec('aaa')[0]; // -> 'a'
@@ -981,7 +981,7 @@ XRegExp.exec = function (str, regex, pos, sticky) {
  *
  * // Extracts every other digit from a string
  * const evens = [];
- * XRegExp.forEach('1a2345', /\d/, function(match, i) {
+ * XRegExp.forEach('1a2345', /\d/, (match, i) => {
  *   if (i % 2) evens.push(+match[0]);
  * });
  * // evens -> [2, 4]
@@ -1230,16 +1230,11 @@ XRegExp.matchChain = function (str, chain) {
  *
  * // Regex search, using named backreferences in replacement string
  * const name = XRegExp('(?<first>\\w+) (?<last>\\w+)');
- * XRegExp.replace('John Smith', name, '${last}, ${first}');
- * // -> 'Smith, John'
- *
  * XRegExp.replace('John Smith', name, '$<last>, $<first>');
  * // -> 'Smith, John'
  *
  * // Regex search, using named backreferences in replacement function
- * XRegExp.replace('John Smith', name, function(match) {
- *   return match.last + ', ' + match.first;
- * });
+ * XRegExp.replace('John Smith', name, (match) => `${match.last}, ${match.first}`);
  * // -> 'Smith, John'
  *
  * // String search, with replace-all
@@ -1297,9 +1292,7 @@ XRegExp.replace = function (str, search, replacement, scope) {
  *   [/c/g, 'x', 'one'], // scope 'one' overrides /g
  *   [/d/, 'w', 'all'],  // scope 'all' overrides lack of /g
  *   ['e', 'v', 'all'],  // scope 'all' allows replace-all for strings
- *   [/f/g, function($0) {
- *     return $0.toUpperCase();
- *   }]
+ *   [/f/g, ($0) => $0.toUpperCase()]
  * ]);
  */
 XRegExp.replaceEach = function (str, replacements) {
@@ -2123,7 +2116,7 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
                     intro = '(?:';
                 }
                 numPriorCaps = numCaps;
-                return intro + data[subName].pattern.replace(subParts, function (match, paren, backref) {
+                var rewrittenSubpattern = data[subName].pattern.replace(subParts, function (match, paren, backref) {
                     // Capturing group
                     if (paren) {
                         capName = data[subName].names[numCaps - numPriorCaps];
@@ -2141,7 +2134,8 @@ XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
                         '\\k<' + data[subName].names[localCapIndex] + '>' : '\\' + (+backref + numPriorCaps);
                     }
                     return match;
-                }) + ')';
+                });
+                return '' + intro + rewrittenSubpattern + ')';
             }
             // Capturing group
             if ($3) {
