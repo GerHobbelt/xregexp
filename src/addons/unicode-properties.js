@@ -5,9 +5,7 @@
  * Unicode data by Mathias Bynens <mathiasbynens.be>
  */
 
-module.exports = function(XRegExp) {
-
-'use strict';
+export default (XRegExp) => {
 
 /**
  * Adds properties to meet the UTS #18 Level 1 RL1.2 requirements for Unicode regex support. See
@@ -52,7 +50,7 @@ if (!XRegExp.addUnicodeData) {
     throw new ReferenceError('Unicode Base must be loaded before Unicode Properties');
 }
 
-var unicodeData = [
+const unicodeData = [
     {
         name: 'ASCII',
         bmp: '\0-\x7F'

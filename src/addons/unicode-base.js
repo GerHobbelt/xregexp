@@ -4,9 +4,7 @@
  * Steven Levithan (c) 2008-2017 MIT License
  */
 
-module.exports = function(XRegExp) {
-
-'use strict';
+export default (XRegExp) => {
 
 /**
  * Adds base support for Unicode matching:
@@ -27,12 +25,12 @@ module.exports = function(XRegExp) {
 // ==--------------------------==
 
 // Storage for Unicode data
-var unicode = {};
+const unicode = {};
 
 // Reuse utils
-var dec = XRegExp._dec;
-var hex = XRegExp._hex;
-var pad4 = XRegExp._pad4;
+const dec = XRegExp._dec;
+const hex = XRegExp._hex;
+const pad4 = XRegExp._pad4;
 
 // Generates a token lookup name: lowercase, with hyphens, spaces, and underscores removed
 function normalize(name) {
@@ -41,22 +39,22 @@ function normalize(name) {
 
 // Gets the decimal code of a literal code unit, \xHH, \uHHHH, or a backslash-escaped literal
 function charCode(chr) {
-    var esc = /^\\[xu](.+)/.exec(chr);
+    const esc = /^\\[xu](.+)/.exec(chr);
     return esc ?
         dec(esc[1]) :
-        chr.charCodeAt(chr.charAt(0) === '\\' ? 1 : 0);
+        chr.charCodeAt(chr[0] === '\\' ? 1 : 0);
 }
 
 // Inverts a list of ordered BMP characters and ranges
 function invertBmp(range) {
-    var output = '';
-    var lastEnd = -1;
+    let output = '';
+    let lastEnd = -1;
 
     XRegExp.forEach(
         range,
         /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/,
-        function(m) {
-            var start = charCode(m[1]);
+        (m) => {
+            const start = charCode(m[1]);
             if (start > lastEnd + 1) {
                 output += '\\u' + pad4(hex(lastEnd + 1));
                 if (start > lastEnd + 2) {
@@ -79,7 +77,7 @@ function invertBmp(range) {
 
 // Generates an inverted BMP range on first use
 function cacheInvertedBmp(slug) {
-    var prop = 'b!';
+    const prop = 'b!';
     return (
         unicode[slug][prop] ||
         (unicode[slug][prop] = invertBmp(unicode[slug].bmp))
@@ -88,8 +86,8 @@ function cacheInvertedBmp(slug) {
 
 // Combines and optionally negates BMP and astral data
 function buildAstral(slug, isNegated) {
-    var item = unicode[slug];
-    var combined = '';
+    const item = unicode[slug];
+    let combined = '';
 
     if (item.bmp && !item.isBmpLast) {
         combined = '[' + item.bmp + ']' + (item.astral ? '|' : '');
@@ -109,7 +107,7 @@ function buildAstral(slug, isNegated) {
 
 // Builds a complete astral pattern on first use
 function cacheAstral(slug, isNegated) {
-    var prop = isNegated ? 'a!' : 'a=';
+    const prop = isNegated ? 'a!' : 'a=';
     return (
         unicode[slug][prop] ||
         (unicode[slug][prop] = buildAstral(slug, isNegated))
@@ -126,20 +124,20 @@ function cacheAstral(slug, isNegated) {
 XRegExp.addToken(
     // Use `*` instead of `+` to avoid capturing `^` as the token name in `\p{^}`
     /\\([pP])(?:{(\^?)([^}]*)}|([A-Za-z]))/,
-    function(match, scope, flags) {
-        var ERR_DOUBLE_NEG = 'Invalid double negation ';
-        var ERR_UNKNOWN_NAME = 'Unknown Unicode token ';
-        var ERR_UNKNOWN_REF = 'Unicode token missing data ';
-        var ERR_ASTRAL_ONLY = 'Astral mode required for Unicode token ';
-        var ERR_ASTRAL_IN_CLASS = 'Astral mode does not support Unicode tokens within character classes';
+    (match, scope, flags) => {
+        const ERR_DOUBLE_NEG = 'Invalid double negation ';
+        const ERR_UNKNOWN_NAME = 'Unknown Unicode token ';
+        const ERR_UNKNOWN_REF = 'Unicode token missing data ';
+        const ERR_ASTRAL_ONLY = 'Astral mode required for Unicode token ';
+        const ERR_ASTRAL_IN_CLASS = 'Astral mode does not support Unicode tokens within character classes';
         // Negated via \P{..} or \p{^..}
-        var isNegated = match[1] === 'P' || !!match[2];
+        let isNegated = match[1] === 'P' || !!match[2];
         // Switch from BMP (0-FFFF) to astral (0-10FFFF) mode via flag A
-        var isAstralMode = flags.indexOf('A') > -1;
+        const isAstralMode = flags.includes('A');
         // Token lookup name. Check `[4]` first to avoid passing `undefined` via `\p{}`
-        var slug = normalize(match[4] || match[3]);
+        let slug = normalize(match[4] || match[3]);
         // Token data object
-        var item = unicode[slug];
+        let item = unicode[slug];
 
         if (match[1] === 'P' && match[2]) {
             throw new SyntaxError(ERR_DOUBLE_NEG + match[0]);
@@ -208,12 +206,12 @@ XRegExp.addToken(
  * }]);
  * XRegExp('\\p{XDigit}:\\p{Hexadecimal}+').test('0:3D'); // -> true
  */
-XRegExp.addUnicodeData = function(data) {
-    var ERR_NO_NAME = 'Unicode token requires name';
-    var ERR_NO_DATA = 'Unicode token has no character data ';
-    var item;
+XRegExp.addUnicodeData = (data) => {
+    const ERR_NO_NAME = 'Unicode token requires name';
+    const ERR_NO_DATA = 'Unicode token has no character data ';
+    let item;
 
-    for (var i = 0; i < data.length; ++i) {
+    for (let i = 0; i < data.length; ++i) {
         item = data[i];
         if (!item.name) {
             throw new Error(ERR_NO_NAME);
@@ -263,8 +261,8 @@ XRegExp.addUnicodeData = function(data) {
  * which do not support XRegExp by simply expanding the XRegExp instance to a String through
  * the `map()` mapping action and subsequent `join()`.
  */
-XRegExp._getUnicodeProperty = function(name) {
-    var slug = normalize(name);
+XRegExp._getUnicodeProperty = (name) => {
+    const slug = normalize(name);
     return unicode[slug];
 };
 
