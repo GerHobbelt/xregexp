@@ -1,6 +1,6 @@
 {
-  "name": "xregexp",
-  "version": "3.2.0-20",
+  "name": "@gerhobbelt/xregexp",
+  "version": "3.2.0-21",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -32,7 +32,8 @@
     "pretest": "npm run build",
     "test": "jasmine JASMINE_CONFIG_PATH=tests/jasmine.json",
     "test-saucelabs": "npm run pretest && zuul tests/spec/*.js",
-    "test-browser": "npm run test-saucelabs -- --local --open"
+    "test-browser": "npm run test-saucelabs -- --local --open",
+    "pub": "npm publish --access public"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
