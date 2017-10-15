@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/xregexp",
-  "version": "3.2.0-21",
+  "version": "3.2.0-22",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -42,8 +42,8 @@
     "babel-plugin-transform-xregexp": "0.0.6",
     "babel-preset-env": "1.6.0",
     "browserify": "14.4.0",
-    "eslint": "4.5.0",
-    "jasmine": "2.5.3",
+    "eslint": "4.9.0",
+    "jasmine": "2.8.0",
     "zuul": "3.11.1"
   }
 }
