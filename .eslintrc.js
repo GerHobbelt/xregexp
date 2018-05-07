@@ -248,8 +248,8 @@ module.exports = {
         "prefer-destructuring": [
             "error",
             {
-                "array": false,
-                "object": false
+                "array": true,
+                "object": true
             }
         ],
         "prefer-numeric-literals": "error",
