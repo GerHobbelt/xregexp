@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/xregexp",
-  "version": "3.2.0-22",
+  "version": "4.0.0-22",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -23,8 +23,9 @@
     "LICENSE"
   ],
   "scripts": {
-    "lint": "eslint src",
+    "lint": "eslint .",
     "babel": "babel src -d lib",
+    "build-unicode-data": "node tools/scripts/block-regex.js && node tools/scripts/category-regex.js && node tools/scripts/property-regex.js && node tools/scripts/script-regex.js",
     "prebuild-orig": "npm run lint && npm run babel",
     "prebuild": "npm run lint",
     "build-orig": "browserify lib/index.js --standalone XRegExp > xregexp-all.js",
@@ -44,8 +45,11 @@
     "browserify": "14.4.0",
     "eslint": "4.9.0",
     "jasmine": "2.8.0",
-    "rollup": "^0.50.0",
-    "rollup-plugin-node-resolve": "^3.0.0",
+    "jsesc": "2.5.1",
+    "rollup": "0.50.0",
+    "rollup-plugin-node-resolve": "3.0.0",
+    "unicode-9.0.0": "0.7.4",
+    "unicode-property-value-aliases": "3.0.0",
     "zuul": "3.11.1"
   }
 }

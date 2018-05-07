@@ -20,16 +20,16 @@
     }
 
     var suiteOptions = {
-        onStart: function () {
+        onStart: function() {
             log('\n' + this.name + ':');
         },
 
-        onCycle: function (event) {
+        onCycle: function(event) {
             log('\n' + String(event.target));
             scrollToEnd();
         },
 
-        onComplete: function () {
+        onComplete: function() {
             log('\nFastest is ' + this.filter('fastest').map('name') + '\n');
             // Remove current suite from queue
             suites.shift();
@@ -110,18 +110,10 @@
         var str = Array(30 + 1).join('hello world x ') + 'xx!';
         var pos = 5;
 
-        XRegExp.install('natives');
-        var fixedExec = RegExp.prototype.exec;
-        XRegExp.uninstall('natives');
-
         suites.push(new Benchmark.Suite('exec', suiteOptions)
             .add('Native exec', function() {
                 regexG.lastIndex = pos;
                 regexG.exec(str);
-            }, benchmarkOptions)
-            .add('Shimmed exec', function() {
-                regexG.lastIndex = pos;
-                fixedExec.call(regexG, str);
             }, benchmarkOptions)
             .add('XRegExp.exec', function() {
                 XRegExp.exec(str, regexG, pos);
@@ -142,10 +134,6 @@
                 regexG.lastIndex = pos;
                 regexG.exec(strs[++i] || strs[i = 0]);
             }, benchmarkOptions)
-            .add('Shimmed exec', function() {
-                regexG.lastIndex = pos;
-                fixedExec.call(regexG, strs[++i] || strs[i = 0]);
-            }, benchmarkOptions)
             .add('XRegExp.exec', function() {
                 XRegExp.exec(strs[++i] || strs[i = 0], regexG, pos);
             }, benchmarkOptions)
@@ -159,15 +147,8 @@
                     match = null;
                 }
             }, benchmarkOptions)
-            .add('Shimmed exec', function() {
-                regexG.lastIndex = pos;
-                var match = fixedExec.call(regexG, strs[++i] || strs[i = 0]);
-                if (match && match.index !== pos) {
-                    match = null;
-                }
-            }, benchmarkOptions)
             .add('XRegExp.exec', function() {
-                var match = XRegExp.exec(strs[++i] || strs[i = 0], regexG, pos, 'sticky');
+                var match = XRegExp.exec(strs[++i] || strs[i = 0], regexG, pos, 'sticky'); // eslint-disable-line no-unused-vars
             }, benchmarkOptions)
         );
     }());
@@ -211,7 +192,7 @@
                             (r.sticky ? 'y' : '')
                     );
                 }
-                while (match = r.exec(str)) {
+                while (match = r.exec(str)) { // eslint-disable-line no-cond-assign
                     matches.push(match[0]);
                     if (r.lastIndex === match.index) {
                         ++r.lastIndex;
@@ -223,7 +204,7 @@
                 var matches = [];
                 var match;
                 var pos = 0;
-                while (match = XRegExp.exec(str, r, pos)) {
+                while (match = XRegExp.exec(str, r, pos)) { // eslint-disable-line no-cond-assign
                     matches.push(match[0]);
                     pos = match.index + (match[0].length || 1);
                 }

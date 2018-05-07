@@ -423,6 +423,7 @@ describe('XRegExp.exec()', function() {
     });
 
     it('should avoid regression on edge cases', function() {
+
         /*
          * From the XRegExp 1.5.1 changelog:
          * Fix: RegExp.prototype.exec no longer throws an error in IE when it is simultaneously
@@ -443,28 +444,37 @@ describe('XRegExp.exec()', function() {
     // NOTE: The remaining specs are for named capture. They are listed separately (as extensions)
     // for the RegExp.prototype.exec and nonglobal String.prototype.match specs...
 
-    it('should include named capture properties on the match array', function() {
+    it('should include named capture properties on the match array if namespacing is not installed', function() {
         var match = XRegExp.exec('a', XRegExp('(?<name>a)'));
 
         expect(match.name).toBe('a');
         expect(match[1]).toBe('a');
     });
 
+    it('should not include named capture properties on the match array if namespacing is installed', function() {
+        XRegExp.install('namespacing');
+        var match = XRegExp.exec('a', XRegExp('(?<name>a)'));
+
+        expect(match.name).toBeUndefined();
+    });
+
+    it('should not include named capture properties on a groups object if namespacing is not installed', function() {
+        var match = XRegExp.exec('a', XRegExp('(?<name>a)'));
+
+        expect(match.groups).toBeUndefined();
+    });
+
+    it('should include named capture properties on a groups object if namespacing is installed', function() {
+        XRegExp.install('namespacing');
+        var match = XRegExp.exec('a', XRegExp('(?<name>a)'));
+
+        expect(match.groups.name).toBe('a');
+        expect(match[1]).toBe('a');
+    });
+
     it('should shaddow array prototype properties with named capture properties', function() {
         expect(XRegExp.exec('a', XRegExp('(?<concat>a)')).concat).toBe('a');
-    });
-
-    it('should throw an exception if reserved array properties are used as capture names', function() {
-        // Reserved names are 'length', '__proto__', and bare integers
-        ['length', '__proto__', '0', '1'].forEach(function(name) {
-            expect(function() {XRegExp.exec('a', XRegExp('(?<' + name + '>a)'));}).toThrowError(SyntaxError);
-        });
-    });
-
-    it('should allow reserved JavaScript keywords as capture names', function() {
-        ['eval', 'for', 'function', 'if', 'throw'].forEach(function(keyword) {
-            expect(XRegExp.exec('a', XRegExp('(?<' + keyword + '>a)'))[keyword]).toBe('a');
-        });
+        expect(XRegExp.exec('a', XRegExp('(?<index>a)')).index).toBe('a');
     });
 
 });
@@ -728,11 +738,11 @@ describe('XRegExp.install()', function() {
 
     // NOTE: All optional features are uninstalled before each spec runs
 
-    var features = ['natives', 'astral'];
+    var features = ['namespacing', 'astral'];
 
     it('should install all features set as true on an options object', function() {
         XRegExp.install({
-            natives: true,
+            namespacing: true,
             astral: true
         });
 
@@ -743,7 +753,7 @@ describe('XRegExp.install()', function() {
 
     it('should not install features set as false on an options object', function() {
         XRegExp.install({
-            natives: false,
+            namespacing: false,
             astral: false
         });
 
@@ -753,7 +763,7 @@ describe('XRegExp.install()', function() {
     });
 
     it('should install all features in a space-delimited options string', function() {
-        XRegExp.install('natives astral');
+        XRegExp.install('namespacing astral');
 
         features.forEach(function(feature) {
             expect(XRegExp.isInstalled(feature)).toBe(true);
@@ -761,7 +771,7 @@ describe('XRegExp.install()', function() {
     });
 
     it('should install all features in a comma-delimited options string', function() {
-        XRegExp.install('natives,astral');
+        XRegExp.install('namespacing,astral');
 
         features.forEach(function(feature) {
             expect(XRegExp.isInstalled(feature)).toBe(true);
@@ -769,7 +779,7 @@ describe('XRegExp.install()', function() {
     });
 
     it('should install all features in a comma+space-delimited options string', function() {
-        XRegExp.install('natives, astral');
+        XRegExp.install('namespacing, astral');
 
         features.forEach(function(feature) {
             expect(XRegExp.isInstalled(feature)).toBe(true);
@@ -784,27 +794,27 @@ describe('XRegExp.install()', function() {
 describe('XRegExp.isInstalled()', function() {
 
     it('should not check multiple space-delimited features simultaneously', function() {
-        XRegExp.install('natives astral');
+        XRegExp.install('namespacing astral');
 
-        expect(XRegExp.isInstalled('natives astral')).toBe(false);
+        expect(XRegExp.isInstalled('namespacing astral')).toBe(false);
     });
 
     it('should not check multiple comma-delimited features simultaneously', function() {
-        XRegExp.install('natives astral');
+        XRegExp.install('namespacing astral');
 
-        expect(XRegExp.isInstalled('natives,astral')).toBe(false);
+        expect(XRegExp.isInstalled('namespacing,astral')).toBe(false);
     });
 
     it('should not check multiple comma+space-delimited features simultaneously', function() {
-        XRegExp.install('natives astral');
+        XRegExp.install('namespacing astral');
 
-        expect(XRegExp.isInstalled('natives, astral')).toBe(false);
+        expect(XRegExp.isInstalled('namespacing, astral')).toBe(false);
     });
 
     it('should not check features using an options object', function() {
-        XRegExp.install('natives');
+        XRegExp.install('astral');
 
-        expect(XRegExp.isInstalled({natives: true})).toBe(false);
+        expect(XRegExp.isInstalled({astral: true})).toBe(false);
     });
 
     it('should report unknown features as not installed', function() {
@@ -812,9 +822,9 @@ describe('XRegExp.isInstalled()', function() {
     });
 
     it('should be case sensitive for feature names', function() {
-        XRegExp.install('natives');
+        XRegExp.install('astral');
 
-        expect(XRegExp.isInstalled('Natives')).toBe(false);
+        expect(XRegExp.isInstalled('Astral')).toBe(false);
     });
 
 });
@@ -1076,37 +1086,50 @@ describe('XRegExp.matchChain()', function() {
     it('should throw an exception when accessing an undefined backreference', function() {
         expect(function() {XRegExp.matchChain('', [
             {regex: /^/, backref: 'bogus'}
-        ]);}).toThrow();
+        ]);}).toThrowError(ReferenceError);
 
         expect(function() {XRegExp.matchChain('', [
             {regex: /^/, backref: 1}
-        ]);}).toThrow();
+        ]);}).toThrowError(ReferenceError);
+    });
 
-        // This does not throw, because there are no matches upon which to access the backreference
+    it('should not throw when referencing an undefined backreference if there are no matches upon which to access the backreference', function() {
         expect(function() {XRegExp.matchChain('', [
             {regex: /x/, backref: 1}
         ]);}).not.toThrow();
     });
 
-    it('should handle a four-link chain with plain regexes and regex/backref objects, using named and numbered backrefs', function() {
+    it('should handle named and numbered backrefs when namespacing is not installed', function() {
+        expect(XRegExp.matchChain('test', [
+            {regex: /.(..)/, backref: 1},
+            {regex: XRegExp('.(?<n>.)'), backref: 'n'}
+        ])).toEqual(['s']);
+    });
+
+    it('should handle named and numbered backrefs when namespacing is installed', function() {
+        XRegExp.install('namespacing');
+        expect(XRegExp.matchChain('test', [
+            {regex: /.(..)/, backref: 1},
+            {regex: XRegExp('.(?<n>.)'), backref: 'n'}
+        ])).toEqual(['s']);
+    });
+
+    it('should handle a multi-link chain with plain regexes and regex/backref objects, using named and numbered backrefs', function() {
         var str = '<html><img src="http://x.com/pic.png">' +
             '<script src="http://xregexp.com/path/file.ext">' +
             '<img src="http://xregexp.com/path/to/img.jpg?x">' +
             '<img src="http://xregexp.com/img2.gif"/></html>';
 
         expect(XRegExp.matchChain(str, [
-            // <img> tag attributes
             {regex: /<img\b([^>]+)>/i, backref: 1},
-            // src attribute values
             {regex: XRegExp('(?ix) \\s src=" (?<src> [^"]+ )'), backref: 'src'},
-            // xregexp.com paths
             {regex: XRegExp('^http://xregexp\\.com(/[^#?]+)', 'i'), backref: 1},
-            // Filenames (strip directory paths)
             /[^\/]+$/
         ])).toEqual(['img.jpg', 'img2.gif']);
     });
 
     it('should pass forward and return nonparticipating capturing groups as empty strings', function() {
+
         /* Converting nonparticipating capturing groups that are passed forward in the chain
          * (rather than returned) from undefineds to empty strings, rather than rejecting any match
          * (even if zero-length) within them, is questionable behavior. However, this probably best
@@ -1162,6 +1185,167 @@ describe('XRegExp.replace()', function() {
         expect(XRegExp.replace('test', /t/g, 'x', 'one')).toBe('xest');
     });
 
+    it('should not pass the groups argument to callbacks when namespacing is not installed', function() {
+        var regex = XRegExp('(?s)(?<groupName>.)');
+        XRegExp.replace('test', regex, function(match, capture1, pos, str, groups) {
+            expect(groups).toBeUndefined();
+        });
+    });
+
+    it('should pass the groups argument to callbacks when namespacing is installed', function() {
+        XRegExp.install('namespacing');
+        var regex = XRegExp('(?s)(?<groupName>.)');
+        var groupsObject = Object.create(null);
+        groupsObject.groupName = 't';
+        XRegExp.replace('test', regex, function(match, capture1, pos, str, groups) {
+            expect(groups).toEqual(groupsObject);
+        });
+    });
+
+    it('should allow accessing named backreferences in callbacks as properties of the first argument when namespacing is not installed', function() {
+        expect(XRegExp.replace('abc', XRegExp('(?<name>.).'), function(match) {
+            return ':' + match.name + ':';
+        })).toBe(':a:c');
+    });
+
+    it('should not allow accessing named backreferences in callbacks as properties of the first argument when namespacing is installed', function() {
+        XRegExp.install('namespacing');
+        expect(XRegExp.replace('abc', XRegExp('(?<name>.).'), function(match) {
+            return ':' + match.name + ':';
+        })).toBe(':undefined:c');
+    });
+
+    describe('supports new replacement text syntax:', function() {
+
+        describe('backreference $0', function() {
+
+            it('should work like $&', function() {
+                expect(XRegExp.replace('xaaa', /aa/, '$0b')).toBe('xaaba');
+                expect(XRegExp.replace('xaaa', 'aa', '$0b')).toBe('xaaba');
+            });
+
+            it('should be allowed as $00', function() {
+                expect(XRegExp.replace('xaaa', /aa/, '$00b')).toBe('xaaba');
+            });
+
+            it('should end after two zeros', function() {
+                expect(XRegExp.replace('xaaa', /aa/, '$000b')).toBe('xaa0ba');
+                expect(XRegExp.replace('xaaa', /aa/, '$001b')).toBe('xaa1ba');
+            });
+
+        });
+
+        describe('named backreferences', function() {
+
+            it('should return the named backreference', function() {
+                expect(XRegExp.replace('test', XRegExp('(?<test>t)', 'g'), ':${test}:')).toBe(':t:es:t:');
+                expect(XRegExp.replace('test', XRegExp('(?<test>t)', 'g'), ':$<test>:')).toBe(':t:es:t:');
+
+                // Backreference to a nonparticipating capturing group
+                expect(XRegExp.replace('test', XRegExp('t|(?<test>t)', 'g'), ':${test}:')).toBe('::es::');
+                expect(XRegExp.replace('test', XRegExp('t|(?<test>t)', 'g'), ':$<test>:')).toBe('::es::');
+            });
+
+            it('should throw an exception for backreferences to unknown group names', function() {
+                expect(function() {XRegExp.replace('test', XRegExp('(?<test>t)', 'g'), ':${x}:');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp.replace('test', XRegExp('(?<test>t)', 'g'), ':$<x>:');}).toThrowError(SyntaxError);
+            });
+
+        });
+
+        describe('explicit numbered backreferences', function() {
+
+            it('should return the numbered backreference', function() {
+                expect(XRegExp.replace('test', /(.)./g, '${1}')).toBe('ts');
+                expect(XRegExp.replace('test', /(.)./g, '$<1>')).toBe('ts');
+
+                // Backreference to a nonparticipating capturing group
+                expect(XRegExp.replace('test', /t|(e)/g, '${1}')).toBe('es');
+                expect(XRegExp.replace('test', /t|(e)/g, '$<1>')).toBe('es');
+            });
+
+            it('should allow leading zeros', function() {
+                expect(XRegExp.replace('test', /(.)./g, '${01}')).toBe('ts');
+                expect(XRegExp.replace('test', /(.)./g, '$<01>')).toBe('ts');
+
+                expect(XRegExp.replace('test', /(.)./g, '${001}')).toBe('ts');
+                expect(XRegExp.replace('test', /(.)./g, '$<001>')).toBe('ts');
+            });
+
+            it('should return named backreferences by number', function() {
+                expect(XRegExp.replace('test', XRegExp('(?<name>.).', 'g'), '${1}')).toBe('ts');
+                expect(XRegExp.replace('test', XRegExp('(?<name>.).', 'g'), '$<1>')).toBe('ts');
+            });
+
+            it('should separate numbered backreferences from following literal digits', function() {
+                expect(XRegExp.replace('test', new RegExp('(.).', 'g'), '${1}0')).toBe('t0s0');
+                expect(XRegExp.replace('test', new RegExp('(.).', 'g'), '$<1>0')).toBe('t0s0');
+
+                expect(XRegExp.replace('test', new RegExp('(.).' + '()'.repeat(9), 'g'), '${1}0')).toBe('t0s0');
+                expect(XRegExp.replace('test', new RegExp('(.).' + '()'.repeat(9), 'g'), '$<1>0')).toBe('t0s0');
+            });
+
+            it('should throw an exception for backreferences to unknown group numbers', function() {
+                expect(function() {XRegExp.replace('test', /t/, '${1}');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp.replace('test', /t/, '$<1>');}).toThrowError(SyntaxError);
+
+                expect(function() {XRegExp.replace('test', /(t)/, '${2}');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp.replace('test', /(t)/, '$<2>');}).toThrowError(SyntaxError);
+            });
+
+            it('should allow ${0} to refer to the entire match', function() {
+                expect(XRegExp.replace('test', /../g, '${0}:')).toBe('te:st:');
+                expect(XRegExp.replace('test', /../g, '$<0>:')).toBe('te:st:');
+
+                expect(XRegExp.replace('test', /../g, '${00}:')).toBe('te:st:');
+                expect(XRegExp.replace('test', /../g, '$<00>:')).toBe('te:st:');
+
+                expect(XRegExp.replace('test', /../g, '${000}:')).toBe('te:st:');
+                expect(XRegExp.replace('test', /../g, '$<000>:')).toBe('te:st:');
+            });
+
+            it('should support backreferences 100 and greater, if the browser does natively', function() {
+                // IE < 9 doesn't allow backreferences greater than \99 *within* a regex, but
+                // XRegExp still allows backreferences to groups 100+ within replacement text
+                try {
+                    // Regex with 1,000 capturing groups. This fails in Firefox 4-6 (but not v3.6
+                    // or v7+) with `InternalError: regular expression too complex`
+                    var lottaGroups = new RegExp([
+                        '^(a)\\1', '()'.repeat(8),
+                        '(b)\\10', '()'.repeat(89),
+                        '(c)', '()'.repeat(899),
+                        '(d)$'
+                    ].join(''));
+
+                    expect(XRegExp.replace('aabbcd', lottaGroups, '${0} ${01} ${001} ${0001} ${1} ${10} ${100} ${1000}')).toBe('aabbcd a a a a b c d');
+                    expect(XRegExp.replace('aabbcd', lottaGroups, '$<0> $<01> $<001> $<0001> $<1> $<10> $<100> $<1000>')).toBe('aabbcd a a a a b c d');
+                    expect(XRegExp.replace('aabbcd', lottaGroups, '$<0> ${01} $<001> ${0001} $<1> ${10} $<100> ${1000}')).toBe('aabbcd a a a a b c d');
+                    // For comparison...
+                    expect(XRegExp.replace('aabbcd', lottaGroups, '$0 $01 $001 $0001 $1 $10 $100 $1000')).toBe('aabbcd a aabbcd1 aabbcd01 a b b0 b00');
+                } catch (err) {
+                    // Keep the assertion count consistent cross-browser
+                    expect(true).toBe(true);
+                    expect(true).toBe(true);
+                    expect(true).toBe(true);
+                    expect(true).toBe(true);
+                }
+            });
+
+        });
+
+        describe('strict error handling', function() {
+
+            it('should throw an exception for backreferences to unknown group numbers', function() {
+                expect(function() {XRegExp.replace('xaaa', /aa/, '$1b');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp.replace('xaaa', /aa/, '$01b');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp.replace('xaaa', /a(a)/, '$2b');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp.replace('xa(a)a', 'a(a)', '$1b');}).toThrowError(SyntaxError);
+            });
+
+        });
+
+    });
+
     /*
      * The following specs:
      * - Are mirrored by String.prototype.replace.
@@ -1169,8 +1353,8 @@ describe('XRegExp.replace()', function() {
 
     // TODO: Copy/update specs from String.prototype.replace here
 
-    // NOTE: The following two specs have already been copied from String.prototype.replace, so
-    // don't copy them again
+    // NOTE: The following two specs have already been copied and adapted from
+    // String.prototype.replace, so don't copy them again
 
     it('should convert any nonstring subject to a string (except null and undefined)', function() {
         var values = [
@@ -1194,12 +1378,6 @@ describe('XRegExp.replace()', function() {
 
         expect(function() {XRegExp.replace();}).toThrowError(TypeError);
     });
-
-    // NOTE: The remaining specs are for named backreferences and replacement text syntax
-    // extensions. They are listed separately (as extensions) for the String.prototype.replace
-    // specs...
-
-    // TODO: Copy/update specs from String.prototype.replace here
 
 });
 
@@ -1300,7 +1478,7 @@ describe('XRegExp.split()', function() {
             {str: '.',         separator: /(.?)(.?)/,       expected: ['', '.', '', '']},
             {str: '.',         separator: /(.??)(.??)/,     expected: ['.']},
             {str: '.',         separator: /(.)?(.)?/,       expected: ['', '.', undefined, '']},
-            {str: 'test',      separator: /(.?)/,           expected: ['','t','','e','','s','','t','']},
+            {str: 'test',      separator: /(.?)/,           expected: ['', 't', '', 'e', '', 's', '', 't', '']},
             {str: 'tesst',     separator: /(s)*/,           expected: ['t', undefined, 'e', 's', 't']},
             {str: 'tesst',     separator: /(s)*?/,          expected: ['t', undefined, 'e', undefined, 's', undefined, 's', undefined, 't']},
             {str: 'tesst',     separator: /(s*)/,           expected: ['t', '', 'e', 'ss', 't']},
@@ -1584,14 +1762,14 @@ describe('XRegExp.test()', function() {
 describe('XRegExp.uninstall()', function() {
 
     beforeEach(function() {
-        XRegExp.install('natives astral');
+        XRegExp.install('namespacing astral');
     });
 
-    var features = ['natives', 'astral'];
+    var features = ['namespacing', 'astral'];
 
     it('should uninstall all features set as true on an options object', function() {
         XRegExp.uninstall({
-            natives: true,
+            namespacing: true,
             astral: true
         });
 
@@ -1602,7 +1780,7 @@ describe('XRegExp.uninstall()', function() {
 
     it('should not uninstall features set as false on an options object', function() {
         XRegExp.uninstall({
-            natives: false,
+            namespacing: false,
             astral: false
         });
 
@@ -1612,7 +1790,7 @@ describe('XRegExp.uninstall()', function() {
     });
 
     it('should uninstall all features in a space-delimited options string', function() {
-        XRegExp.uninstall('natives astral');
+        XRegExp.uninstall('namespacing astral');
 
         features.forEach(function(feature) {
             expect(XRegExp.isInstalled(feature)).toBe(false);
@@ -1620,7 +1798,7 @@ describe('XRegExp.uninstall()', function() {
     });
 
     it('should uninstall all features in a comma-delimited options string', function() {
-        XRegExp.uninstall('natives,astral');
+        XRegExp.uninstall('namespacing,astral');
 
         features.forEach(function(feature) {
             expect(XRegExp.isInstalled(feature)).toBe(false);
@@ -1628,7 +1806,7 @@ describe('XRegExp.uninstall()', function() {
     });
 
     it('should uninstall all features in a comma+space-delimited options string', function() {
-        XRegExp.uninstall('natives, astral');
+        XRegExp.uninstall('namespacing, astral');
 
         features.forEach(function(feature) {
             expect(XRegExp.isInstalled(feature)).toBe(false);
@@ -1636,11 +1814,11 @@ describe('XRegExp.uninstall()', function() {
     });
 
     it('should undo repeated installations with a single uninstall', function() {
-        XRegExp.install('natives');
-        XRegExp.install('natives');
-        XRegExp.uninstall('natives');
+        XRegExp.install('astral');
+        XRegExp.install('astral');
+        XRegExp.uninstall('astral');
 
-        expect(XRegExp.isInstalled('natives')).toBe(false);
+        expect(XRegExp.isInstalled('astral')).toBe(false);
     });
 
     // TODO: Add basic specs that verify whether actual functionality of uninstalled features is

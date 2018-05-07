@@ -1,7 +1,7 @@
 /*!
  * XRegExp
  * <xregexp.com>
- * Steven Levithan (c) 2007-2017 MIT License
+ * Steven Levithan (c) 2007-present MIT License
  */
 
 /**
@@ -20,7 +20,7 @@ const REGEX_DATA = 'xregexp';
 // Optional features that can be installed and uninstalled
 const features = {
     astral: false,
-    natives: false
+    namespacing: false
 };
 // Native methods to use and restore ('native' is an ES3 reserved keyword)
 const nativ = {
@@ -252,14 +252,22 @@ function getContextualTokenSeparator(match, scope, flags) {
         // No need to separate tokens if at the beginning or end of a group
         match.input[match.index - 1] === '(' ||
         match.input[match.index + match[0].length] === ')' ||
-        // No need to separate tokens if at the beginning of a non-capturing group or lookahead
-        match.input.slice(match.index - 3, 3).match(/\(\?[:=!]/) ||
+
         // No need to separate tokens if before or after a `|`
         match.input[match.index - 1] === '|' ||
         match.input[match.index + match[0].length] === '|' ||
+
         // No need to separate tokens if at the beginning or end of the pattern
-        match.input[match.index - 1] === undefined ||
-        match.input[match.index + match[0].length] === undefined ||
+        match.index < 1 ||
+        match.index + match[0].length >= match.input.length ||
+
+        // No need to separate tokens if at the beginning of a noncapturing group or lookahead.
+        // The way this is written relies on:
+        // - The search regex matching only 3-char strings.
+        // - Although `substr` gives chars from the end of the string if given a negative index,
+        //   the resulting substring will be too short to match. Ex: `'abcd'.substr(-1, 3) === 'd'`
+        nativ.test.call(/^\(\?[:=!]/, match.input.substr(match.index - 3, 3)) ||
+
         // Avoid separating tokens when the following token is a quantifier
         isQuantifierNext(match.input, match.index + match[0].length, flags)
     ) {
@@ -491,19 +499,14 @@ function setAstral(on) {
 }
 
 /**
- * Enables or disables native method overrides.
+ * Adds named capture groups to the `groups` property of match arrays. See here for details:
+ * https://github.com/tc39/proposal-regexp-named-groups
  *
  * @private
  * @param {Boolean} on `true` to enable; `false` to disable.
  */
-function setNatives(on) {
-    RegExp.prototype.exec = (on ? fixed : nativ).exec;
-    RegExp.prototype.test = (on ? fixed : nativ).test;
-    String.prototype.match = (on ? fixed : nativ).match;
-    String.prototype.replace = (on ? fixed : nativ).replace;
-    String.prototype.split = (on ? fixed : nativ).split;
-
-    features.natives = on;
+function setNamespacing(on) {
+    features.namespacing = on;
 }
 
 /**
@@ -1032,12 +1035,12 @@ XRegExp.globalize = (regex) => copyRegex(regex, {addG: true});
  *   // Enables support for astral code points in Unicode addons (implicitly sets flag A)
  *   astral: true,
  *
- *   // DEPRECATED: Overrides native regex methods with fixed/extended versions
- *   natives: true
+ *   // Adds named capture groups to the `groups` property of matches
+ *   namespacing: true
  * });
  *
  * // With an options string
- * XRegExp.install('astral natives');
+ * XRegExp.install('astral namespacing');
  */
 XRegExp.install = (options) => {
     options = prepareOptions(options);
@@ -1046,8 +1049,8 @@ XRegExp.install = (options) => {
         setAstral(true);
     }
 
-    if (!features.natives && options.natives) {
-        setNatives(true);
+    if (!features.namespacing && options.namespacing) {
+        setNamespacing(true);
     }
 };
 
@@ -1057,7 +1060,7 @@ XRegExp.install = (options) => {
  * @memberOf XRegExp
  * @param {String} feature Name of the feature to check. One of:
  *   - `astral`
- *   - `natives`
+ *   - `namespacing`
  * @returns {Boolean} Whether the feature is installed.
  * @example
  *
@@ -1171,16 +1174,23 @@ XRegExp.matchChain = (str, chain) => (function recurseChain(values, level) {
 
     function addMatch(match) {
         if (item.backref) {
-            // Safari 4.0.5 (but not 5.0.5+) inappropriately uses sparse arrays to hold the
-            // `undefined`s for backreferences to nonparticipating capturing groups. In such
-            // cases, a `hasOwnProperty` or `in` check on its own would inappropriately throw
-            // the exception, so also check if the backreference is a number that is within the
-            // bounds of the array.
-            if (!(match.hasOwnProperty(item.backref) || +item.backref < match.length)) {
-                throw new ReferenceError(`Backreference to undefined group: ${item.backref}`);
+            const ERR_UNDEFINED_GROUP = `Backreference to undefined group: ${item.backref}`;
+            const isNamedBackref = isNaN(item.backref);
+
+            if (isNamedBackref && XRegExp.isInstalled('namespacing')) {
+                // `groups` has `null` as prototype, so using `in` instead of `hasOwnProperty`
+                if (!(item.backref in match.groups)) {
+                    throw new ReferenceError(ERR_UNDEFINED_GROUP);
+                }
+            } else if (!match.hasOwnProperty(item.backref)) {
+                throw new ReferenceError(ERR_UNDEFINED_GROUP);
             }
 
-            matches.push(match[item.backref] || '');
+            const backrefValue = isNamedBackref && XRegExp.isInstalled('namespacing') ?
+                match.groups[item.backref] :
+                match[item.backref];
+
+            matches.push(backrefValue || '');
         } else {
             matches.push(match[0]);
         }
@@ -1375,12 +1385,12 @@ XRegExp.test = (str, regex, pos, sticky) => !!XRegExp.exec(str, regex, pos, stic
  *   // Disables support for astral code points in Unicode addons
  *   astral: true,
  *
- *   // DEPRECATED: Restores native regex methods
- *   natives: true
+ *   // Don't add named capture groups to the `groups` property of matches
+ *   namespacing: true
  * });
  *
  * // With an options string
- * XRegExp.uninstall('astral natives');
+ * XRegExp.uninstall('astral namespacing');
  */
 XRegExp.uninstall = (options) => {
     options = prepareOptions(options);
@@ -1389,8 +1399,8 @@ XRegExp.uninstall = (options) => {
         setAstral(false);
     }
 
-    if (features.natives && options.natives) {
-        setNatives(false);
+    if (features.namespacing && options.namespacing) {
+        setNamespacing(false);
     }
 };
 
@@ -1452,8 +1462,7 @@ XRegExp.union = (patterns, flags, options) => {
 
 /**
  * Adds named capture support (with backreferences returned as `result.name`), and fixes browser
- * bugs in the native `RegExp.prototype.exec`. Calling `XRegExp.install('natives')` uses this to
- * override the native method. Use via `XRegExp.exec` without overriding natives.
+ * bugs in the native `RegExp.prototype.exec`. Use via `XRegExp.exec`.
  *
  * @memberOf RegExp
  * @param {String} str String to search.
@@ -1486,13 +1495,19 @@ fixed.exec = function(str) {
         }
 
         // Attach named capture properties
+        let groupsObject = match;
+        if (XRegExp.isInstalled('namespacing')) {
+            // https://tc39.github.io/proposal-regexp-named-groups/#sec-regexpbuiltinexec
+            match.groups = Object.create(null);
+            groupsObject = match.groups;
+        }
         if (this[REGEX_DATA] && this[REGEX_DATA].captureNames) {
             // Skip index 0
             for (let i = 1; i < match.length; ++i) {
                 const name = this[REGEX_DATA].captureNames[i - 1];
                 if (name) {
-                    if (match[i] != undefined || match[name] == undefined) {
-                        match[name] = match[i];
+                    if (match[i] != undefined || groupsObject[name] == undefined) {
+                        groupsObject[name] = match[i];
                     }
                 }
             }
@@ -1513,8 +1528,7 @@ fixed.exec = function(str) {
 };
 
 /**
- * Fixes browser bugs in the native `RegExp.prototype.test`. Calling `XRegExp.install('natives')`
- * uses this to override the native method.
+ * Fixes browser bugs in the native `RegExp.prototype.test`.
  *
  * @memberOf RegExp
  * @param {String} str String to search.
@@ -1527,8 +1541,7 @@ fixed.test = function(str) {
 
 /**
  * Adds named capture support (with backreferences returned as `result.name`), and fixes browser
- * bugs in the native `String.prototype.match`. Calling `XRegExp.install('natives')` uses this to
- * override the native method.
+ * bugs in the native `String.prototype.match`.
  *
  * @memberOf String
  * @param {RegExp|*} regex Regex to search with. If not a regex object, it is passed to `RegExp`.
@@ -1555,9 +1568,8 @@ fixed.match = function(regex) {
  * text, and provides named backreferences to replacement functions as `arguments[0].name`. Also
  * fixes browser bugs in replacement text syntax when performing a replacement using a nonregex
  * search value, and the value of a replacement regex's `lastIndex` property during replacement
- * iterations and upon completion. Calling `XRegExp.install('natives')` uses this to override the
- * native method. Note that this doesn't support SpiderMonkey's proprietary third (`flags`)
- * argument. Use via `XRegExp.replace` without overriding natives.
+ * iterations and upon completion. Note that this doesn't support SpiderMonkey's proprietary third
+ * (`flags`) argument. Use via `XRegExp.replace`.
  *
  * @memberOf String
  * @param {RegExp|String} search Search pattern to be replaced.
@@ -1586,13 +1598,23 @@ fixed.replace = function(search, replacement) {
         // functions isn't type-converted to a string
         result = nativ.replace.call(String(this), search, (...args) => {
             if (captureNames) {
-                // Change the `args[0]` string primitive to a `String` object that can store
-                // properties. This really does need to use `String` as a constructor
-                args[0] = new String(args[0]);
-                // Store named backreferences on the first argument
+                let groupsObject;
+
+                if (XRegExp.isInstalled('namespacing')) {
+                    // https://tc39.github.io/proposal-regexp-named-groups/#sec-regexpbuiltinexec
+                    groupsObject = Object.create(null);
+                    args.push(groupsObject);
+                } else {
+                    // Change the `args[0]` string primitive to a `String` object that can store
+                    // properties. This really does need to use `String` as a constructor
+                    args[0] = new String(args[0]);
+                    groupsObject = args[0];
+                }
+
+                // Store named backreferences
                 for (let i = 0; i < captureNames.length; ++i) {
                     if (captureNames[i]) {
-                        args[0][captureNames[i]] = args[i + 1];
+                        groupsObject[captureNames[i]] = args[i + 1];
                     }
                 }
             }
@@ -1688,8 +1710,7 @@ fixed.replace = function(search, replacement) {
 };
 
 /**
- * Fixes browser bugs in the native `String.prototype.split`. Calling `XRegExp.install('natives')`
- * uses this to override the native method. Use via `XRegExp.split` without overriding natives.
+ * Fixes browser bugs in the native `String.prototype.split`. Use via `XRegExp.split`.
  *
  * @memberOf String
  * @param {RegExp|String} separator Regex or string to use for separating the string.
@@ -1908,7 +1929,7 @@ XRegExp.addToken(
         if (!isNaN(match[1])) {
             throw new SyntaxError(`Cannot use integer as capture name ${match[0]}`);
         }
-        if (match[1] === 'length' || match[1] === '__proto__') {
+        if (!XRegExp.isInstalled('namespacing') && (match[1] === 'length' || match[1] === '__proto__')) {
             throw new SyntaxError(`Cannot use reserved word as capture name ${match[0]}`);
         }
         if (this.captureNames.includes(match[1])) {

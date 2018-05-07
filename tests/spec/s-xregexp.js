@@ -56,9 +56,9 @@ describe('XRegExp()', function() {
         ];
         // XRegExp follows the native RegExp. Chrome 20 follows the spec and converts empty
         // patterns to (?:), but Firefox 14.0.1, Safari 5.1.2, Opera 12, and IE 9 do not
-        var isEmpty = function(regex) {
+        function isEmpty(regex) {
             return regex.source === '(?:)' || regex.source === '';
-        };
+        }
 
         emptyTypes.forEach(function(item) {
             expect(isEmpty(XRegExp(item))).toBe(true);
@@ -281,6 +281,7 @@ describe('XRegExp()', function() {
     describe('fixes regex syntax cross-browser:', function() {
 
         it('should use the correct JavaScript rules for empty character classes', function() {
+
             /* Traditional regex behavior is that a leading, unescaped ] within a character class
              * is treated as a literal character and does not end the character class. However,
              * this is not true for ES3/5, which states that [] is an empty set that will never
@@ -417,13 +418,21 @@ describe('XRegExp()', function() {
             it('should throw an exception if bare integers are used as capture names', function() {
                 expect(function() {XRegExp('(?<0>)');}).toThrowError(SyntaxError);
                 expect(function() {XRegExp('(?<1>)');}).toThrowError(SyntaxError);
+                expect(function() {XRegExp('(?<01>)');}).toThrowError(SyntaxError);
                 expect(function() {XRegExp('(?<234>)');}).toThrowError(SyntaxError);
             });
 
-            it('should throw an exception if reserved words are used as capture names', function() {
+            it('should throw an exception if reserved words are used as capture names if namespacing is not installed', function() {
                 // Only these names are reserved
                 ['length', '__proto__'].forEach(function(name) {
                     expect(function() {XRegExp('(?<' + name + '>)');}).toThrowError(SyntaxError);
+                });
+            });
+
+            it('should not throw an exception if reserved words are used as capture names if namespacing is installed', function() {
+                XRegExp.install('namespacing');
+                ['length', '__proto__'].forEach(function(name) {
+                    expect(function() {XRegExp('(?<' + name + '>)');}).not.toThrow();
                 });
             });
 
@@ -795,32 +804,29 @@ describe('XRegExp()', function() {
                 expect(XRegExp('^(a)()()()()()()()()()\\1#\n0$', 'x').test('aa0')).toBe(true);
             });
 
-            it('should not add atom separator (?:) at the beginning or end of groups in simple cases', function() {
+            it('should not add atom separator (?:) at the beginning or end of capturing groups', function() {
                 expect(XRegExp('( . )', 'x').source).toBe('(.)');
                 expect(XRegExp('(#\n.#\n)', 'x').source).toBe('(.)');
             });
 
-            it('should not add atom separator (?:) at the beginning or end of non-capturing groups in simple cases', function() {
+            it('should not add atom separator (?:) at the beginning or end of noncapturing groups', function() {
                 expect(XRegExp('(?: . )', 'x').source).toBe('(?:.)');
                 expect(XRegExp('(?:#\n.#\n)', 'x').source).toBe('(?:.)');
             });
 
-            it('should not add atom separator (?:) at the beginning or end of a lookahead in simple cases', function() {
+            it('should not add atom separator (?:) at the beginning or end of lookahead', function() {
                 expect(XRegExp('(?= . )', 'x').source).toBe('(?=.)');
-                expect(XRegExp('(?=#\n.#\n)', 'x').source).toBe('(?=.)');
-            });
-
-            it('should not add atom separator (?:) at the beginning or end of a negated lookahead in simple cases', function() {
                 expect(XRegExp('(?! . )', 'x').source).toBe('(?!.)');
+                expect(XRegExp('(?=#\n.#\n)', 'x').source).toBe('(?=.)');
                 expect(XRegExp('(?!#\n.#\n)', 'x').source).toBe('(?!.)');
             });
 
-            it('should not add atom separator (?:) at the beginning or end of the pattern in simple cases', function() {
+            it('should not add atom separator (?:) at the beginning or end of the pattern', function() {
                 expect(XRegExp(' ( . ) ', 'x').source).toBe('(.)');
                 expect(XRegExp(' (#\n.#\n) ', 'x').source).toBe('(.)');
             });
 
-            it('should not add atom separator (?:) around | in simple cases', function() {
+            it('should not add atom separator (?:) around |', function() {
                 expect(XRegExp('( a | b )', 'x').source).toBe('(a|b)');
                 expect(XRegExp('(#\na#\n|#\nb#\n)', 'x').source).toBe('(a|b)');
             });
