@@ -6,20 +6,6 @@ cd "$(dirname "$0")"
 cd ..
 
 
-# Ordered list of all library source files
-source_files='
-    ./tools/intro.js
-    ./lib/xregexp.js
-    ./lib/addons/build.js
-    ./lib/addons/matchrecursive.js
-    ./lib/addons/unicode-base.js
-    ./lib/addons/unicode-blocks.js
-    ./lib/addons/unicode-categories.js
-    ./lib/addons/unicode-properties.js
-    ./lib/addons/unicode-scripts.js
-    ./tools/outro.js
-'
-
 # Unordered list of all source files which MAY need any XregExp version number updated
 to_patch_files='
     ./src/xregexp.js
@@ -48,9 +34,9 @@ fi
 
 # compile source files using babel:
 # Remove old babel output files before running the compiler
-rm -rf lib
-mkdir -p lib/addons
-node_modules/.bin/babel src -d lib
+rm -rf dist
+node_modules/.bin/rollup -c
+node_modules/.bin/babel 
 
 
 # Filename of concatenated package

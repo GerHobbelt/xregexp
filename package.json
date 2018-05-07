@@ -44,6 +44,8 @@
     "browserify": "14.4.0",
     "eslint": "4.9.0",
     "jasmine": "2.8.0",
+    "rollup": "^0.50.0",
+    "rollup-plugin-node-resolve": "^3.0.0",
     "zuul": "3.11.1"
   }
 }
