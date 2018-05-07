@@ -209,8 +209,10 @@ XRegExp.addToken(
 XRegExp.addUnicodeData = (data) => {
     const ERR_NO_NAME = 'Unicode token requires name';
     const ERR_NO_DATA = 'Unicode token has no character data ';
+    let item;
 
-    for (const item of data) {
+    for (let i = 0; i < data.length; ++i) {
+        item = data[i];
         if (!item.name) {
             throw new Error(ERR_NO_NAME);
         }

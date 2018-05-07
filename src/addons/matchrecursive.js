@@ -77,7 +77,7 @@ XRegExp.matchRecursive = (str, left, right, flags, options) => {
     const sticky = flags.includes('y');
     // Flag `y` is controlled internally
     const basicFlags = flags.replace(/y/g, '');
-    let {escapeChar} = options;
+    let escapeChar = options.escapeChar;
     const vN = options.valueNames;
     const output = [];
     let openTokens = 0;

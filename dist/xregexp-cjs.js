@@ -57,7 +57,7 @@ const correctExecNpcg = nativ.exec.call(/()??/, '')[1] === undefined;
 // Check for ES6 `flags` prop support
 const hasFlagsProp = /x/.flags !== undefined;
 // Shortcut to `Object.prototype.toString`
-const {toString} = {};
+const toString = {}.toString;
 
 function hasNativeFlag(flag) {
     // Can't check based on the presence of properties/getters since browsers might support such
@@ -377,6 +377,8 @@ function pad4(str) {
  * @returns {Object} Object with properties `pattern` and `flags`.
  */
 function prepareFlags(pattern, flags) {
+    let i;
+
     // Recent browsers throw on duplicate flags, so copy this behavior for nonnative flags
     if (clipDuplicates(flags) !== flags) {
         throw new SyntaxError(`Invalid duplicate regex flag ${flags}`);
@@ -393,9 +395,9 @@ function prepareFlags(pattern, flags) {
     });
 
     // Throw on unknown native or nonnative flags
-    for (const flag of flags) {
-        if (!registeredFlags[flag]) {
-            throw new SyntaxError(`Unknown regex flag ${flag}`);
+    for (i = 0; i < flags.length; ++i) {
+        if (!registeredFlags[flags[i]]) {
+            throw new SyntaxError(`Unknown regex flag ${flags[i]}`);
         }
     }
 
@@ -566,8 +568,10 @@ function prepareJoin(patterns) {
 
     const parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
     const output = [];
+    let pattern;
+    for (let i = 0; i < patterns.length; ++i) {
+        pattern = patterns[i];
 
-    for (const pattern of patterns) {
         if (XRegExp.isRegExp(pattern)) {
             numPriorCaptures = numCaptures;
             captureNames = (pattern[REGEX_DATA] && pattern[REGEX_DATA].captureNames) || [];
@@ -681,7 +685,7 @@ function XRegExp(pattern, flags) {
                 pos += (result.matchLength || 1);
             } else {
                 // Get the native token at the current position
-                const [token] = XRegExp.exec(appliedPattern, nativeTokens[scope], pos, 'sticky');
+                const token = XRegExp.exec(appliedPattern, nativeTokens[scope], pos, 'sticky')[0];
                 output += token;
                 pos += token.length;
                 if (token === '[' && scope === defaultScope) {
@@ -736,7 +740,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '4.1.1-26';
+XRegExp.version = '4.1.1-27';
 
 // ==--------------------------==
 // Public methods
@@ -803,7 +807,8 @@ XRegExp._pad4 = pad4;
  */
 XRegExp.addToken = (regex, handler, options) => {
     options = options || {};
-    let {optionalFlags} = options;
+    let optionalFlags = options.optionalFlags;
+    let i;
 
     if (options.flag) {
         registerFlag(options.flag);
@@ -811,8 +816,8 @@ XRegExp.addToken = (regex, handler, options) => {
 
     if (optionalFlags) {
         optionalFlags = nativ.split.call(optionalFlags, '');
-        for (const flag of optionalFlags) {
-            registerFlag(flag);
+        for (i = 0; i < optionalFlags.length; ++i) {
+            registerFlag(optionalFlags[i]);
         }
     }
 
@@ -1192,8 +1197,8 @@ XRegExp.matchChain = (str, chain) => (function recurseChain(values, level) {
         }
     }
 
-    for (const value of values) {
-        XRegExp.forEach(value, item.regex, addMatch);
+    for (let i = 0; i < values.length; ++i) {
+        XRegExp.forEach(values[i], item.regex, addMatch);
     }
 
     return ((level === chain.length - 1) || !matches.length) ?
@@ -1303,7 +1308,11 @@ XRegExp.replace = (str, search, replacement, scope) => {
  * ]);
  */
 XRegExp.replaceEach = (str, replacements) => {
-    for (const r of replacements) {
+    let i;
+    let r;
+
+    for (i = 0; i < replacements.length; ++i) {
+        r = replacements[i];
         str = XRegExp.replace(str, r[0], r[1], r[2]);
     }
 
@@ -1576,7 +1585,7 @@ fixed.replace = function(search, replacement) {
 
     if (isRegex) {
         if (search[REGEX_DATA]) {
-            ({captureNames} = search[REGEX_DATA]);
+            captureNames = search[REGEX_DATA].captureNames;
         }
         // Only needed if `search` is nonglobal
         origLastIndex = search.lastIndex;
@@ -1600,7 +1609,7 @@ fixed.replace = function(search, replacement) {
                     // Change the `args[0]` string primitive to a `String` object that can store
                     // properties. This really does need to use `String` as a constructor
                     args[0] = new String(args[0]);
-                    [groupsObject] = args;
+                    groupsObject = args[0];
                 }
 
                 // Store named backreferences
@@ -2270,7 +2279,7 @@ XRegExp.matchRecursive = (str, left, right, flags, options) => {
     const sticky = flags.includes('y');
     // Flag `y` is controlled internally
     const basicFlags = flags.replace(/y/g, '');
-    let {escapeChar} = options;
+    let escapeChar = options.escapeChar;
     const vN = options.valueNames;
     const output = [];
     let openTokens = 0;
@@ -2601,8 +2610,10 @@ XRegExp.addToken(
 XRegExp.addUnicodeData = (data) => {
     const ERR_NO_NAME = 'Unicode token requires name';
     const ERR_NO_DATA = 'Unicode token has no character data ';
+    let item;
 
-    for (const item of data) {
+    for (let i = 0; i < data.length; ++i) {
+        item = data[i];
         if (!item.name) {
             throw new Error(ERR_NO_NAME);
         }

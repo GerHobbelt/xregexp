@@ -80,8 +80,8 @@ const createBmpRange = (r, {addBrackets} = {addBrackets: true}) => {
     if (r.length === 0) {return '';}
 
     const buf = [];
-    let [start] = r;
-    let [end] = r;
+    let start = r[0];
+    let end = r[0];
     let predict = start + 1;
     r = r.slice(1);
 
