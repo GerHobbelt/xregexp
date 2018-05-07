@@ -1,7 +1,7 @@
 /*!
- * XRegExp-All 
+ * XRegExp-All
  * <xregexp.com>
- * Steven Levithan (c) 2012-2016 MIT License
+ * Steven Levithan (c) 2012-present MIT License
  */
 
 // Module systems magic dance
@@ -13,9 +13,12 @@
     // CommonJS
     } else if (typeof exports === 'object') {
         var self = definition();
-        // Use Node.js's `module.exports`. This supports both `require('xregexp')` and
-        // `require('xregexp').XRegExp`
-        (typeof module === 'object' ? (module.exports = self) : exports).XRegExp = self;
+        // Use Node.js's `module.exports`. This supports `require('xregexp')`.
+        if (typeof module === 'object') {
+            module.exports = self;
+        } else {
+            exports.XRegExp = self;
+        }
     // <script>
     } else {
         // Create global

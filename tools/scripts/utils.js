@@ -152,7 +152,7 @@ const writeFile = (name, object) => {
     });
     fs.writeFileSync(
         `${__dirname}/../output/${name}`,
-        `module.exports = ${output};\n`
+        `export default ${output};\n`
     );
 };
 

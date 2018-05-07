@@ -35,18 +35,23 @@ fi
 # compile source files using babel:
 # Remove old babel output files before running the compiler
 rm -rf dist
+rm -rf lib
+echo "Bundling..."
 node_modules/.bin/rollup -c
-node_modules/.bin/babel 
+echo "DeBABELizing..."
+node_modules/.bin/babel dist/ -d lib/ 
+echo "Da big one..."
 
 
 # Filename of concatenated package
 output_file='./xregexp-all.js'
 
 # Remove output file to re-write it
-rm -f $output_file
+rm -f "${output_file}"
 
 # Concatenate all source files
-for file in $source_files
+cat  ./tools/intro.js > "${output_file}"
+for file in ./lib/xregexp-es6.js
 do
     # use SED to kill duplicate definitions of REGEX_DATA and functions pad4, dec and hex.
     # Also clear out the internal export statements: the intro+outro takes care of that
@@ -57,6 +62,8 @@ do
                         -e "s/module\\.exports *= *exports\\['default'\\];//" \
                         -e 's/exports\.default *= *XRegExp;//' \
                         -e 's/exports\.default *= *function *(XRegExp) *{//' \
+                        -e 's/var [[:alpha:]]* *= *function [[:alpha:]]* *(XRegExp) *{//' \
+                        -e '/build(XRegExp);/,/unicodeScripts(XRegExp);/ { d; }' \
                         -e "s/'use strict';//" \
                         -e "s/REGEX_DATA = 'xregexp',//" \
                         -e '/\/\/ Adds leading zeros if shorter than four characters/,/\/\/ Gets the decimal code/ { /Gets the decimal/ p; d; }' \
@@ -64,14 +71,17 @@ do
                         >> "${output_file}"
     echo '' >> "${output_file}"
 done
+cat  ./tools/outro.js >> "${output_file}"
 
 
 # and none of the following should dump core when the code is intact:
 echo "Testing source file integrity: lib/xregexp.js"
-node ./lib/xregexp.js
+node ./dist/xregexp-umd.js
+node ./dist/xregexp-cjs.js
 
 echo "Testing source file integrity: all (babel-compiled) sources in lib/"
-node ./lib/index.js
+node ./lib/xregexp-umd.js
+node ./lib/xregexp-cjs.js
 
 echo "Testing source file integrity: generated output file xregexp-all.js"
 node "${output_file}"

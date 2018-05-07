@@ -4,19 +4,19 @@ import resolve from 'rollup-plugin-node-resolve';
 export default {
   input: 'src/index.js',
   output: [
-  	  {
-	    file: 'dist/xregexp-cjs.js',
-	    format: 'cjs'
-	  },
-	  {
-	    file: 'dist/xregexp-es6.js',
-	    format: 'es'
-	  },
-	  {
-	    file: 'dist/xregexp-umd.js',
-	    name: 'XRegExp',
-	    format: 'umd'
-	  }
+    {
+      file: 'dist/xregexp-cjs.js',
+      format: 'cjs'
+    },
+    {
+      file: 'dist/xregexp-es6.js',
+      format: 'es'
+    },
+    {
+      file: 'dist/xregexp-umd.js',
+      name: 'XRegExp',
+      format: 'umd'
+    }
   ],
   plugins: [
     resolve({

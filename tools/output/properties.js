@@ -1,4 +1,4 @@
-module.exports = [
+export default [
     {
         'name': 'ASCII',
         'bmp': '\0-\x7F'
