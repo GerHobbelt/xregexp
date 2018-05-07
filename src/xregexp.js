@@ -66,7 +66,8 @@ function hasNativeFlag(flag) {
     try {
         // Can't use regex literals for testing even in a `try` because regex literals with
         // unsupported flags cause a compilation error in IE
-        new RegExp('', flag);
+        var x = new RegExp('', flag);
+        isSupported = !!x || true;          // thwart ROLLUP tree-shaking; see https://github.com/rollup/rollup/issues/2181
     } catch (exception) {
         isSupported = false;
     }
@@ -739,7 +740,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '3.2.0-22';
+XRegExp.version = '4.0.0-22';
 
 // ==--------------------------==
 // Public methods
