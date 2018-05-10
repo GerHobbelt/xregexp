@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/xregexp",
-  "version": "4.1.1-27",
+  "version": "4.1.1-28",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -15,7 +15,7 @@
     "regular expression",
     "unicode"
   ],
-  "main": "./lib",
+  "main": "./xregexp-all.js",
   "files": [
     "src",
     "lib",
@@ -40,8 +40,8 @@
     "babel-plugin-add-module-exports": "0.2.1",
     "babel-plugin-array-includes": "2.0.3",
     "babel-plugin-transform-xregexp": "0.0.6",
-    "babel-preset-env": "1.6.1",
-    "browserify": "16.2.0",
+    "babel-preset-env": "1.7.0",
+    "browserify": "16.2.2",
     "eslint": "4.19.1",
     "jasmine": "3.1.0",
     "jsesc": "2.5.1",
