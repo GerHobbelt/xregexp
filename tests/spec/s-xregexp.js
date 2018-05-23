@@ -887,6 +887,43 @@ describe('XRegExp()', function() {
 
     });
 
+    describe('should correctly flag *isNative* for various regexes:', function() {
+
+        it('should mark [] and [^] regexes as native', function() {
+            expect(new XRegExp('').xregexp.isNative).toBe(true);
+            expect(new XRegExp('[]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('[^]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('[\\s\\S]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('\\b\\B').xregexp.isNative).toBe(true);
+        });
+
+        it('should mark escape code carrying regexes as native', function() {
+            expect(new XRegExp('\b\f\r\n\t').xregexp.isNative).toBe(true);
+            expect(new XRegExp('[\b\f\r\n\t]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('[^\b\f\r\n\t]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('\\b\\f\\r\\n\\t').xregexp.isNative).toBe(true);
+            expect(new XRegExp('[\\b\\f\\r\\n\\t]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('[^\\b\\f\\r\\n\\t]').xregexp.isNative).toBe(true);
+        });
+
+        xit('should mark hex or octal code carrying regexes as native', function() {
+            console.log('test:', new XRegExp('(a)(b)\001\xF7'));
+            expect(new XRegExp('(a)(b)\001\xF7').xregexp.isNative).toBe(true);
+            expect(new XRegExp('(a)(b)[\001\xF7]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('(a)(b)[^\001\xF7]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('(a)(b)\\001\\xF7').xregexp.isNative).toBe(true);
+            expect(new XRegExp('(a)(b)[\\001\\xF7]').xregexp.isNative).toBe(true);
+            expect(new XRegExp('(a)(b)[^\\001\\xF7]').xregexp.isNative).toBe(true);
+        });
+
+        it('should mark \\p{xyz} carrying regexes as not native', function() {
+            expect(new XRegExp('\\p{Number}').xregexp.isNative).toBe(false);
+            expect(new XRegExp('[\\p{Number}]').xregexp.isNative).toBe(false);
+            expect(new XRegExp('[^\\p{Number}]').xregexp.isNative).toBe(false);
+        });
+
+    });
+
 });
 
 describe('XRegExp.version', function() {

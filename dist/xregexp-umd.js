@@ -93,6 +93,30 @@
     };
 
     /**
+     * Determine whether two regexes match for purposes of detecting whether the
+     * XRegExp produced regex can work in a native environment *without having XRegExp around*.
+     *
+     * @private
+     * @param  {String} re1
+     * @param  {String} re2
+     * @return {Boolean}     TRUE when regexes match
+     */
+    function areRegexesIdenticalForNativity(re1, re2) {
+        // fix the isNotNative check for the `[]` and `[^]` fixups
+        // we might have done on the source regex:
+        //
+        // we don't care about the difference between `[]` and `[^]`:
+        // XRegExp doesn't transform the one to the other, so we're safe
+        // to treat them as the same in here: we are only after determining
+        // whether these regexes are the same, i.e. is XRegExp has produced
+        // a 'native' regex equivalent that can work *without* having
+        // XRegExp around.
+        re1 = re1 && re1.replace(/\[(\^?)\]|\[\\s\\S\]|\\b\\B/, '[]');
+        re2 = re2 && re2.replace(/\[(\^?)\]|\[\\s\\S\]|\\b\\B/, '[]');
+        return re1 === re2;
+    }
+
+    /**
      * Attaches extended data and `XRegExp.prototype` properties to a regex object.
      *
      * @private
@@ -223,7 +247,7 @@
             hasCaptureNames ? xData.captureNames.slice(0) : null,
             xregexpSource,
             xregexpFlags,
-            customFlags || hasCaptureNames || regex.source !== xregexpSource,
+            customFlags || hasCaptureNames || !areRegexesIdenticalForNativity(regex.source, xregexpSource),
             options.isInternalOnly
         );
 
@@ -725,7 +749,7 @@
             generated.captures,
             pattern,
             flags,
-            customFlags || generated.captures || generated.pattern !== pattern
+            customFlags || generated.captures || !areRegexesIdenticalForNativity(pattern, generated.pattern)
         );
     }
 
