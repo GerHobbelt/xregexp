@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/xregexp",
-  "version": "4.1.1-29",
+  "version": "4.2.0-29",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -36,19 +36,20 @@
     "pub": "npm publish --access public"
   },
   "devDependencies": {
-    "babel-cli": "6.26.0",
-    "babel-plugin-add-module-exports": "0.2.1",
-    "babel-plugin-array-includes": "2.0.3",
-    "babel-plugin-transform-xregexp": "1.0.0",
-    "babel-preset-env": "1.7.0",
+    "@gerhobbelt/babel-cli": "7.0.0-beta.530006",
+    "@gerhobbelt/babel-core": "7.0.0-beta.530006",
+    "@gerhobbelt/babel-plugin-add-module-exports": "0.3.3-1",
+    "@gerhobbelt/babel-plugin-array-includes": "2.0.3-1",
+    "@gerhobbelt/babel-plugin-transform-xregexp": "1.0.0-1",
+    "@gerhobbelt/babel-preset-env": "7.0.0-beta.530006",
     "browserify": "16.2.2",
-    "eslint": "4.19.1",
-    "jasmine": "3.1.0",
+    "eslint": "5.5.0",
+    "jasmine": "3.2.0",
     "jsesc": "2.5.1",
-    "rollup": "0.59.2",
+    "rollup": "0.65.0",
     "rollup-plugin-node-resolve": "3.3.0",
-    "unicode-10.0.0": "0.7.5",
-    "unicode-property-value-aliases": "3.2.0",
-    "zuul": "3.11.1"
+    "unicode-11.0.0": "0.7.7",
+    "unicode-property-value-aliases": "3.3.0",
+    "zuul": "3.12.0"
   }
 }
