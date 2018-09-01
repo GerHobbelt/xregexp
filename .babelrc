@@ -5,7 +5,6 @@
   "compact": false,
   "retainLines": false,
   "plugins": [
-    "@gerhobbelt/babel-plugin-transform-runtime"
   ],
   "presets": [
     ["@gerhobbelt/babel-preset-env", {
