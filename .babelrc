@@ -5,12 +5,13 @@
   "compact": false,
   "retainLines": false,
   "plugins": [
+    "@gerhobbelt/babel-plugin-proposal-unicode-property-regex"
   ],
   "presets": [
     ["@gerhobbelt/babel-preset-env", {
       "targets": {
         "browsers": ["last 2 versions", "safari >= 7"],
-        "node": "4.0"
+        "node": "6.0"
       }
     }]
   ]
