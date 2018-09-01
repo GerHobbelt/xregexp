@@ -28,7 +28,11 @@
     "use strict";
 "use strict";
 
+var _interopRequireDefault = require("@gerhobbelt/babel-runtime/helpers/interopRequireDefault");
+
 exports.default = void 0;
+
+var _create = _interopRequireDefault(require("@gerhobbelt/babel-runtime/core-js/object/create"));
 
 /*!
  * XRegExp
@@ -1553,7 +1557,7 @@ fixed.exec = function (str) {
 
     if (XRegExp.isInstalled('namespacing')) {
       // https://tc39.github.io/proposal-regexp-named-groups/#sec-regexpbuiltinexec
-      match.groups = Object.create(null);
+      match.groups = (0, _create.default)(null);
       groupsObject = match.groups;
     }
 
@@ -1666,7 +1670,7 @@ fixed.replace = function (search, replacement) {
 
         if (XRegExp.isInstalled('namespacing')) {
           // https://tc39.github.io/proposal-regexp-named-groups/#sec-regexpbuiltinexec
-          groupsObject = Object.create(null);
+          groupsObject = (0, _create.default)(null);
           args.push(groupsObject);
         } else {
           // Change the `args[0]` string primitive to a `String` object that can store
