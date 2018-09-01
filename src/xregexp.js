@@ -399,8 +399,6 @@ function pad4(str) {
  * @returns {Object} Object with properties `pattern` and `flags`.
  */
 function prepareFlags(pattern, flags) {
-    let i;
-
     // Recent browsers throw on duplicate flags, so copy this behavior for nonnative flags
     if (clipDuplicates(flags) !== flags) {
         throw new SyntaxError(`Invalid duplicate regex flag ${flags}`);
@@ -417,7 +415,7 @@ function prepareFlags(pattern, flags) {
     });
 
     // Throw on unknown native or nonnative flags
-    for (i = 0; i < flags.length; ++i) {
+    for (let i = 0; i < flags.length; ++i) {
         if (!registeredFlags[flags[i]]) {
             throw new SyntaxError(`Unknown regex flag ${flags[i]}`);
         }
@@ -830,7 +828,6 @@ XRegExp._pad4 = pad4;
 XRegExp.addToken = (regex, handler, options) => {
     options = options || {};
     let optionalFlags = options.optionalFlags;
-    let i;
 
     if (options.flag) {
         registerFlag(options.flag);
@@ -838,7 +835,7 @@ XRegExp.addToken = (regex, handler, options) => {
 
     if (optionalFlags) {
         optionalFlags = nativ.split.call(optionalFlags, '');
-        for (i = 0; i < optionalFlags.length; ++i) {
+        for (let i = 0; i < optionalFlags.length; ++i) {
             registerFlag(optionalFlags[i]);
         }
     }
@@ -1330,11 +1327,8 @@ XRegExp.replace = (str, search, replacement, scope) => {
  * ]);
  */
 XRegExp.replaceEach = (str, replacements) => {
-    let i;
-    let r;
-
-    for (i = 0; i < replacements.length; ++i) {
-        r = replacements[i];
+    for (let i = 0; i < replacements.length; ++i) {
+        let r = replacements[i];
         str = XRegExp.replace(str, r[0], r[1], r[2]);
     }
 
