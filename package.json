@@ -24,6 +24,7 @@
   ],
   "scripts": {
     "lint": "eslint src",
+    "fix": "eslint src --fix",
     "babel-orig": "babel src -d lib",
     "build-unicode-data": "node tools/scripts/block-regex.js && node tools/scripts/category-regex.js && node tools/scripts/property-regex.js && node tools/scripts/script-regex.js",
     "prebuild": "npm run build-unicode-data && npm run lint",

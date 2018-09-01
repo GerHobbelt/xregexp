@@ -1328,7 +1328,7 @@ XRegExp.replace = (str, search, replacement, scope) => {
  */
 XRegExp.replaceEach = (str, replacements) => {
     for (let i = 0; i < replacements.length; ++i) {
-        let r = replacements[i];
+        const r = replacements[i];
         str = XRegExp.replace(str, r[0], r[1], r[2]);
     }
 
