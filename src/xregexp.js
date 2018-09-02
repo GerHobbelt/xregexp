@@ -760,7 +760,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '4.2.0-29';
+XRegExp.version = '4.2.0-30';
 
 // ==--------------------------==
 // Public methods

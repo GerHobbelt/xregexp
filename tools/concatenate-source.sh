@@ -40,6 +40,13 @@ echo "Bundling..."
 node_modules/.bin/rollup -c
 echo "DeBABELizing..."
 node_modules/.bin/babel dist/ -d lib/ 
+
+rm -rf lib2
+mkdir lib2
+node_modules/.bin/babel --no-babelrc --config-file ./.babelrc-4-dist dist/ -d lib2/
+cp lib2/* dist/
+rm -rf lib2
+
 echo "Da big one..."
 
 

@@ -1,0 +1,22 @@
+{
+  "ignore": [
+    "node_modules/**/*.js"
+  ],
+  "compact": false,
+  "retainLines": false,
+  "plugins": [
+    "@gerhobbelt/babel-plugin-proposal-unicode-property-regex"
+  ],
+  "presets": [
+    ["@gerhobbelt/babel-preset-env", {
+      "targets": {
+        "node": "6",
+        "browsers": ">25%",
+        "esmodules": true,
+      },
+      "loose": true,
+      "modules": false,
+      "ignoreBrowserslistConfig": true,
+    }]
+  ]
+}
