@@ -49,7 +49,7 @@ const nativeTokens = {
     'class': /\\(?:[0-3][0-7]{0,2}|[4-7][0-7]?|x[\dA-Fa-f]{2}|u(?:[\dA-Fa-f]{4}|{[\dA-Fa-f]+})|c[A-Za-z]|[\s\S])|[\s\S]/
 };
 // Any backreference or dollar-prefixed character in replacement strings
-const replacementToken = /\$(?:\{([\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*)\}|<([\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*)>|(\d\d?|[\s\S]))/gu;
+const replacementToken = /\$(?:{([\w$]+)}|<([\w$]+)>|(\d\d?|[\s\S]))/g;
 // Check for correct `exec` handling of nonparticipating capturing groups
 const correctExecNpcg = nativ.exec.call(/()??/, '')[1] === undefined;
 // Check for ES6 `flags` prop support
@@ -1887,7 +1887,7 @@ XRegExp.addToken(
  * and $ only. Also allows numbered backreferences as `\k<n>`.
  */
 XRegExp.addToken(
-    /\\k<([\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*)>/u,
+    /\\k<([\w$]+)>/,
     function(match) {
         // Groups with the same name is an error, else would need `lastIndexOf`
         const index = isNaN(match[1]) ? (this.captureNames.indexOf(match[1]) + 1) : +match[1];
@@ -1939,7 +1939,7 @@ XRegExp.addToken(
  * Python-style named capture as octals.
  */
 XRegExp.addToken(
-    /\(\?P?<([\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*)>/u,
+    /\(\?P?<([\w$]+)>/,
     function(match) {
         // Disallow bare integers as names because named backreferences are added to match arrays
         // and therefore numeric properties may lead to incorrect lookups
