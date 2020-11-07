@@ -789,7 +789,7 @@ XRegExp.prototype = new RegExp(); // ==--------------------------==
  * @type String
  */
 
-XRegExp.version = '4.4.0-31'; // ==--------------------------==
+XRegExp.version = '4.4.0-32'; // ==--------------------------==
 // Public methods
 // ==--------------------------==
 // Intentionally undocumented; used in tests and addons
