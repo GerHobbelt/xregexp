@@ -15,7 +15,7 @@
     "regular expression",
     "unicode"
   ],
-  "main": "./lib/index.js",
+  "main": "./xregexp-all.js",
   "module": "./src/index.js",
   "files": [
     "src",
@@ -25,8 +25,7 @@
     "types/index.d.ts"
   ],
   "scripts": {
-    "lint": "eslint . && npm run dtslint",
-    "lint": "eslint src",
+    "lint": "eslint src && npm run dtslint",
     "dtslint": "dtslint types",
     "fix": "eslint src --fix",
     "babel-orig": "babel src -d lib",
@@ -42,25 +41,26 @@
   },
   "types": "types",
   "devDependencies": {
-    "@babel/cli": "7.2.3",
-    "@babel/core": "7.2.2",
-    "@babel/plugin-transform-runtime": "7.8.3",
-    "@babel/preset-env": "7.2.3",
+    "@babel/cli": "7.12.1",
+    "@babel/core": "7.12.3",
+    "@babel/plugin-transform-runtime": "7.12.1",
+    "@babel/preset-env": "7.12.1",
     "@unicode/unicode-13.0.0": "1.0.2",
-    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-plugin-add-module-exports": "1.0.4",
     "babel-plugin-array-includes": "2.0.3",
-    "babel-plugin-transform-xregexp": "0.0.6",
-    "browserify": "16.2.3",
-    "dtslint": "2.0.5",
-    "eslint": "5.12.1",
-    "jasmine": "3.3.1",
-    "jsesc": "2.5.2",
-    "rollup": "1.1.2",
-    "rollup-plugin-node-resolve": "4.0.0",
-    "unicode-property-value-aliases": "3.3.0",
+    "babel-plugin-transform-xregexp": "1.0.0",
+    "browserify": "17.0.0",
+    "dtslint": "4.0.5",
+    "eslint": "7.13.0",
+    "jasmine": "3.6.3",
+    "jsesc": "3.0.2",
+    "rollup": "2.33.1",
+    "rollup-plugin-node-resolve": "5.2.0",
+    "typescript": "^4.0.5",
+    "unicode-property-value-aliases": "3.5.0",
     "zuul": "3.12.0"
   },
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.8.3"
+    "@babel/runtime-corejs3": "^7.12.5"
   }
 }
