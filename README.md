@@ -1,4 +1,4 @@
-[XRegExp](http://xregexp.com/) 4.4.0-12
+[XRegExp](http://xregexp.com/) 4.4.0-31
 =======================================
 
 

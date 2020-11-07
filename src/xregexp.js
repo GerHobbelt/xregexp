@@ -68,7 +68,7 @@ function hasNativeFlag(flag) {
         // unsupported flags cause a compilation error in IE
         var x = new RegExp('', flag);
         isSupported = !!x || true;          // thwart ROLLUP tree-shaking; see https://github.com/rollup/rollup/issues/2181
-        
+
         // Work around a broken/incomplete IE11 polyfill for sticky introduced in core-js 3.6.0
         if (flag === 'y') {
             // Using function to avoid babel transform to regex literal
@@ -770,7 +770,7 @@ XRegExp.prototype = new RegExp();
  * @memberOf XRegExp
  * @type String
  */
-XRegExp.version = '4.2.4-31';
+XRegExp.version = '4.4.0-31';
 
 // ==--------------------------==
 // Public methods
