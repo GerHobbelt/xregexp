@@ -26,6 +26,11 @@ if [ -f ./package.json ]; then
         cat "${file}" | sed -e "s/\\* XRegExp\\([ -][^0-9]*\\)\\([0-9]\\+\\..*\\)\$/* XRegExp\\1$v/" -e "s/XRegExp\.version = [^;]\\+;/XRegExp.version = '$v';/" > __tmp__
         cat __tmp__ > "${file}"
     done
+    for file in README.md
+    do
+        cat "${file}" | sed -e "s/\\[XRegExp\\](\\([^0-9]*\\)\\([0-9]\\+\\..*\\)\$/[XRegExp](\\1$v/" > __tmp__
+        cat __tmp__ > "${file}"
+    done
     rm -f __tmp__ 
 else
     echo "This repo doesn't come with a package.json file"
@@ -58,18 +63,20 @@ rm -f "${output_file}"
 
 # Concatenate all source files
 cat  ./tools/intro.js > "${output_file}"
-for file in ./lib/xregexp-es6.js
+for file in ./dist/xregexp-es6.js
 do
     # use SED to kill duplicate definitions of REGEX_DATA and functions pad4, dec and hex.
     # Also clear out the internal export statements: the intro+outro takes care of that
     # in full UMD/AMD style.
     cat "${file}" | sed -e 's/^\}; *\/\/ *End of module.*$//' \
+                        -e 's/export *default *XRegExp;//' \
                         -e 's/^module\.exports *= *function *(XRegExp) *{//' \
                         -e 's/module\.exports *= *XRegExp;//' \
                         -e "s/module\\.exports *= *exports\\['default'\\];//" \
                         -e 's/exports\.default *= *XRegExp;//' \
                         -e 's/exports\.default *= *function *(XRegExp) *{//' \
                         -e 's/var [[:alpha:]]* *= *function [[:alpha:]]* *(XRegExp) *{//' \
+                        -e 's/var [[:alpha:]]* *= *XRegExp *=> *{//' \
                         -e '/build(XRegExp);/,/unicodeScripts(XRegExp);/ { d; }' \
                         -e "s/'use strict';//" \
                         -e "s/REGEX_DATA = 'xregexp',//" \
@@ -84,10 +91,12 @@ cat  ./tools/outro.js >> "${output_file}"
 # and none of the following should dump core when the code is intact:
 echo "Testing source file integrity: lib/xregexp.js"
 node ./dist/xregexp-umd.js
+#node ./dist/xregexp-es6.js
 node ./dist/xregexp-cjs.js
 
 echo "Testing source file integrity: all (babel-compiled) sources in lib/"
 node ./lib/xregexp-umd.js
+#node ./lib/xregexp-es6.js
 node ./lib/xregexp-cjs.js
 
 echo "Testing source file integrity: generated output file xregexp-all.js"
