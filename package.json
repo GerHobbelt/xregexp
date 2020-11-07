@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/xregexp",
-  "version": "4.3.0-31",
+  "version": "4.4.0-31",
   "description": "Extended regular expressions",
   "homepage": "http://xregexp.com/",
   "author": "Steven Levithan <steves_list@hotmail.com>",
@@ -15,15 +15,19 @@
     "regular expression",
     "unicode"
   ],
-  "main": "./xregexp-all.js",
+  "main": "./lib/index.js",
+  "module": "./src/index.js",
   "files": [
     "src",
     "lib",
     "tools/output",
-    "xregexp-all.js"
+    "xregexp-all.js",
+    "types/index.d.ts"
   ],
   "scripts": {
+    "lint": "eslint . && npm run dtslint",
     "lint": "eslint src",
+    "dtslint": "dtslint types",
     "fix": "eslint src --fix",
     "babel-orig": "babel src -d lib",
     "build-unicode-data": "node tools/scripts/block-regex.js && node tools/scripts/category-regex.js && node tools/scripts/property-regex.js && node tools/scripts/script-regex.js",
@@ -36,25 +40,27 @@
     "test-browser": "npm run test-saucelabs -- --local --open",
     "pub": "npm publish --access public"
   },
+  "types": "types",
   "devDependencies": {
     "@babel/cli": "7.2.3",
     "@babel/core": "7.2.2",
     "@babel/plugin-transform-runtime": "7.8.3",
     "@babel/preset-env": "7.2.3",
+    "@unicode/unicode-13.0.0": "1.0.2",
     "babel-plugin-add-module-exports": "0.2.1",
     "babel-plugin-array-includes": "2.0.3",
     "babel-plugin-transform-xregexp": "0.0.6",
     "browserify": "16.2.3",
+    "dtslint": "2.0.5",
     "eslint": "5.12.1",
     "jasmine": "3.3.1",
     "jsesc": "2.5.2",
     "rollup": "1.1.2",
     "rollup-plugin-node-resolve": "4.0.0",
-    "unicode-12.1.0": "0.8.0",
     "unicode-property-value-aliases": "3.3.0",
     "zuul": "3.12.0"
   },
   "dependencies": {
-    "@babel/runtime-corejs3": "7.8.3"
+    "@babel/runtime-corejs3": "^7.8.3"
   }
 }

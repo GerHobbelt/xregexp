@@ -5,21 +5,25 @@
   "compact": false,
   "retainLines": false,
   "plugins": [
-    "@gerhobbelt/babel-plugin-proposal-unicode-property-regex",
     [
-      "@gerhobbelt/babel-plugin-transform-runtime",
+      "@babel/plugin-transform-runtime",
       {
         "corejs": 3,
       },
     ],
   ],
   "presets": [
-    ["@gerhobbelt/babel-preset-env", {
-      "exclude": ["transform-literals"],
-      "targets": {
-        "browsers": ["last 2 versions", "safari >= 7"],
-        "node": "6.0"
+    [
+      "@babel/env", {
+        "exclude": [
+          "transform-literals",
+          "transform-sticky-regex"
+        ],
+        "targets": {
+          "browsers": ["last 2 versions"],
+          "node": "12.0"
+        }
       }
-    }]
+    ]
   ]
 }
